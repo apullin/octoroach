@@ -74,6 +74,7 @@ int main(void) {
 #else //No hall sensors, standard BEMF control
     legCtrlSetup(); // Timer 1
     steeringSetup();  //Timer 5
+    //dz_steeringSetup(); //Timer 5
 #endif
 
     //tailCtrlSetup();

@@ -1,6 +1,8 @@
 #ifndef __HALL_H
 #define __HALL_H
 
+#include "pid.h"
+
 // better to turn gains to zero until initialized by command
 #define DEFAULT_HALL_KP  0
 #define DEFAULT_HALL_KI  0
