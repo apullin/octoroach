@@ -99,6 +99,8 @@ static void SetupTimer2(void) {
 
 
 static void SetupInputCapture() {
+    
+    
     // RB4 and RB5 will be used for inputs
     _TRISB4 = 1; // set for input
     _TRISB5 = 1; // set for input
@@ -113,8 +115,9 @@ static void SetupInputCapture() {
     event and the Input Capture Interrupt (ICI<1:0>) bits are ignored. */
     // every edge to double resolution
 
-    OpenCapture8(IC_IDLE_STOP & IC_TIMER2_SRC &
-            IC_INT_1CAPTURE & IC_EVERY_EDGE);
+    //TODO: (pullin, fgb) Input Capture modules differ slightly, need overhaul
+    /*OpenCapture8(IC_IDLE_STOP & IC_TIMER2_SRC &
+            IC_INT_1CAPTURE & IC_EVERY_EDGE);*/
     // left leg
     motor_count[1] = 0;
     old_left_time = 0;
@@ -122,8 +125,10 @@ static void SetupInputCapture() {
     EnableIntIC7;
     /* In Edge Detection Mode (ICM = 001), the interrupt is generated on every capture
     event and the Input Capture Interrupt (ICI<1:0>) bits are ignored. */
-    OpenCapture7(IC_IDLE_STOP & IC_TIMER2_SRC &
-            IC_INT_1CAPTURE & IC_EVERY_EDGE);
+    
+    //TODO: (pullin, fgb) Input Capture modules differ slightly, need overhaul
+    /*OpenCapture7(IC_IDLE_STOP & IC_TIMER2_SRC &
+            IC_INT_1CAPTURE & IC_EVERY_EDGE);*/
 }
 
 //unsigned long toc;

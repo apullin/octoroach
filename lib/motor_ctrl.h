@@ -34,4 +34,8 @@ void mcSetDutyCycle(unsigned char channel, float duty_cycle);
 // value >0, =0, <0 for discrete mode (default mode)
 void mcSteer(float value);
 
+#ifdef __dsPIC33E__
+void SetDCMCPWM(int chan, int val, int updatedis);
+#endif
+
 #endif  // __MOTOR_CTRL_H

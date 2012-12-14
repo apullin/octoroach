@@ -35,8 +35,10 @@
 pidObj tailPID;
 //DSP PID stuff
 //These have to be declared here!
-fractional tail_abcCoeffs[3] __attribute__((section(".xbss, bss, xmemory")));
-fractional tail_controlHists[3] __attribute__((section(".ybss, bss, ymemory")));
+//fractional tail_abcCoeffs[3] __attribute__((section(".xbss, bss, xmemory")));
+//fractional tail_controlHists[3] __attribute__((section(".ybss, bss, ymemory")));
+fractional tail_abcCoeffs[3] __attribute__((eds,space(xmemory)));
+fractional tail_controlHists[3] __attribute__((eds,space(ymemory)));
 
 //Counter for blinking the red LED during motion
 //int blinkCtr;

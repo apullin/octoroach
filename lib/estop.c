@@ -42,8 +42,13 @@
  * 	//Reset robot by sending cmdSoftwareReset(...)
  *  
  */
-
+#ifdef __dsPIC33F_
+#include <p33Fxxxx.h>
 #include "pwm.h"
+#elif defined __dsPIC33E_
+#include <p33Exxxx.h>
+#include "hspwm.h"
+#endif
 
 /*****************************************************************************
 * Function Name : EmergencyStop
@@ -52,9 +57,12 @@
 * Return Value  : None
 *****************************************************************************/
 void EmergencyStop(){
+        //TODO: (pullin, fgb) PWM module is largely different in 33E, needs overhaul
+    /*
 	PTCON &= PWM_DIS;  //Disable PWM output
 	PDC1 = 0;	//Zero all duty cycles
 	PDC2 = 0;
 	PDC3 = 0;
 	PDC4 = 0;
+     */
 }

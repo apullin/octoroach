@@ -5,8 +5,9 @@
  * Author: stanbaek
  *********************************************/
 
+#include <p33Exxxx.h>
 #include "motor_ctrl.h"
-#include "pwm.h"
+#include <hspwm.h>
 #include "ports.h"
 #include "led.h"
 
@@ -47,9 +48,7 @@ void mcSetDutyCycle(unsigned char channel, float duty_cycle) {
 }
 
 void mcThrust(float value) {
-
     mcSetDutyCycle(MC_CHANNEL_PWM1, value);
-
 }
 
 void mcSteer(float value) {
@@ -83,59 +82,59 @@ void mcSteer(float value) {
 }
 
 void mcSetSteerMode(unsigned char mode) {
-
-    if (mode == MC_STEER_MODE_DISC) {
-        steerMode = MC_STEER_MODE_DISC;
-        // PWM2L & PWM3L pins are general I/O
-        PWMCON1bits.PEN2L = 0;
-        PWMCON1bits.PEN3L = 0;
-    } else {
-        steerMode = MC_STEER_MODE_CONT;
-        // PWM2L & PWM3L pins are enabled for PWM output
-        PWMCON1bits.PEN2L = 1;
-        PWMCON1bits.PEN3L = 1;
-    }
-
+    //TODO: (pullin, fgb) PWM module is largely different in 33E, needs overhaul
+    /*  if (mode == MC_STEER_MODE_DISC) {
+            steerMode = MC_STEER_MODE_DISC;
+            // PWM2L & PWM3L pins are general I/O
+            PWMCON1bits.PEN2L = 0;
+            PWMCON1bits.PEN3L = 0;
+        } else {
+            steerMode = MC_STEER_MODE_CONT;
+            // PWM2L & PWM3L pins are enabled for PWM output
+            PWMCON1bits.PEN2L = 1;
+            PWMCON1bits.PEN3L = 1;
+        }
+     */
 }
 
 static void mcSetupPeripheral(void) {
-
-    //////////// NKOHUT ///////////
-    /*
-    unsigned int PTPERvalue = 8000;
-    unsigned int SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value;
-    SEVTCMPvalue = 7952;
-    PTCONvalue = PWM_EN & PWM_IDLE_CON & PWM_OP_SCALE1 &
-            PWM_IPCLK_SCALE1 & PWM_MOD_FREE;
-    PWMCON1value = PWM_MOD1_IND & PWM_PEN1L & PWM_MOD2_IND & PWM_PEN2L &
-            PWM_MOD3_IND & PWM_PEN3L & PWM_MOD4_IND & PWM_PEN4L;
-    PWMCON2value = PWM_SEVOPS4 & PWM_OSYNC_TCY & PWM_UEN;
-    ConfigIntMCPWM(PWM_INT_DIS & PWM_FLTA_DIS_INT & PWM_FLTB_DIS_INT);
-    OpenMCPWM(PTPERvalue, SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value);
-    SetDCMCPWM(1, 0, 0);
-    SetDCMCPWM(2, 0, 0);
-    SetDCMCPWM(3, 0, 0);
-    SetDCMCPWM(4, 0, 0);
-
-    pwmPeriod = PTPERvalue;
-    */
-
-    //////////// APULLIN ///////////
+    //TODO: PWM module is largely different in 33E, needs overhaul
     
-     unsigned int PTPERvalue = 2000;
-    unsigned int SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value;
-    SEVTCMPvalue = 1988;
-    //    SEVTCMPvalue = 160; // Special Event Trigger Compare Value for ADC in phase with PWM
-    //PTCONvalue = PWM_EN & PWM_IDLE_CON & PWM_OP_SCALE1 &
-    //             PWM_IPCLK_SCALE4 & PWM_MOD_FREE;
-    PTCONvalue = PWM_EN & PWM_IDLE_CON & PWM_OP_SCALE4 &
-            PWM_IPCLK_SCALE1 & PWM_MOD_FREE;
-    PWMCON1value = PWM_MOD1_IND & PWM_PEN1L & PWM_MOD2_IND & PWM_PEN2L &
-            PWM_MOD3_IND & PWM_PEN3L & PWM_MOD4_IND & PWM_PEN4L;
-    PWMCON2value = PWM_SEVOPS4 & PWM_OSYNC_TCY & PWM_UEN;
-    ConfigIntMCPWM(PWM_INT_DIS & PWM_FLTA_DIS_INT & PWM_FLTB_DIS_INT);
-    OpenMCPWM(PTPERvalue, SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value);
-    SetDCMCPWM(1, 0, 0);
-    SetDCMCPWM(2, 0, 0);
-     
+    /*
+      unsigned int PTPERvalue = 2000;
+     unsigned int SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value;
+     SEVTCMPvalue = 1988;
+     //    SEVTCMPvalue = 160; // Special Event Trigger Compare Value for ADC in phase with PWM
+     //PTCONvalue = PWM_EN & PWM_IDLE_CON & PWM_OP_SCALE1 &
+     //             PWM_IPCLK_SCALE4 & PWM_MOD_FREE;
+     PTCONvalue = PWM_EN & PWM_IDLE_CON & PWM_OP_SCALE4 &
+             PWM_IPCLK_SCALE1 & PWM_MOD_FREE;
+     PWMCON1value = PWM_MOD1_IND & PWM_PEN1L & PWM_MOD2_IND & PWM_PEN2L &
+             PWM_MOD3_IND & PWM_PEN3L & PWM_MOD4_IND & PWM_PEN4L;
+     PWMCON2value = PWM_SEVOPS4 & PWM_OSYNC_TCY & PWM_UEN;
+     ConfigIntMCPWM(PWM_INT_DIS & PWM_FLTA_DIS_INT & PWM_FLTB_DIS_INT);
+     OpenMCPWM(PTPERvalue, SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value);
+     SetDCMCPWM(1, 0, 0);
+     SetDCMCPWM(2, 0, 0);
+     */
 }
+
+#ifdef __dsPIC33E__
+
+void SetDCMCPWM(int chan, int val, int updatedis) {
+    switch (chan) {
+        case 1:
+            SetHSPWMSecDutyCycle1(val);
+            break;
+        case 2:
+            SetHSPWMSecDutyCycle2(val);
+            break;
+        case 3:
+            SetHSPWMSecDutyCycle3(val);
+            break;
+        case 4:
+            SetHSPWMSecDutyCycle4(val);
+            break;
+    }
+}
+#endif

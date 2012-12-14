@@ -7,7 +7,7 @@
 
 #include "settings.h"
 #include "Generic.h"
-#include "p33Exxxx.h"
+#include <p33Exxxx.h>
 #include "init_default.h"
 #include "ports.h"
 #include "battery.h"

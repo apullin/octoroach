@@ -188,30 +188,14 @@ void cmdHandleRadioRxBuffer(void) {
 -----------------------------------------------------------------------------*/
 
 static void cmdSetThrust(unsigned char status, unsigned char length, unsigned char *frame) {
-
-    unsigned char chr_test[4];
-    float *duty_cycle = (float*) chr_test;
-
-    chr_test[0] = frame[0];
-    chr_test[1] = frame[1];
-    chr_test[2] = frame[2];
-    chr_test[3] = frame[3];
-
-    mcSetDutyCycle(MC_CHANNEL_PWM1, duty_cycle[0]);
-    //mcSetDutyCycle(1, duty_cycle[0]);
+    float duty_cycle = *((float*)frame);
+    mcSetDutyCycle(MC_CHANNEL_PWM1, duty_cycle);
 }
 
 static void cmdSteer(unsigned char status, unsigned char length, unsigned char *frame) {
 
-    unsigned char chr_test[4];
-    float *steer_value = (float*) chr_test;
-
-    chr_test[0] = frame[0];
-    chr_test[1] = frame[1];
-    chr_test[2] = frame[2];
-    chr_test[3] = frame[3];
-
-    mcSteer(steer_value[0]);
+    float steer_value = *((float*)frame);
+    mcSteer(steer_value);
 }
 
 /*-----------------------------------------------------------------------------
@@ -246,37 +230,7 @@ static void cmdGetImuData(unsigned char status, unsigned char length, unsigned c
 // 6 bytes for gyro data
 
 static void cmdGetImuLoop(unsigned char status, unsigned char length, unsigned char *frame) {
-
-    unsigned int count;
-    unsigned long tic;
-    unsigned char *tic_char;
-    Payload pld;
-
-    LED_RED = 1;
-
-    count = frame[0] + (frame[1] << 8);
-
-    tic_char = (unsigned char*) &tic;
-    tic = sclockGetTime();
-
-    while (count) {
-
-        pld = payCreateEmpty(16); // data length = 16
-        paySetData(pld, 4, tic_char);
-        payAppendData(pld, 4, 6, xlReadXYZ());
-        payAppendData(pld, 10, 6, gyroReadXYZ());
-        paySetStatus(pld, status);
-        paySetType(pld, CMD_GET_IMU_DATA);
-
-        radioSendPayload(macGetDestAddr(), pld);
-        count--;
-        payDelete(pld);
-        delay_ms(4);
-        tic = sclockGetTime();
-    }
-
-    LED_RED = 0;
-
+ //Obsolete, AP 12/13/12
 }
 
 static void cmdStartImuDataSave(unsigned char status, unsigned char length, unsigned char *frame) {

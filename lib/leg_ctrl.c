@@ -1,11 +1,13 @@
 //leg_ctrl.c
 
+#include <p33Exxxx.h>
+
 #include "pid.h"
 #include "leg_ctrl.h"
 #include "motor_ctrl.h"
 #include "timer.h"
 #include "adc_pid.h"
-#include "pwm.h"
+#include "hspwm.h"
 #include "led.h"
 #include "adc.h"
 #include "move_queue.h"
@@ -27,8 +29,10 @@ pidObj motor_pidObjs[NUM_MOTOR_PIDS];
 #ifdef PID_HARDWARE
 //DSP PID stuff
 //These have to be declared here!
-fractional motor_abcCoeffs[NUM_MOTOR_PIDS][3] __attribute__((section(".xbss, bss, xmemory")));
-fractional motor_controlHists[NUM_MOTOR_PIDS][3] __attribute__((section(".ybss, bss, ymemory")));
+//fractional motor_abcCoeffs[NUM_MOTOR_PIDS][3] __attribute__((section(".xbss, bss, xmemory")));
+//fractional motor_controlHists[NUM_MOTOR_PIDS][3] __attribute__((section(".ybss, bss, ymemory")));
+fractional motor_abcCoeffs[NUM_MOTOR_PIDS][3] __attribute__((eds,space(xmemory)));
+fractional motor_controlHists[NUM_MOTOR_PIDS][3] __attribute__((eds,space(ymemory)));
 #endif
 
 //Counter for blinking the red LED during motion

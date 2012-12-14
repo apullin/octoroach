@@ -21,8 +21,10 @@
 //Steering controller variables
 pidObj steeringPID;
 
-fractional steering_abcCoeffs[3] __attribute__((section(".xbss, bss, xmemory")));
-fractional steering_controlHists[3] __attribute__((section(".ybss, bss, ymemory")));
+//fractional steering_abcCoeffs[3] __attribute__((section(".xbss, bss, xmemory")));
+//fractional steering_controlHists[3] __attribute__((section(".ybss, bss, ymemory")));
+fractional steering_abcCoeffs[3] __attribute__((eds,space(xmemory)));
+fractional steering_controlHists[3] __attribute__((eds,space(ymemory)));
 
 //#define GYRO_AVG_SAMPLES 	32
 
