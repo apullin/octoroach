@@ -2,7 +2,7 @@
 // R. Fearing
 // code for position feedback using hall sensors on left and right motor
 
-#include "p33Fxxxx.h"
+#include "p33Exxxx.h"
 #include "led.h"
 #include "pid.h"
 #include "hall.h"
@@ -12,10 +12,9 @@
 #include "motor_ctrl.h"
 #include "timer.h"
 #include "adc_pid.h"
-#include "pwm.h"
+//#include "pwm.h"
 #include "move_queue.h"
 #include "hall.h"
-#include "p33Fxxxx.h"
 #include "incap.h" // input capture
 #include "sys_service.h"
 #include <stdlib.h> // for malloc

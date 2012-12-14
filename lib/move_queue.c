@@ -6,7 +6,7 @@
 #include "move_queue.h"
 #include "payload.h"
 #include "pid.h"
-#include "p33Fxxxx.h"
+#include "p33Exxxx.h"
 //#include <stdio.h>      // for NULL
 #include <stdlib.h>     // for malloc
 
