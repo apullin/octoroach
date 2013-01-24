@@ -12,12 +12,12 @@
 #define TAIL_DEFAULT_KFF  0
 #define SOFT_GAIN_SCALER 512
 #elif defined PID_HARDWARE
-#define TAIL_DEFAULT_KP  500
+#define TAIL_DEFAULT_KP  5000
 #define TAIL_DEFAULT_KI  50
 #define TAIL_DEFAULT_KD  0
 #define TAIL_DEFAULT_KAW 0
 #define TAIL_DEFAULT_KFF  0
-#define TAIL_PID_SCALER 8
+#define TAIL_PID_SCALER 1
 #endif
 
 

@@ -220,7 +220,7 @@ class Robot:
             packet = [numToSend]
             packet.extend(toSend)    #Full moveq format to be given to pack()
             #Actual TX
-            self.tx( 0, command.SET_TAIL_QUEUE, pack('=h'+numToSend*'hLhhhh', *packet))
+            self.tx( 0, command.SET_TAIL_QUEUE, pack('=h'+numToSend*'fLhhhh', *packet))
             time.sleep(0.01)                #simple holdoff, probably not neccesary
             segments = segments[4:]         #remanining unsent ones
             toSend = segments[0:4]          #Due to python indexing, this could be from 1-4

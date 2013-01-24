@@ -65,6 +65,8 @@ typedef struct {
 
 ENCPOS encPos;
 
+#define ZEROANGLE -77.0
+
 /*-----------------------------------------------------------------------------
  *          Declaration of static functions
 -----------------------------------------------------------------------------*/
@@ -182,6 +184,14 @@ float encGetAux1Pos(void) {
     i2cEndTx(ENC_I2C_CHAN);
 
     apos = ((enc_data_r2 << 6)+(enc_data_r1 & 0x3F)) * LSB2ENCDEG; //concatenate registers
+
+    apos = apos - ZEROANGLE;
+    //from zeroangle = 38
+    if (apos <= -180.0) {
+        apos = apos + 360.0;
+    } else if (apos > 180.0) {
+        apos = apos - 360.0;
+    }
 
     return apos;
 }

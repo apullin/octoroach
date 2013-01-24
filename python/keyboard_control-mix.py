@@ -12,9 +12,11 @@ RESET_ROBOT = True   #Note: This MUST be False if you're using an XBee
 
 def menu():
     print "-------------------------------------"
-    print "Keyboard control with Mixing,  May 6, 2011"
+    print "Keyboard control with Mixing PLUS Aux AMS+Hbridge"
     print " up: increase throt     q:quit   left/right: steering"
     print " down: decrease throt   s: reset to straight  space: all stop"
+    print " t: AUX up 15.0deg   g: AUX down 15.0deg"
+    print ""
 
 def main():
     xb = setupSerial(shared.BS_COMPORT, shared.BS_BAUDRATE)
@@ -33,6 +35,10 @@ def main():
     
     verifyAllMotorGainsSet()  #exits on failure
     
+    tailgains = [5000,500,1500,0,0]
+    R1.setTailGains(tailgains, retries = 8)
+    verifyAllTailGainsSet()
+    
     tinc = 20;
 
     forward = 0
@@ -40,6 +46,8 @@ def main():
     
     left_throt = 0
     right_throt = 0
+    
+    auxangle = 0.0
 
     #blank out any keypresses leading in...
     while msvcrt.kbhit():
@@ -58,6 +66,14 @@ def main():
             turn = turn + tinc
         elif ord(keypress) == 77: #right
             turn = turn - tinc
+        elif keypress == 't': #AUX up 15.0
+            auxangle = auxangle + 15.0
+            tailq = [1, auxangle, 1000, TAIL_SEG_CONSTANT, 0, 0, 0]
+            R1.sendTailQueue(tailq)
+        elif keypress == 'g': #AUX down 15.0
+            auxangle = auxangle - 15.0
+            tailq = [1, auxangle, 1000, TAIL_SEG_CONSTANT, 0, 0, 0]
+            R1.sendTailQueue(tailq)
         elif keypress == 's':  #go straight
                 forward = min(left_throt, right_throt)
                 turn = 0
@@ -79,7 +95,7 @@ def main():
             right_throt = 0
         
         #Display output values
-        outstring = "L: {0:03.1f}  |   R: {1:03.1f}           \r".format(left_throt,right_throt)
+        outstring = "L: {0:03.1f}  |   R: {1:03.1f}      | AUX : {2:3.1f}      \r".format(left_throt,right_throt,auxangle)
         sys.stdout.write(outstring)
         sys.stdout.flush()
         

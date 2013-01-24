@@ -41,7 +41,7 @@ void mcSetup(void) {
 void mcSetDutyCycle(unsigned char channel, float duty_cycle) {
 
     unsigned int pdc_value;
-    pdc_value = (unsigned int) (2 * duty_cycle / 100 * pwmPeriod);
+    pdc_value = (unsigned int) (2.0 * duty_cycle / 100.0 * pwmPeriod);
     SetDCMCPWM(channel, pdc_value, 0);
 
 }
@@ -122,7 +122,7 @@ static void mcSetupPeripheral(void) {
 
     //////////// APULLIN ///////////
     
-     unsigned int PTPERvalue = 2000;
+    unsigned int PTPERvalue = 2000;
     unsigned int SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value;
     SEVTCMPvalue = 1988;
     //    SEVTCMPvalue = 160; // Special Event Trigger Compare Value for ADC in phase with PWM
@@ -137,5 +137,5 @@ static void mcSetupPeripheral(void) {
     OpenMCPWM(PTPERvalue, SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value);
     SetDCMCPWM(1, 0, 0);
     SetDCMCPWM(2, 0, 0);
-     
+    pwmPeriod = PTPERvalue;
 }

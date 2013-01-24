@@ -201,8 +201,8 @@ static void telemISRHandler() {
             data.telemStruct.inputR = motor_pidObjs[1].input;
             //data.telemStruct.dcL = PDC3; //For IP2.4 modified to use Hbridge
             //data.telemStruct.dcR = PDC4; //For IP2.4 modified to use Hbridge
-            data.telemStruct.dcL = PDC1;
-            data.telemStruct.dcR = PDC2;
+            data.telemStruct.dcL = PDC2;
+            data.telemStruct.dcR = PDC3;
             data.telemStruct.gyroX = imuGetGyroXValue();
             data.telemStruct.gyroY = imuGetGyroYValue();
             data.telemStruct.gyroZ = imuGetGyroZValue();
