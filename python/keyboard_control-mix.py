@@ -35,7 +35,7 @@ def main():
     
     verifyAllMotorGainsSet()  #exits on failure
     
-    tailgains = [5000,500,1500,0,0]
+    tailgains = [15000,100,100,0,0]
     R1.setTailGains(tailgains, retries = 8)
     verifyAllTailGainsSet()
     
@@ -68,11 +68,11 @@ def main():
             turn = turn - tinc
         elif keypress == 't': #AUX up 15.0
             auxangle = auxangle + 15.0
-            tailq = [1, auxangle, 1000, TAIL_SEG_CONSTANT, 0, 0, 0]
+            tailq = [1, auxangle, 500, TAIL_SEG_CONSTANT, 0, 0, 0]
             R1.sendTailQueue(tailq)
         elif keypress == 'g': #AUX down 15.0
             auxangle = auxangle - 15.0
-            tailq = [1, auxangle, 1000, TAIL_SEG_CONSTANT, 0, 0, 0]
+            tailq = [1, auxangle, 500, TAIL_SEG_CONSTANT, 0, 0, 0]
             R1.sendTailQueue(tailq)
         elif keypress == 's':  #go straight
                 forward = min(left_throt, right_throt)

@@ -42,6 +42,10 @@ void mcSetDutyCycle(unsigned char channel, float duty_cycle) {
 
     unsigned int pdc_value;
     pdc_value = (unsigned int) (2.0 * duty_cycle / 100.0 * pwmPeriod);
+    Nop();
+    Nop();
+    Nop();
+    Nop();
     SetDCMCPWM(channel, pdc_value, 0);
 
 }

@@ -12,7 +12,7 @@ from or_helpers import *
 
 
 ###### Operation Flags ####
-SAVE_DATA1 = True 
+SAVE_DATA1 = False 
 RESET_R1 = True  
 
 EXIT_WAIT   = False
@@ -44,7 +44,7 @@ def main():
     #  [ Kp , Ki , Kd , Kaw , Kff     ,  Kp , Ki , Kd , Kaw , Kff ]
     #    ----------LEFT----------        ---------_RIGHT----------
     
-    motorgains = [15000,5,0,0,10 , 15000,5,0,0,10] #Hardware PID
+    motorgains = [15000,100,0,0,10 , 15000,5,0,0,10] #Hardware PID
 
     R1.setMotorGains(motorgains, retries = 8)
     #Verify all robots have motor gains set
@@ -96,11 +96,10 @@ def main():
              
     #YAW control: Straight then -90 degree turn 
     numMoves = 3
-    moveq1 = [numMoves, \
-        150, 150, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*0.0)),
-        150, 150, 10000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*-90.0)),
-        150, 150, 10000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*0.0))]
-    
+    moveq1 = [numMoves, 
+        0,   0,   1000, MOVE_SEG_RAMP      , 400, 400, 0, STEER_MODE_DECREASE, int(round(shared.deg2count*0.0)) ,
+        400, 400, 4000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_DECREASE, int(round(shared.deg2count*0.0)) ,
+        0,   0,   1000, MOVE_SEG_RAMP      , -400, -400, 0, STEER_MODE_DECREASE, int(round(shared.deg2count*0.0))]    
     #No movements, just for static telemetry capture
     #numMoves = 1
     #moveq1 = [numMoves, \
@@ -109,6 +108,7 @@ def main():
     #Timing settings
     R1.leadinTime = 500;
     R1.leadoutTime = 500;
+    R1.runtime = 7000;
     
     #Flash must be erased to save new data
     if SAVE_DATA1:

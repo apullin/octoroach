@@ -166,20 +166,24 @@ float encGetAux1Pos(void) {
     float apos;
 
     i2cStartTx(ENC_I2C_CHAN); //read first register
-    i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_AUX1_WR);
+    //i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_L_WR); //Nick's hardware
+    i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_AUX1_WR); //DZ's hardware
     i2cSendByte(ENC_I2C_CHAN, 0xFE);
     i2cEndTx(ENC_I2C_CHAN);
     i2cStartTx(ENC_I2C_CHAN);
-    i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_AUX1_RD);
+    //i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_L_RD); //Nick's hardware
+    i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_AUX1_RD); //DZ's hardware
     enc_data_r1 = i2cReceiveByte(ENC_I2C_CHAN);
     i2cEndTx(ENC_I2C_CHAN);
 
     i2cStartTx(ENC_I2C_CHAN); //read second register
-    i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_AUX1_WR);
+    //i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_L_WR); //Nick's hardware
+    i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_AUX1_WR); //DZ's hardware
     i2cSendByte(ENC_I2C_CHAN, 0xFF);
     i2cEndTx(ENC_I2C_CHAN);
     i2cStartTx(ENC_I2C_CHAN);
-    i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_AUX1_RD);
+    //i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_L_RD); //Nick's hardware
+    i2cSendByte(ENC_I2C_CHAN, ENC_ADDR_AUX1_RD); //DZ's hardware
     enc_data_r2 = i2cReceiveByte(ENC_I2C_CHAN);
     i2cEndTx(ENC_I2C_CHAN);
 
