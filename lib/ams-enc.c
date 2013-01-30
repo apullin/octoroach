@@ -65,7 +65,7 @@ typedef struct {
 
 ENCPOS encPos;
 
-#define ZEROANGLE -77.0
+#define ZEROANGLE -67.0
 
 /*-----------------------------------------------------------------------------
  *          Declaration of static functions
