@@ -41,13 +41,17 @@ void mcSetup(void) {
 void mcSetDutyCycle(unsigned char channel, float duty_cycle) {
 
     unsigned int pdc_value;
-    pdc_value = (unsigned int) (2.0 * duty_cycle / 100.0 * pwmPeriod);
-    Nop();
-    Nop();
-    Nop();
-    Nop();
-    SetDCMCPWM(channel, pdc_value, 0);
 
+    //LED indicator
+    if((duty_cycle > 90.0) || (duty_cycle < -90.0)){
+        LED_YELLOW = 1;
+    }
+    else{
+        LED_YELLOW = 0;
+    }
+
+    pdc_value = (unsigned int) (2.0 * duty_cycle / 100.0 * pwmPeriod);
+    SetDCMCPWM(channel, pdc_value, 0);
 }
 
 void mcThrust(float value) {
