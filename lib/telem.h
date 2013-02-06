@@ -22,14 +22,15 @@ typedef struct {
     int accelZ;
     int bemfL;
     int bemfR;
-    float tailTorque;
     int Vbatt;
-    int steerAngle;
-    float tailAngle;
+    int steerInput;
     float bodyPosition;
     unsigned long motor_count[2];
-    int sOut;
+    int steerOutput;
 } telemStruct_t;
+
+//static char TELEM_UNPACK_FORMAT[] = "=LLhhhhhhhhhhhhhhhfLLh";
+//static char TELEM_SAVE_FORMAT[]   = "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%d,%d,%d";
 
 //TODO: A union is not neccesary here. Remove for clarity, and chage related
 //  code

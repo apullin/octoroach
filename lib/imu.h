@@ -14,6 +14,10 @@ int imuGetGyroXValue();
 int imuGetGyroYValue();
 int imuGetGyroZValue();
 
+int imuGetXLXValue();
+int imuGetYLXValue();
+int imuGetZLXValue();
+
 float imuGetGyroXValueDeg();
 float imuGetGyroYValueDeg();
 float imuGetGyroZValueDeg();

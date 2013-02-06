@@ -17,8 +17,6 @@
 #include "battery.h"
 #include "cmd.h"
 #include "radio.h"
-#include "xl.h"
-#include "gyro.h"
 #include "utils.h"
 #include "sclock.h"
 #include "motor_ctrl.h"
@@ -36,18 +34,16 @@
 
 #include <stdlib.h>
 
-extern unsigned char id[4];
-
-volatile unsigned long wakeTime;
-extern volatile char g_radio_duty_cycle;
-extern volatile char inMotion;
+//volatile unsigned long wakeTime;
+//extern volatile char g_radio_duty_cycle;
+//extern volatile char inMotion;
 
 int dcCounter;
 
 int main(void) {
 
-    wakeTime = 0;
-    dcCounter = 0;
+    //wakeTime = 0;
+    //dcCounter = 0;
 
     WordVal src_addr_init = {RADIO_SRC_ADDR};
     WordVal src_pan_id_init = {RADIO_SRC_PAN_ID};
@@ -67,22 +63,21 @@ int main(void) {
     macSetDestAddr(dst_addr_init);
 
     dfmemSetup();
-    //xlSetup();
-    gyroSetup();
     mcSetup();
     cmdSetup();
     adcSetup();
     telemSetup(); //Timer 5
-    encSetup();
-    imuSetup();
+    //encSetup();
+    imuSetup(); //Calls gyroSetup and xlSetup
 
-    #ifdef  HALL_SENSORS
-    hallSetup();    // Timer 1, Timer 2
-    hallSteeringSetup(); //doesn't exist yet
-    #else //No hall sensors, standard BEMF control
+    //Use hall...() setup functions if using hall effect sensors.
+    //These are incompatible with the legCtrl and amsCtlr modules
+    //hallSetup(); //Timer 1, Timer 2
+    //hallSteeringSetup(); //doesn't exist yet
+
+    //No hall sensors, standard BEMF control
     legCtrlSetup(); // Timer 1
     steeringSetup();  //Timer 5
-    #endif
 
     //Tail control is a special case
     //tailCtrlSetup();

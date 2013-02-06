@@ -290,7 +290,8 @@ class Robot:
         self.findFileName()
         self.writeFileHeader()
         fileout = open(self.dataFileName, 'a')
-        np.savetxt(fileout , np.array(self.imudata), '%d,'*14+'%f,%d,%d,%f,%f,%d,%d,%d', delimiter = ',')
+        np.savetxt(fileout , np.array(self.imudata), \
+            '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%d,%d,%d', delimiter = ',')
         fileout.close()
         self.clAnnounce()
         print "Telemtry data saved to", self.dataFileName
@@ -310,7 +311,9 @@ class Robot:
         fileout.write('%  numSamples    = ' + repr(self.numSamples) + '\n')
         fileout.write('%  moveq         = ' + repr(self.moveq) + '\n')
         fileout.write('% Columns: \n')
-        fileout.write('% time | Llegs | Rlegs | DCL | DCR | GyroX | GyroY | GyroZ | GryoZAvg | AccelX | AccelY |AccelZ | LBEMF | RBEMF | SteerOut | Vbatt | SteerAngle\n')
+        fileout.write('% time | Llegs | Rlegs | DCL | DCR | GyroX | GyroY | GyroZ | "+ \
+            "GryoZAvg | AccelX | AccelY |AccelZ | LBEMF | RBEMF | Vbatt | SteerInput |" + \
+            " YawAngle | Hall1 | Hall2 | SteerOut\n')
         fileout.close()
 
     def setupImudata(self, moveq):

@@ -67,11 +67,13 @@ static unsigned int streamSkipNum = 15;
 //Offset for time value when recording samples
 static unsigned long telemStartTime = 0;
 
-//Function to be installed into T5, and setup function
+////// Private Functions //////
 static void SetupTimer5(); // Might collide with setup in steering module!
 static void telemServiceRoutine(void); //To be installed with sysService
 //The following local functions are called by the service routine:
 static void telemISRHandler(void);
+void telemPackData(telemU* data);
+
 
 /////////        Telemtry ISR          ////////
 ////////  Installed to Timer5 @ 300hz  ////////
@@ -158,7 +160,7 @@ void telemSendDataDelay(unsigned char data_length, unsigned char* data, int dela
     radioSendPayload(macGetDestAddr(), pld);
 
     delay_ms(delaytime_ms); // allow radio transmission time
-    
+
 }
 
 
@@ -190,44 +192,10 @@ static void telemISRHandler() {
 
     //skipcounter decrements to 0, triggering a telemetry save, and resets
     // value of skicounter
+    ////////////////////   FLASH SAVE SECTION  //////////////////////
     if (skipcounter == 0) {
         if (samplesToSave > 0) {
-            /////// Get XL data
-
-            data.telemStruct.sampleIndex = sampIdx;
-            data.telemStruct.timeStamp = sclockGetTime() - telemStartTime;
-            data.telemStruct.inputL = motor_pidObjs[0].input;
-            data.telemStruct.inputR = motor_pidObjs[1].input;
-            //data.telemStruct.dcL = PDC3; //For IP2.4 modified to use Hbridge
-            //data.telemStruct.dcR = PDC4; //For IP2.4 modified to use Hbridge
-            data.telemStruct.dcL = PDC1;
-            data.telemStruct.dcR = PDC2;
-            data.telemStruct.gyroX = imuGetGyroXValue();
-            data.telemStruct.gyroY = imuGetGyroYValue();
-            data.telemStruct.gyroZ = imuGetGyroZValue();
-            data.telemStruct.gyroAvg = imuGetGyroZValueAvgDeg();
-
-            //XL temprorarily disabled to prevent collision with AM encoder
-            // TODO (apullin, fgb, nkohut) : bring XL access into imu module
-            /*data.telemStruct.accelX = xldata[0];
-            data.telemStruct.accelY = xldata[1];
-            data.telemStruct.accelZ = xldata[2]; */
-
-            data.telemStruct.accelX = 0;
-            data.telemStruct.accelY = 0;
-            data.telemStruct.accelZ = 0;
-
-
-            data.telemStruct.bemfL = bemf[0];
-            data.telemStruct.bemfR = bemf[1];
-            data.telemStruct.tailTorque = tailTorque;
-            data.telemStruct.Vbatt = adcGetVBatt();
-            data.telemStruct.steerAngle = 0;
-            data.telemStruct.tailAngle = 0.0;
-            data.telemStruct.bodyPosition = imuGetBodyZPositionDeg();
-            data.telemStruct.motor_count[0] = 0;
-            data.telemStruct.motor_count[1] = 0;
-            data.telemStruct.sOut = steeringPID.output;
+            telemPackData(&data);
             telemSaveData(&data);
             sampIdx++;
         }
@@ -239,35 +207,12 @@ static void telemISRHandler() {
     skipcounter--;
 
 
-
-    ////////////////////   STREAMING SECTION
+    ////////////////////   STREAMING SECTION  //////////////////////
     if (telemStreamingFlag == TELEM_STREAM_ON) {
         if (streamSkipCounter == 0) {
             if (samplesToStream > 0) {
 
-                /////// Get XL data
-                //xlGetXYZ((unsigned char*) xldata);
-
-                data.telemStruct.sampleIndex = sampIdx;
-                data.telemStruct.timeStamp = sclockGetTime() - telemStartTime;
-                data.telemStruct.inputL = motor_pidObjs[0].input;
-                data.telemStruct.inputR = motor_pidObjs[1].input;
-                data.telemStruct.dcL = PDC1;
-                data.telemStruct.dcR = PDC2;
-                data.telemStruct.gyroX = imuGetGyroXValue();
-                data.telemStruct.gyroY = imuGetGyroYValue();
-                data.telemStruct.gyroZ = imuGetGyroZValue();
-                data.telemStruct.gyroAvg = imuGetGyroZValueAvgDeg();
-                //XL temprorarily disabled to prevent collision with AM encoder
-                // TODO (apullin, fgb, nkohut) : bring XL access into imu module
-                data.telemStruct.accelX = 0; //xldata[0];
-                data.telemStruct.accelY = 0; //xldata[1];
-                data.telemStruct.accelZ = 0; //xldata[2];
-                data.telemStruct.bemfL = bemf[0];
-                data.telemStruct.bemfR = bemf[1];
-                data.telemStruct.sOut = steeringPID.output;
-                data.telemStruct.Vbatt = adcGetVBatt();
-                data.telemStruct.steerAngle = steeringPID.input;
+                telemPackData(&data);
                 sampIdx++;
                 //Send back data:
                 Payload pld;
@@ -301,3 +246,30 @@ void telemSetSkip(unsigned int skipnum) {
 void telemSetStartTime(void) {
     telemStartTime = sclockGetTime();
 }
+
+void telemPackData(telemU* data) {
+    data->telemStruct.sampleIndex = sampIdx;
+    data->telemStruct.timeStamp = sclockGetTime() - telemStartTime;
+    data->telemStruct.inputL = motor_pidObjs[0].input;
+    data->telemStruct.inputR = motor_pidObjs[1].input;
+    //data.telemStruct.dcL = PDC3; //For IP2.4 modified to use Hbridge
+    //data.telemStruct.dcR = PDC4; //For IP2.4 modified to use Hbridge
+    data->telemStruct.dcL = PDC1;
+    data->telemStruct.dcR = PDC2;
+    data->telemStruct.gyroX = imuGetGyroXValue();
+    data->telemStruct.gyroY = imuGetGyroYValue();
+    data->telemStruct.gyroZ = imuGetGyroZValue();
+    data->telemStruct.gyroAvg = imuGetGyroZValueAvgDeg();
+    data->telemStruct.accelX = imuGetGyroXValue();
+    data->telemStruct.accelY = imuGetGyroYValue();
+    data->telemStruct.accelZ = imuGetGyroZValue();
+    data->telemStruct.bemfL = bemf[0];
+    data->telemStruct.bemfR = bemf[1];
+    data->telemStruct.Vbatt = adcGetVBatt();
+    data->telemStruct.steerInput = 0;
+    data->telemStruct.bodyPosition = imuGetBodyZPositionDeg();
+    data->telemStruct.motor_count[0] = 0;
+    data->telemStruct.motor_count[1] = 0;
+    data->telemStruct.steerOutput = steeringPID.output;
+}
+
