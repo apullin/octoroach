@@ -30,7 +30,7 @@
 #if defined(__RADIO_HIGH_DATA_RATE)
 #define READBACK_DELAY_TIME_MS 3
 #else
-#define READBACK_DELAY_TIME_MS 10
+#define READBACK_DELAY_TIME_MS 8
 #endif
 
 
@@ -119,6 +119,8 @@ void telemReadbackSamples(unsigned long numSamples) {
     int delaytime_ms = READBACK_DELAY_TIME_MS;
     unsigned long i = 0; //will actually be the same as the sampleIndex
 
+    _T1IE = 0; _T2IE = 0; _T3IE = 0; _T4IE = 0; _T5IE = 0;
+
     LED_GREEN = 1;
     //Disable motion interrupts for readback
     //_T1IE = 0; _T5IE=0; //TODO: what is a cleaner way to do this?
@@ -133,13 +135,15 @@ void telemReadbackSamples(unsigned long numSamples) {
         do {
             telemSendDataDelay(PACKETSIZE, (unsigned char*) (&sampleData), delaytime_ms);
             //Linear backoff
-            delaytime_ms += 2;
+            delaytime_ms += 1;
         } while (g_last_ackd == 0);
 
         delaytime_ms = READBACK_DELAY_TIME_MS;
     }
 
     LED_GREEN = 0;
+
+    _T1IE = 1; _T2IE = 1; _T3IE = 1; _T4IE = 1; _T5IE = 1;
 
 }
 

@@ -85,8 +85,8 @@ static void imuISRHandler() {
     }
 
     //Convert to degrees
-    lastGyroXValueDeg = (float) (lastGyroXValue * LSB2DEG);
-    lastGyroYValueDeg = (float) (lastGyroYValue * LSB2DEG);
+    //lastGyroXValueDeg = (float) (lastGyroXValue * LSB2DEG);
+    //lastGyroYValueDeg = (float) (lastGyroYValue * LSB2DEG);
     lastGyroZValueDeg = (float) (lastGyroZValue * LSB2DEG);
 
     //Update Z gyro averging filter
@@ -104,7 +104,7 @@ static void imuISRHandler() {
     lastXLXValue = xlData[0];
     lastXLYValue = xlData[1];
     lastXLZValue = xlData[2];
-}
+ }
 
 static void SetupTimer4() {
     ///// Timer 4 setup, 300Hz /////

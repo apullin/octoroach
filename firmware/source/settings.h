@@ -17,8 +17,8 @@
 
 //Radio queue sizes
 //Overflow or underflow has not been tested for the radio
-#define RADIO_RXPQ_MAX_SIZE 	4
-#define RADIO_TXPQ_MAX_SIZE	4
+#define RADIO_RXPQ_MAX_SIZE 	8
+#define RADIO_TXPQ_MAX_SIZE	8
 
 /////// System Service settings ///////
 #define SYS_SERVICE_T1 // For legCtrl, hall

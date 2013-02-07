@@ -10,7 +10,7 @@
 #ifndef __SYS_SERVICE_H
 #define	__SYS_SERVICE_H
 
-#define SERVICE_VECT_LEN 8
+#define SERVICE_VECT_LEN 4
 
 //This will pull in sysService enabling definitions
 #include "settings.h"
