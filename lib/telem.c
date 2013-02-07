@@ -260,9 +260,9 @@ void telemPackData(telemU* data) {
     data->telemStruct.gyroY = imuGetGyroYValue();
     data->telemStruct.gyroZ = imuGetGyroZValue();
     data->telemStruct.gyroAvg = imuGetGyroZValueAvgDeg();
-    data->telemStruct.accelX = imuGetGyroXValue();
-    data->telemStruct.accelY = imuGetGyroYValue();
-    data->telemStruct.accelZ = imuGetGyroZValue();
+    data->telemStruct.accelX = imuGetXLXValue();
+    data->telemStruct.accelY = imuGetXLYValue();
+    data->telemStruct.accelZ = imuGetXLZValue();
     data->telemStruct.bemfL = bemf[0];
     data->telemStruct.bemfR = bemf[1];
     data->telemStruct.Vbatt = adcGetVBatt();

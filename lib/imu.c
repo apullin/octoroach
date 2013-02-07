@@ -124,15 +124,14 @@ static void SetupTimer4() {
 ////////////////////////
 
 void imuSetup() {
-    int retval;
-    retval = sysServiceInstallT4(imuServiceRoutine);
-    SetupTimer4();
-
     //Initialize gyro and XL chips
     xlSetup();
     gyroSetup();
-
     dfilterAvgCreate(&gyroZavg, GYRO_AVG_SAMPLES);
+
+    int retval;
+    retval = sysServiceInstallT4(imuServiceRoutine);
+    SetupTimer4();
 }
 
 int imuGetGyroXValue() {
@@ -151,11 +150,11 @@ int imuGetXLXValue() {
     return lastXLXValue;
 }
 
-int imuGetYLXValue() {
+int imuGetXLYValue() {
     return lastXLYValue;
 }
 
-int imuGetZLXValue() {
+int imuGetXLZValue() {
     return lastXLZValue;
 }
 
