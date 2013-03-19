@@ -65,7 +65,7 @@ typedef struct {
 
 ENCPOS encPos;
 
-#define ZEROANGLE -67.0
+#define ZEROANGLE 21.0
 
 /*-----------------------------------------------------------------------------
  *          Declaration of static functions
@@ -189,7 +189,9 @@ float encGetAux1Pos(void) {
 
     apos = ((enc_data_r2 << 6)+(enc_data_r1 & 0x3F)) * LSB2ENCDEG; //concatenate registers
 
-    apos = apos - ZEROANGLE;
+    //apos = apos - ZEROANGLE;
+    apos = -apos + ZEROANGLE;
+
     //from zeroangle = 38
     if (apos <= -180.0) {
         apos = apos + 360.0;
@@ -222,7 +224,7 @@ static inline void encoderSetupPeripheral(void) { //same setup as ITG3200 for co
             I2C1_STOP_DIS & I2C1_RESTART_DIS & I2C1_START_DIS;
 
     // BRG = Fcy(1/Fscl - 1/10000000)-1, Fscl = 909KHz 	
-    I2C1BRGvalue = 39;
+    I2C1BRGvalue = 95;
     OpenI2C1(I2C1CONvalue, I2C1BRGvalue);
     IdleI2C1();
 }
