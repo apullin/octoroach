@@ -27,8 +27,7 @@
 #define MAXTAILPOSITION 130.0
 #define MINTAILPOSITION -115.0
 
-//#define MAXTAILPOSITION 120.0
-//#define MINTAILPOSITION -100.0
+#define TAIL_OFFSET_ANGLE 21.0
 
 
 //PID container objects
@@ -62,7 +61,7 @@ float initialBodyPosition = 0.0;
 int gyroCtrlTorque;
 int tailCtrlFlag = 0;
 
- 
+
 
 //Function to be installed into T1, and setup function
 static void SetupTimer1(void);
@@ -73,13 +72,6 @@ static void tailSynth();
 static void serviceTailPID();
 
 //volatile char tailInMotion;
-
-/////////        Leg Control ISR       ////////
-/////////  Installed to Timer1 @ 1Khz  ////////
-//void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
-
-
-
 
 static void tailCtrlServiceRoutine(void) {
     serviceTailQueue(); //Update controllers
@@ -111,7 +103,7 @@ static void SetupTimer1(void) {
 void tailCtrlSetup() {
 
     SetupTimer1(); // Timer 1 @ 1 Khz
-    
+
 
     //Tail queue
     tailq = tailqInit(16);
@@ -142,7 +134,7 @@ void tailCtrlSetup() {
 
 	int retval;
     retval = sysServiceInstallT1(tailCtrlServiceRoutine);
- 
+
 }
 
 
@@ -271,8 +263,18 @@ void tailCtrlSetInput(int val) {
 static void serviceTailPID() {
 
     //update tail position
-    lastTailPos = encGetAux1Pos();
+    //lastTailPos = encGetAux1Pos();
+    lastTailPos = encGetFloatPos(0);
 
+    // Angle offset and branching
+    lastTailPos = -lastTailPos + TAIL_OFFSET_ANGLE;
+    if (lastTailPos <= -180.0) {
+        lastTailPos += 360.0;
+    } else if (lastTailPos > 180.0) {
+        lastTailPos -= 360.0;
+    }
+
+    //Scaling and convertion to int type for DSP PID controller
     int encAngle = (int) (lastTailPos * 10.0);
     //Update the setpoints
     //if((currentMove->inputL != 0) && (currentMove->inputR != 0)){
@@ -330,4 +332,3 @@ static void serviceTailPID() {
     } //if tailCtrlFlag == 1
 
 }
-

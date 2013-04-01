@@ -61,56 +61,12 @@ def main():
     #Verify all robots have steering gains set
     verifyAllSteeringGainsSet()  #exits on failure
     
-    #tailGains = [0, 0, 0, 0, 0]
-    #R1.setTailGains(tailGains)
-    #Verify all robots have tail gains set
-    #verifyAllTailGainsSet()  #exits on failure
-    
-    # Steering controller setpoint
-    #R1.setSteeringRate(0 , retries = 8)
-    #Verify all robots have steering rate set
-    #verifyAllSteeringRateSet()  #exits on failure
-
-    #### Do not send more than 5 move segments per packet!   ####
-    #### Instead, send multiple packets, and don't use       ####
-    ####    calcNumSamples() below, manually calc numSamples ####
-    #### This will be fixed to be automatic in the future.   ####
-
-    #Move segment format:
-    # [value1, value2 , segtime , move_seg_type , param1 , param2, param3]
-    # - value1 , value2 are initial setpoints for leg speed for each segment
-    # - segtime is the length of the segment, in milliseconds
-    # - move_seg_type is one of the types enumerated at the top of or_helpers.py
-    # MOVE_SEG_CONSTANT: param1 , param2 , param3 have no effect, set to 0.
-    # MOVE_SEG_RAMP    : param1 and param2 are left/right ramp rates, in legs speed per
-    #       second. param3 has no effect.
-    # MOVE_SEG_SIN     : Not implemented.
-    # MOVE_SEG_TRI     : Not implemented.
-    # MOVE_SEG_SAW     : Not implemented.
-    # MOVE_SEG_IDLE    : value1,value2 and params have no efffect. Disables leg speed controller.
-    # MOVE_SEG_LOOP_DECL: Turns on move queue looping. value1,value2, and params have no effect.
-    # MOVE_SEG_LOOP_CLEAR: Turns off move queue looping.value1,value2, and params have no effect.
-    # MOVE_SEG_QFLUSH  : Flushes all following items in move queue. value1,value2, and params have no effect.
-             
-    #YAW control: Straight then -90 degree turn 
-    #numMoves = 5
-    #moveq1 = [numMoves, \
-    #    0, 0, 500,   MOVE_SEG_RAMP, 30, 30,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*0.0)),
-    #    60, 60, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*0.0)),
-    #    60, 60, 4000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*90.0)),
-    #    60, 60, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*90.0)),
-    #    60, 60, 500,   MOVE_SEG_RAMP, -30,  -30,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*90.0))]
-    
-    #numMoves = 4
-    #moveq1 = [numMoves, \
-    #    85, 85, 5300,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*0.0)),
-    #    85, 85, 5900,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*80.0)),
-    #    85, 85, 6500,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*160.0)),
-    #    85, 85, 6200,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*240.0))]
-    
-    numMoves = 1
+    numMoves = 4
     moveq1 = [numMoves, \
-        0, 0, 1000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
+        0, 0, 250, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0,
+        900, 900, 100, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0,
+        900, 0, 250, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0,         
+        0, 0, 250, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
     
     #No movements, just for static telemetry capture
     #numMoves = 1
@@ -181,9 +137,9 @@ if __name__ == '__main__':
         print "\nRecieved Ctrl+C, exiting."
         shared.xb.halt()
         shared.ser.close()
-    except Exception as args:
-        print "\nGeneral exception:",args
-        print "Attemping to exit cleanly..."
-        shared.xb.halt()
-        shared.ser.close()
-        sys.exit()
+    #except Exception as args:
+    #    print "\nGeneral exception:",args
+    #    print "Attemping to exit cleanly..."
+    #    shared.xb.halt()
+    #    shared.ser.close()
+    #    sys.exit()

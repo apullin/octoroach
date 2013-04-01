@@ -1,3 +1,10 @@
+"""
+authors: apullin
+
+Contents of this file are copyright Andrew Pullin, 2013
+
+"""
+
 import msvcrt, sys, time
 from lib import command 
 import shared
@@ -24,6 +31,7 @@ def main():
     shared.xb = xb
     
     R1 = Robot('\x20\x52', xb)
+    #R1 = Robot('\x20\x27', xb)
     shared.ROBOTS = [R1]
 
     if RESET_ROBOT:

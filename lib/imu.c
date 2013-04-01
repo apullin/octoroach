@@ -1,5 +1,6 @@
+// Authors: nkohut
+
 #include "utils.h"
-#include "payload.h"
 #include "led.h"
 #include "gyro.h"
 #include "xl.h"
@@ -8,14 +9,14 @@
 #include "adc_pid.h"
 #include "leg_ctrl.h"
 #include "sys_service.h"
-#include "ams-enc.h"
+//#include "ams-enc.h"
 #include "imu.h"
 
-#define TIMER_FREQUENCY     300                 // 300 Hz
+#define TIMER_FREQUENCY     300.0                 // 300 Hz
 #define TIMER_PERIOD        1/TIMER_FREQUENCY   //This is used for numerical integration
 
 //Setup for Gyro Z averaging filter
-#define GYRO_AVG_SAMPLES 	8
+#define GYRO_AVG_SAMPLES 	4
 
 
 //Filter stuctures for gyro variables
@@ -55,7 +56,7 @@ static void imuServiceRoutine(void){
 }
 
 static void imuISRHandler(){
-	
+	CRITICAL_SECTION_START
 	int gyroData[3];
 
 	/////// Get Gyro data and calc average via filter
@@ -68,21 +69,25 @@ static void imuISRHandler(){
         lastGyroZValue = gyroData[2];
 
         //Threshold:
-        
-        if((lastGyroXValue < 8) && (lastGyroXValue > -8)){
+        /*
+        if((lastGyroXValue < GYRO_DRIFT_THRESH) && (lastGyroXValue > -GYRO_DRIFT_THRESH)){
             lastGyroXValue = lastGyroXValue >> 1; //fast divide by 2
         }
-        if((lastGyroYValue < 8) && (lastGyroYValue > -8)){
+
+        if((lastGyroYValue < GYRO_DRIFT_THRESH) && (lastGyroYValue > -GYRO_DRIFT_THRESH)){
             lastGyroYValue = lastGyroYValue >> 1; //fast divide by 2
         }
-        if((lastGyroZValue < 8) && (lastGyroZValue > -8)){
+        */
+        if((lastGyroZValue < GYRO_DRIFT_THRESH) && (lastGyroZValue > -GYRO_DRIFT_THRESH)){
             lastGyroZValue = lastGyroZValue >> 1; //fast divide by 2
         }
         
-
+        /*
         lastGyroXValueDeg = (float) (lastGyroXValue*LSB2DEG);
         lastGyroYValueDeg = (float) (lastGyroYValue*LSB2DEG);
-        lastGyroZValueDeg = (float) (lastGyroZValue*LSB2DEG); 
+        */
+        lastGyroZValueDeg = (float) (lastGyroZValue*LSB2DEG);
+
 
         dfilterAvgUpdate(&gyroZavg, gyroData[2]);
 
@@ -91,6 +96,7 @@ static void imuISRHandler(){
         lastGyroZValueAvgDeg = (float)lastGyroZValueAvg*LSB2DEG;
 
         lastBodyZPositionDeg = lastBodyZPositionDeg + lastGyroZValueDeg*TIMER_PERIOD;
+        CRITICAL_SECTION_END
 }
 
 static void SetupTimer4(){

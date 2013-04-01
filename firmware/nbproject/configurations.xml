@@ -13,9 +13,7 @@
         <itemPath>../../imageproc-lib/payload_queue.h</itemPath>
         <itemPath>../../imageproc-lib/packet_queue.h</itemPath>
         <itemPath>../../imageproc-lib/queue.h</itemPath>
-        <itemPath>../../imageproc-lib/at86rf.h</itemPath>
         <itemPath>../../imageproc-lib/at86rf231.h</itemPath>
-        <itemPath>../../imageproc-lib/ipspi1.h</itemPath>
         <itemPath>../../imageproc-lib/radio.h</itemPath>
         <itemPath>../../imageproc-lib/init_default.h</itemPath>
         <itemPath>../../imageproc-lib/dfilter_avg.h</itemPath>
@@ -23,6 +21,7 @@
         <itemPath>../../imageproc-lib/pid_hw.h</itemPath>
         <itemPath>../../imageproc-lib/pid.h</itemPath>
         <itemPath>../../imageproc-lib/sclock.h</itemPath>
+        <itemPath>../../imageproc-lib/ams-enc.h</itemPath>
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../lib/adc_pid.h</itemPath>
@@ -41,7 +40,6 @@
         <itemPath>../lib/tail_ctrl.h</itemPath>
         <itemPath>../lib/sys_service.h</itemPath>
         <itemPath>../lib/hall.h</itemPath>
-        <itemPath>../lib/ams-enc.h</itemPath>
         <itemPath>../lib/imu.h</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.h</itemPath>
@@ -61,9 +59,7 @@
         <itemPath>../../imageproc-lib/battery.c</itemPath>
         <itemPath>../../imageproc-lib/packet_queue.c</itemPath>
         <itemPath>../../imageproc-lib/queue.c</itemPath>
-        <itemPath>../../imageproc-lib/at86rf.c</itemPath>
         <itemPath>../../imageproc-lib/payload.c</itemPath>
-        <itemPath>../../imageproc-lib/ipspi1.c</itemPath>
         <itemPath>../../imageproc-lib/payload_queue.c</itemPath>
         <itemPath>../../imageproc-lib/init_default.c</itemPath>
         <itemPath>../../imageproc-lib/dfmem.c</itemPath>
@@ -75,6 +71,12 @@
         <itemPath>../../imageproc-lib/version.c</itemPath>
         <itemPath>../../imageproc-lib/sclock.c</itemPath>
         <itemPath>../../imageproc-lib/radio.c</itemPath>
+        <itemPath>../../imageproc-lib/ams-enc.c</itemPath>
+        <itemPath>../../imageproc-lib/spi_controller.c</itemPath>
+        <itemPath>../../imageproc-lib/at86rf231_driver.c</itemPath>
+        <itemPath>../../imageproc-lib/ppool.c</itemPath>
+        <itemPath>../../imageproc-lib/carray.c</itemPath>
+        <itemPath>../../imageproc-lib/mac_packet.c</itemPath>
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../../imageproc-lib/delay.s</itemPath>
@@ -82,7 +84,6 @@
         <itemPath>../lib/motor_ctrl.c</itemPath>
         <itemPath>../lib/traps.c</itemPath>
         <itemPath>../lib/move_queue.c</itemPath>
-        <itemPath>../lib/sensors.c</itemPath>
         <itemPath>../lib/estop.c</itemPath>
         <itemPath>../lib/telem.c</itemPath>
         <itemPath>../lib/steering.c</itemPath>
@@ -91,8 +92,8 @@
         <itemPath>../lib/tail_ctrl.c</itemPath>
         <itemPath>../lib/sys_service.c</itemPath>
         <itemPath>../lib/hall.c</itemPath>
-        <itemPath>../lib/ams-enc.c</itemPath>
         <itemPath>../lib/imu.c</itemPath>
+        <itemPath>../lib/or_telem.c</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.c</itemPath>
       <itemPath>source/main.c</itemPath>
@@ -116,7 +117,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>RealICEPlatformTool</platformTool>
         <languageToolchain>XC16</languageToolchain>
-        <languageToolchainVersion>1.10</languageToolchainVersion>
+        <languageToolchainVersion>1.11</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -402,36 +403,6 @@
           <property key="legacy-libc" value="false"/>
           <property key="oXC16glb-macros" value="__IMAGEPROC2;PID_HARDWARE"/>
           <property key="output-file-format" value="elf"/>
-        </C30Global>
-      </item>
-      <item path="../lib/sensors.c" ex="false" overriding="false">
-        <C30>
-          <property key="code-model" value="default"/>
-          <property key="const-model" value="default"/>
-          <property key="data-model" value="large-data"/>
-          <property key="enable-all-warnings" value="false"/>
-          <property key="enable-ansi-std" value="false"/>
-          <property key="enable-ansi-warnings" value="false"/>
-          <property key="enable-fatal-warnings" value="false"/>
-          <property key="enable-large-arrays" value="false"/>
-          <property key="enable-omit-frame-pointer" value="false"/>
-          <property key="enable-procedural-abstraction" value="false"/>
-          <property key="enable-short-double" value="false"/>
-          <property key="enable-symbols" value="true"/>
-          <property key="enable-unroll-loops" value="false"/>
-          <property key="extra-include-directories" value=""/>
-          <property key="isolate-each-function" value="false"/>
-          <property key="optimization-level" value="0"/>
-          <property key="post-instruction-scheduling" value="default"/>
-          <property key="pre-instruction-scheduling" value="default"/>
-          <property key="preprocessor-macros" value=""/>
-          <property key="scalar-model" value="default"/>
-        </C30>
-        <C30-AS>
-        </C30-AS>
-        <C30-LD>
-        </C30-LD>
-        <C30Global>
         </C30Global>
       </item>
       <item path="../lib/steering.c" ex="false" overriding="true">
