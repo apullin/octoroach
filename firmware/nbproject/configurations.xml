@@ -70,13 +70,13 @@
         <itemPath>../../imageproc-lib/pid.c</itemPath>
         <itemPath>../../imageproc-lib/version.c</itemPath>
         <itemPath>../../imageproc-lib/sclock.c</itemPath>
-        <itemPath>../../imageproc-lib/radio.c</itemPath>
         <itemPath>../../imageproc-lib/ams-enc.c</itemPath>
         <itemPath>../../imageproc-lib/spi_controller.c</itemPath>
         <itemPath>../../imageproc-lib/at86rf231_driver.c</itemPath>
         <itemPath>../../imageproc-lib/ppool.c</itemPath>
         <itemPath>../../imageproc-lib/carray.c</itemPath>
         <itemPath>../../imageproc-lib/mac_packet.c</itemPath>
+        <itemPath>../../imageproc-lib/radio.c</itemPath>
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../../imageproc-lib/delay.s</itemPath>

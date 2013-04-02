@@ -31,7 +31,7 @@
 #include "telem.h"
 #include "hall.h"
 #include "tail_ctrl.h"
-//#include "ams-enc.h"
+#include "ams-enc.h"
 #include "imu.h"
 #include "spi_controller.h"
 #include "ppool.h"
@@ -79,7 +79,7 @@ int main(void) {
     mcSetup();
     adcSetup();
  
-    //encSetup();
+    encSetup();
     imuSetup();
 
 #ifdef  HALL_SENSORS

@@ -28,8 +28,8 @@ void orTelemGetData(unsigned char* ptr) {
     tptr = (orTelemStruct_t*) ptr;
     tptr->inputL = motor_pidObjs[0].input;
     tptr->inputR = motor_pidObjs[1].input;
-    tptr->dcL = PDC1;
-    tptr->dcR = PDC2;
+    tptr->dcL = PDC2;
+    tptr->dcR = PDC3;
     tptr->gyroX = imuGetGyroXValue();
     tptr->gyroY = imuGetGyroYValue();
     tptr->gyroZ = imuGetGyroZValue();
