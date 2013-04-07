@@ -79,7 +79,7 @@ int main(void) {
     mcSetup();
     adcSetup();
  
-    encSetup();
+    //encSetup();
     imuSetup();
 
 #ifdef  HALL_SENSORS
@@ -91,7 +91,7 @@ int main(void) {
 #endif
 
     //Tail control is a special case
-    tailCtrlSetup();
+    //tailCtrlSetup();
 
     //Camera is untested with current code base, AP 12/6/2012
     //ovcamSetup();

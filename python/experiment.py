@@ -47,7 +47,8 @@ def main():
     #    ----------LEFT----------        ---------_RIGHT----------
     
     #motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0] #Hardware PID
-    motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0]
+    #motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0]
+    motorgains = [32000,100,0,0,0,    32000,100,0,0,0]
 
     R1.setMotorGains(motorgains, retries = 8)
     #Verify all robots have motor gains set
@@ -55,7 +56,7 @@ def main():
 
     #Steering gains format:
     #  [ Kp , Ki , Kd , Kaw , Kff]
-    steeringGains = [15000,5,0,0,0,  STEER_MODE_SPLIT] # Hardware PID
+    steeringGains = [11000,10,0,0,0,  STEER_MODE_SPLIT] # Hardware PID
 
     R1.setSteeringGains(steeringGains, retries = 8)
     #Verify all robots have steering gains set
@@ -93,13 +94,14 @@ def main():
     # MOVE_SEG_QFLUSH  : Flushes all following items in move queue. value1,value2, and params have no effect.
              
     #YAW control: Straight then -90 degree turn 
-    #numMoves = 5
+    #numMoves = 3
     #moveq1 = [numMoves, \
-    #    0, 0, 500,   MOVE_SEG_RAMP, 30, 30,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*0.0)),
-    #    60, 60, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*0.0)),
-    #    60, 60, 4000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*90.0)),
-    #    60, 60, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*90.0)),
-    #    60, 60, 500,   MOVE_SEG_RAMP, -30,  -30,  0, STEER_MODE_YAW_SPLIT, int(round(shared.deg2count*90.0))]
+    #    0, 0, 1000,   MOVE_SEG_RAMP, 600, 600,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*0.0)),
+    #    600, 600, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*0.0)),
+    #    600, 600, 1000,   MOVE_SEG_CONSTANT, -600,  -600,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*0.0))]
+    
+    #trapezoidal velocity profile
+    [numMoves, moveq1] = trapRun(topspeed = 300, tstime = 2000, acceltime=500, deceltime=500,steertype = STEER_MODE_DECREASE)
     
     #numMoves = 4
     #moveq1 = [numMoves, \
@@ -108,9 +110,9 @@ def main():
     #    85, 85, 6500,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*160.0)),
     #    85, 85, 6200,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*240.0))]
     
-    numMoves = 1
-    moveq1 = [numMoves, \
-        0, 0, 1000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
+    #numMoves = 1
+    #moveq1 = [numMoves, \
+    #    300, 300, 3000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_YAW_DEC, 0]
     
     #No movements, just for static telemetry capture
     #numMoves = 1
@@ -170,6 +172,28 @@ def main():
     print "Done"
     xb_safe_exit()
 
+
+def trapRun(topspeed = 0, tstime = 0, acceltime = 0, deceltime = 0, steertype = STEER_MODE_YAW_DEC):
+    moveq = []
+    numMoves = 0
+    if acceltime != 0:
+        ramprate = int(topspeed / ( acceltime/1000.0))
+        moveq.extend( [ 0, 0, acceltime,   MOVE_SEG_RAMP, ramprate, ramprate,  0, steertype, 0])
+        numMoves = numMoves + 1
+        
+    if tstime != 0:
+        ramprate = int(topspeed / ( acceltime/1000.0))
+        moveq.extend( [ topspeed, topspeed, tstime,   MOVE_SEG_CONSTANT, 0, 0,  0, steertype, 0])
+        numMoves = numMoves + 1
+        
+    if deceltime != 0:
+        ramprate = -int(topspeed / ( deceltime/1000.0))
+        moveq.extend( [ topspeed, topspeed, deceltime,   MOVE_SEG_RAMP, ramprate, ramprate,  0, steertype, 0])
+        numMoves = numMoves + 1
+        
+    moveq.insert(0,numMoves)
+    
+    return [numMoves, moveq]
 
 #Provide a try-except over the whole main function
 # for clean exit. The Xbee module should have better

@@ -21,6 +21,7 @@ extern pidObj motor_pidObjs[NUM_MOTOR_PIDS];
 extern int bemf[NUM_MOTOR_PIDS];
 extern pidObj steeringPID;
 extern pidObj tailPID;
+extern float lastTailPos;
 
 void orTelemGetData(unsigned char* ptr) {
     /////// Get XL data
@@ -28,15 +29,12 @@ void orTelemGetData(unsigned char* ptr) {
     tptr = (orTelemStruct_t*) ptr;
     tptr->inputL = motor_pidObjs[0].input;
     tptr->inputR = motor_pidObjs[1].input;
-    tptr->dcL = PDC2;
-    tptr->dcR = PDC3;
+    tptr->dcL = PDC1;
+    tptr->dcR = PDC4;
     tptr->gyroX = imuGetGyroXValue();
     tptr->gyroY = imuGetGyroYValue();
     tptr->gyroZ = imuGetGyroZValue();
     tptr->gyroAvg = imuGetGyroZValueAvgDeg();
-    tptr->accelX = 0;
-    tptr->accelY = 0;
-    tptr->accelZ = 0;
     tptr->accelX = 0;
     tptr->accelY = 0;
     tptr->accelZ = 0;
@@ -48,6 +46,10 @@ void orTelemGetData(unsigned char* ptr) {
     tptr->motor_count[0] = 0;
     tptr->motor_count[1] = 0;
     tptr->yawAngle = imuGetBodyZPositionDeg();
+    tptr->dcH1 = PDC2;
+    tptr->dcH2 = PDC3;
+    tptr->sprawlAngle = lastTailPos;
+    tptr->sprawlInput = tailPID.input;
 }
 
 //This may be unneccesary, since the telemtry type isn't totally anonymous

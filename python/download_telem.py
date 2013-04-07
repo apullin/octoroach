@@ -37,7 +37,7 @@ def main():
 
     numToDL = raw_input("How many samples to download? ")
     
-    if numToDL > 0:
+    if numToDL > 0 and numToDL != '':
         R1.numSamples = int(numToDL)
         R1.imudata = [ [] ] * R1.numSamples
         R1.runtime = 'UNKNOWN'

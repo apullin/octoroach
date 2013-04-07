@@ -6,7 +6,7 @@ Contents of this file are copyright Andrew Pullin, 2013
 #BS_COMPORT = 'COM3'
 #BS_BAUDRATE = 230400
 #XBee
-BS_COMPORT = 'COM4'
+BS_COMPORT = 'COM3'
 BS_BAUDRATE = 57600
 
 deg2count = 14.375

@@ -27,7 +27,7 @@ pktFormat = { \
     command.SET_MOVE_QUEUE:         '', \
     command.SET_STEERING_GAINS:     '6h', \
     command.SOFTWARE_RESET:         '', \
-    command.SPECIAL_TELEMETRY:      '=LLhhhhhhhhhhhhhhhhLLf', \
+    command.SPECIAL_TELEMETRY:      '=LLhhhhhhhhhhhhhhhhLLfhhfh', \
     command.ERASE_SECTORS:          'L', \
     command.FLASH_READBACK:         '', \
     command.SLEEP:                  'b', \

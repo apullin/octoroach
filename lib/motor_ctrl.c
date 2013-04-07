@@ -132,7 +132,7 @@ static void mcSetupPeripheral(void) {
     
     unsigned int PTPERvalue = 2000;
     unsigned int SEVTCMPvalue, PTCONvalue, PWMCON1value, PWMCON2value;
-    SEVTCMPvalue = 1988;
+    SEVTCMPvalue = 1980;
     //    SEVTCMPvalue = 160; // Special Event Trigger Compare Value for ADC in phase with PWM
     //PTCONvalue = PWM_EN & PWM_IDLE_CON & PWM_OP_SCALE1 &
     //             PWM_IPCLK_SCALE4 & PWM_MOD_FREE;

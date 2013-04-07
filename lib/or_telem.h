@@ -22,6 +22,10 @@ typedef struct {
     int Vbatt;
     unsigned long motor_count[2];
     float yawAngle;
+    int dcH1;
+    int dcH2;
+    float sprawlAngle;
+    int sprawlInput;
 } orTelemStruct_t;
 
 void orTelemGetData(unsigned char* ptr);

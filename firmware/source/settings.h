@@ -22,7 +22,7 @@
 //  Ron's + DZ's radio settings:
 //#define RADIO_CHANNEL		0x13
 //#define RADIO_SRC_ADDR 		0x2052
-//#define RADIO_SRC_PAN_ID  		0x2060
+//#define RADIO_PAN_ID  		0x2060
 //#define RADIO_DST_ADDR		0x2011
 
 #define RADIO_RXPQ_MAX_SIZE 	20
