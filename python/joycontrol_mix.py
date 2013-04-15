@@ -37,8 +37,9 @@ def main():
         R1.reset()
         time.sleep(0.5)
 
-    motorgains = [15000,100,0,0,10 , 15000,5,0,0,10]
+    #motorgains = [15000,100,0,0,10 , 15000,5,0,0,10]
     #motorgains = [25000,50,0,0,25,    25000,50,0,0,25]
+    motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0]
 
     R1.setMotorGains(motorgains, retries = 8)
     
@@ -64,7 +65,7 @@ def main():
             pygame.event.pump()
             
             thrustInput = -j.get_axis(1)
-            turnInput = -j.get_axis(4)
+            turnInput = -j.get_axis(2)
             
             if j.get_button(BUTTON_L1) == 1 and MAXTHROT > 0:
                 MAXTHROT = MAXTHROT - tinc

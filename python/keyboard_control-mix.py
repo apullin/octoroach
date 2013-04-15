@@ -22,8 +22,7 @@ def menu():
     print "Keyboard control with Mixing PLUS Aux AMS+Hbridge"
     print " up: increase throt     q:quit   left/right: steering"
     print " down: decrease throt   s: reset to straight  space: all stop"
-    print " t: AUX up 10.0 deg   g: AUX down 10.0 deg"
-    print " z: AUX to 0 deg"
+    print " t: AUX up 10 deg   g: AUX down 10 deg    z: AUX to 0 deg"
     print ""
 
 def main():
@@ -45,10 +44,13 @@ def main():
     verifyAllMotorGainsSet()  #exits on failure
     
     tailgains = [15000,100,100,0,0]
+    #tailgains = [32000,0,0,0,0]
     R1.setTailGains(tailgains, retries = 8)
     verifyAllTailGainsSet()
     
-    tinc = 30;
+    tinc = 30
+    tailinc = 10.0
+    tailStepTime = 1000
 
     forward = 0
     turn = 0
@@ -76,16 +78,16 @@ def main():
         elif ord(keypress) == 77: #right
             turn = turn + tinc
         elif keypress == 't': #AUX up 15.0
-            auxangle = auxangle + 10.0
-            tailq = [1, auxangle, 500, TAIL_SEG_CONSTANT, 0, 0, 0]
+            auxangle = auxangle + tailinc
+            tailq = [1, auxangle, tailStepTime, TAIL_SEG_CONSTANT, 0, 0, 0]
             R1.sendTailQueue(tailq)
         elif keypress == 'g': #AUX down 15.0
-            auxangle = auxangle - 10.0
-            tailq = [1, auxangle, 500, TAIL_SEG_CONSTANT, 0, 0, 0]
+            auxangle = auxangle - tailinc
+            tailq = [1, auxangle, tailStepTime, TAIL_SEG_CONSTANT, 0, 0, 0]
             R1.sendTailQueue(tailq)
         elif keypress == 'z': #AUX to 0.0
             auxangle = 0.0
-            tailq = [1, auxangle, 500, TAIL_SEG_CONSTANT, 0, 0, 0]
+            tailq = [1, auxangle, tailStepTime, TAIL_SEG_CONSTANT, 0, 0, 0]
             R1.sendTailQueue(tailq)
         elif keypress == 's':  #go straight
                 forward = min(left_throt, right_throt)

@@ -27,7 +27,7 @@ pktFormat = { \
     command.SET_MOVE_QUEUE:         '', \
     command.SET_STEERING_GAINS:     '6h', \
     command.SOFTWARE_RESET:         '', \
-    command.SPECIAL_TELEMETRY:      '=LLhhhhhhhhhhhhhhhhLLfhhfh', \
+    command.SPECIAL_TELEMETRY:      '=LLhhhhhhhhhhhhhhhhLLff', \
     command.ERASE_SECTORS:          'L', \
     command.FLASH_READBACK:         '', \
     command.SLEEP:                  'b', \
@@ -68,7 +68,7 @@ def xbee_received(packet):
     except KeyError:
         print "Got bad packet type: ",type
         return
-    
+            
     try:
         # GET_IMU_DATA
         if type == command.GET_IMU_DATA:

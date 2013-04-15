@@ -14,7 +14,7 @@ from or_helpers import *
 
 
 ###### Operation Flags ####
-SAVE_DATA1 = True 
+SAVE_DATA1 = False 
 RESET_R1 = True  
 
 EXIT_WAIT   = False

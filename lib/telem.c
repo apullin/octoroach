@@ -133,6 +133,8 @@ void telemReadbackSamples(unsigned long numSamples) {
 
 void telemSendDataDelay(telemStruct_t* sample, int delaytime_ms) {
     // Create Payload, set status and type (don't cares)
+
+    /*
     MacPacket pkt = radioRequestPacket(telemPacketSize);
     if(pkt == NULL) { return; }
     macSetDestPan(pkt, RADIO_PAN_ID);
@@ -149,7 +151,11 @@ void telemSendDataDelay(telemStruct_t* sample, int delaytime_ms) {
     }
 
     radioProcess();
+    */
 
+    radioSendData(RADIO_DST_ADDR, 0, CMD_SPECIAL_TELEMETRY, telemPacketSize,
+           (unsigned char*) sample, 1 );
+    
     delay_ms(delaytime_ms); // allow radio transmission time
 
 }
@@ -214,7 +220,7 @@ void telemErase(unsigned long numSamples) {
     LED_2 = 0; //Green LED off
 
     //Since we've erased, reset our place keeper vars
-    //dfmemZeroIndex();
+    dfmemZeroIndex();
 }
 
 

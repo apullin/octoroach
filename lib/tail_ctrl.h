@@ -27,5 +27,6 @@ void tailCtrlSetup();
 void tailCtrlSetGains(int Kp, int Ki, int Kd, int Kaw, int ff);
 void tailCtrlOnOff(unsigned char state);
 void tailCtrlSetInput(int val);
+float tailGetLastPositionFloat();
 
 #endif   // __TAIL_CTRL_H

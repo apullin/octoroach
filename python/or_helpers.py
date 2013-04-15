@@ -169,7 +169,7 @@ class Robot:
         n = moveq[0]
         if len(moveq[1:]) != n * SEG_LENGTH:
             print "CRITICAL: Move queue length specification invalid."
-            print "Wrong number of entries, n = ",n," , len(moveq) = ",len(moveq)
+            print "Wrong number of entries, len(moveq) = ",len(moveque)
             xb_safe_exit()
             
         self.nummoves = n
@@ -260,7 +260,7 @@ class Robot:
         shared.last_packet_time = dlStart
         #bytesIn = 0
         while self.imudata.count([]) > 0:
-            time.sleep(0.01)
+            time.sleep(0.02)
             dlProgress(self.numSamples - self.imudata.count([]) , self.numSamples)
             if (time.time() - shared.last_packet_time) > timeout:
                 print ""
@@ -303,7 +303,7 @@ class Robot:
         self.findFileName()
         self.writeFileHeader()
         fileout = open(self.dataFileName, 'a')
-        np.savetxt(fileout , np.array(self.imudata), '%d,'*19+'%f,%d,%d,%f,%d', delimiter = ',')
+        np.savetxt(fileout , np.array(self.imudata), '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%f', delimiter = ',')
         fileout.close()
         self.clAnnounce()
         print "Telemtry data saved to", self.dataFileName
@@ -323,7 +323,7 @@ class Robot:
         fileout.write('%  numSamples    = ' + repr(self.numSamples) + '\n')
         fileout.write('%  moveq         = ' + repr(self.moveq) + '\n')
         fileout.write('% Columns: \n')
-        fileout.write('% time | Llegs | Rlegs | DCL | DCR | GyroX | GyroY | GyroZ | GryoZAvg | AccelX | AccelY |AccelZ | LBEMF | RBEMF | SteerIn | SteerOut | Vbatt |  HallL | HallR | YawAngle | DCH1 | DCH2 | SprawlAngle | SprawlIn\n')
+        fileout.write('% time | Llegs | Rlegs | DCL | DCR | GyroX | GyroY | GyroZ | GryoZAvg | AccelX | AccelY |AccelZ | LBEMF | RBEMF | Vbatt | SteerIn | SteerOut | HallL | HallR | YawAngle\n')
         fileout.close()
 
     def setupImudata(self, moveq):
@@ -353,7 +353,7 @@ class Robot:
             filenum.sort()
             filenum = filenum[-1] + 1
             self.dataFileName = "imudata" + str(filenum) + ".txt"
-               
+            
 
 
 ########## Helper functions #################

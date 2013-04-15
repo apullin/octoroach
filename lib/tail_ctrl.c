@@ -27,7 +27,8 @@
 #define MAXTAILPOSITION 130.0
 #define MINTAILPOSITION -115.0
 
-#define TAIL_OFFSET_ANGLE 21.0
+//#define MAXTAILPOSITION 120.0
+//#define MINTAILPOSITION -100.0
 
 
 //PID container objects
@@ -61,7 +62,7 @@ float initialBodyPosition = 0.0;
 int gyroCtrlTorque;
 int tailCtrlFlag = 0;
 
-
+#define TAIL_ZERO_OFFSET -253.0
 
 //Function to be installed into T1, and setup function
 static void SetupTimer1(void);
@@ -103,7 +104,7 @@ static void SetupTimer1(void) {
 void tailCtrlSetup() {
 
     SetupTimer1(); // Timer 1 @ 1 Khz
-
+    
 
     //Tail queue
     tailq = tailqInit(16);
@@ -134,7 +135,7 @@ void tailCtrlSetup() {
 
 	int retval;
     retval = sysServiceInstallT1(tailCtrlServiceRoutine);
-
+ 
 }
 
 
@@ -222,7 +223,8 @@ static void tailSynth() {
 
         if (bodyPosition < (refBodyPosition - bodyPosDeadband)) {
             gyroCtrlTorque = POS;
-        } else if (bodyPosition > (refBodyPosition + bodyPosDeadband)) {
+        }
+        else if (bodyPosition > (refBodyPosition + bodyPosDeadband)) {
             gyroCtrlTorque = NEG;
         } else {
             gyroCtrlTorque = ZERO;
@@ -263,18 +265,23 @@ void tailCtrlSetInput(int val) {
 static void serviceTailPID() {
 
     //update tail position
-    //lastTailPos = encGetAux1Pos();
-    lastTailPos = encGetFloatPos(0);
+    float temp = encGetFloatPos(0);
 
-    // Angle offset and branching
-    lastTailPos = -lastTailPos + TAIL_OFFSET_ANGLE;
-    if (lastTailPos <= -180.0) {
-        lastTailPos += 360.0;
-    } else if (lastTailPos > 180.0) {
-        lastTailPos -= 360.0;
+    //Apply offset
+    //temp -= TAIL_ZERO_OFFSET;
+    temp = -temp - TAIL_ZERO_OFFSET;
+    
+    //Constrain angle to single branch
+    if (temp <= -180.0) {
+        temp += 360.0;
+    } else if (temp > 180.0) {
+        temp -= 360.0;
     }
 
-    //Scaling and convertion to int type for DSP PID controller
+    //Set global variable
+    lastTailPos = temp;
+
+    //Integer cast and scaling for PID controller
     int encAngle = (int) (lastTailPos * 10.0);
     //Update the setpoints
     //if((currentMove->inputL != 0) && (currentMove->inputR != 0)){
@@ -290,6 +297,8 @@ static void serviceTailPID() {
         pidUpdate(&tailPID,
                 TAIL_PID_SCALER * encAngle); //Update with scaled feedback, sets tailPID.output
         tailPID.input = temp; //Reset unscaled input
+
+
 #endif   //PID_SOFTWWARE vs PID_HARDWARE
 
 
@@ -297,7 +306,6 @@ static void serviceTailPID() {
         tailPID.output = 0; //no output if idling
     }
 
-    //Clipping, +- 100.0
     tailTorque = tailPID.output*PIDOUT2HBRIDGETORQUE;
 
     if (tailTorque > 100.0) {
@@ -308,12 +316,10 @@ static void serviceTailPID() {
         tailTorque = -100.0;
     }
 
-
+    //This is for bang-bang torque control of the tail
     if (tailCtrlFlag == 1) {
 
-        // HOW DO I DO THIS "AND" CORRECTLY IN C
-
-        if (lastTailPos > MINTAILPOSITION && lastTailPos < MAXTAILPOSITION) {
+        if ((lastTailPos > MINTAILPOSITION) && (lastTailPos < MAXTAILPOSITION)) {
             if (gyroCtrlTorque == POS) {
                 mcSteer(-100.0);
             }
@@ -332,3 +338,7 @@ static void serviceTailPID() {
     } //if tailCtrlFlag == 1
 
 }
+
+float tailGetLastPositionFloat()
+{
+    return lastTailPos;
