@@ -4,6 +4,7 @@
 
 // Data structure type
 typedef struct {
+//START_PARSE
     int inputL;
     int inputR;
     int dcL;
@@ -22,6 +23,7 @@ typedef struct {
     int Vbatt;
     unsigned long motor_count[2];
     float yawAngle;
+//END_PARSE
 } orTelemStruct_t;
 
 void orTelemGetData(unsigned char* ptr);
