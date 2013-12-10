@@ -71,6 +71,7 @@ int main(void) {
     radioSetSrcAddr(RADIO_SRC_ADDR);
     
     dfmemSetup();
+    uint64_t id = dfmemGetUnqiueID();
     //xlSetup();
     gyroSetup();
     
