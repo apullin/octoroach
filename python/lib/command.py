@@ -10,6 +10,13 @@ is invalid and void.
 
 """
 
+class commandEntry:    
+    def __init__(self, num, name, func):
+        self.cmdNum = num
+        self.cmdName = name
+        self.cmdFunction = func
+        
+
 # CMD values of 0x00 - 0x7F(127) are defined here
 # Add CMD definitions 
 # for bootloader (0x00 - 0x1F)
@@ -52,26 +59,69 @@ RESET_STOPWATCH = 0x3B
 BASE_ECHO = 0x3f
 
 
+
+                
+cmdList = []
+
 # CMD values of 0x80(128) - 0xEF(239) are available for user applications.
 SET_THRUST_OPEN_LOOP =      0x80
+cmdList.append( commandEntry(SET_THRUST_OPEN_LOOP, 'SET_THRUST_OPEN_LOOP', 'cmdSetThrustOpenLoop') )
+
 SET_THRUST_CLOSED_LOOP =    0x81
+cmdList.append( commandEntry(SET_THRUST_CLOSED_LOOP, 'SET_THRUST_CLOSED_LOOP', 'cmdSetThrustClosedLoop') )
+
 SET_PID_GAINS =             0x82
+cmdList.append( commandEntry(SET_PID_GAINS, 'SET_PID_GAINS', 'cmdSetPIDgains') )
+
 GET_PID_TELEMETRY =         0x83
+cmdList.append( commandEntry(GET_PID_TELEMETRY, 'GET_PID_TELEMETRY', 'cmdPIDtelemetry') )
+
 SET_CTRLD_TURN_RATE =       0x84
+cmdList.append( commandEntry(SET_CTRLD_TURN_RATE, 'SET_CTRLD_TURN_RATE' ,'cmdCtrldTurnRate') )
+
 GET_IMU_LOOP_ZGYRO =        0x85
+cmdList.append( commandEntry(GET_IMU_LOOP_ZGYRO, 'GET_IMU_LOOP_ZGYRO' , 'cmdIMUloopZgyro') )
+
 SET_MOVE_QUEUE =            0x86
+cmdList.append( commandEntry(SET_MOVE_QUEUE, 'SET_MOVE_QUEUE' , 'cmdSetMoveQueue') )
+
 SET_STEERING_GAINS =        0x87
+cmdList.append( commandEntry(SET_STEERING_GAINS, 'SET_STEERING_GAINS' , 'cmdSetSteeringGains') )
+
 SOFTWARE_RESET     =        0x88
+cmdList.append( commandEntry(SOFTWARE_RESET, 'SOFTWARE_RESET' , 'cmdSoftwareReset') )
+
 SPECIAL_TELEMETRY  =        0x89
+cmdList.append( commandEntry(SPECIAL_TELEMETRY, 'SPECIAL_TELEMETRY' , 'cmdSpecialTelemetry') )
+
 ERASE_SECTORS      =        0x8A
+cmdList.append( commandEntry(ERASE_SECTORS, 'ERASE_SECTORS' , 'cmdEraseSectors') )
+
 FLASH_READBACK     =        0x8B
+cmdList.append( commandEntry(FLASH_READBACK, 'FLASH_READBACK' , 'cmdFlashReadback') )
+
 SLEEP              =        0x8C
+cmdList.append( commandEntry(SLEEP, 'SLEEP' , 'cmdSleep') )
+
 SET_VEL_PROFILE =           0x8D
+cmdList.append( commandEntry(SET_VEL_PROFILE, 'SET_VEL_PROFILE' , 'cmdSetVelProfile') )
+
 WHO_AM_I =                  0x8E
+cmdList.append( commandEntry(WHO_AM_I, 'WHO_AM_I' ,'cmdWhoAmI') )
+
 START_TELEM =               0x8F
+cmdList.append( commandEntry(START_TELEM, 'START_TELEM' ,'cmdStartTelem') )
+
 ZERO_POS =                  0x90
+cmdList.append( commandEntry(ZERO_POS, 'ZERO_POS' ,'cmdZeroPos') )
+
 SET_HALL_GAINS =            0x91
+cmdList.append( commandEntry(SET_HALL_GAINS, 'SET_HALL_GAINS' ,'cmdSetHallGains') )
+
 SET_TAIL_QUEUE =            0x92
+cmdList.append( commandEntry(SET_TAIL_QUEUE, 'SET_TAIL_QUEUE' ,'cmdSetTailQueue') )
+
 SET_TAIL_GAINS =            0x93
+cmdList.append( commandEntry(SET_TAIL_GAINS, 'SET_TAIL_GAINS' ,'cmdSetTailGains') )
 
 # CMD values of 0xF0(240) - 0xFF(255) are reserved for future use
