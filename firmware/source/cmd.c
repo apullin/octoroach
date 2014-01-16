@@ -449,6 +449,9 @@ static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned
 }
 
 static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame) {
+    //Tail control being deprecated from mainline project
+    //TODO () : figure out an easy way of switching in tail control
+    /*
     //The count is read via standard pointer math
     unsigned int count;
     count = (unsigned int) (*(frame));
@@ -468,9 +471,13 @@ static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned
         //idx =+ sizeof(_args_cmdSetMoveQueue);
         idx += sizeof (tailCmdStruct);
     }
+  */
 }
 
 static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned char *frame) {
+    //Tail control being deprecated from mainline project
+    //TODO () : figure out an easy way of switching in tail control
+    /*
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetTailGains, argsPtr, frame);
 
@@ -479,6 +486,7 @@ static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
     radioSendData(RADIO_DST_ADDR, 0, CMD_SET_TAIL_GAINS, length, frame, 0);
+     */
 }
 
 

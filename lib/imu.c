@@ -2,8 +2,6 @@
 
 #include "utils.h"
 #include "led.h"
-#include "gyro.h"
-#include "xl.h"
 #include "pid.h"
 #include "dfilter_avg.h"
 #include "adc_pid.h"
@@ -11,6 +9,13 @@
 #include "sys_service.h"
 //#include "ams-enc.h"
 #include "imu.h"
+
+#if defined (__IMAGEPROC24)
+    #include "gyro.h"
+    #include "xl.h"
+#elif defined (__IMAGEPROC25)
+    #include "mpu6000.h"
+#endif
 
 #define TIMER_FREQUENCY     300.0                 // 300 Hz
 #define TIMER_PERIOD        1/TIMER_FREQUENCY   //This is used for numerical integration
@@ -59,10 +64,13 @@ static void imuISRHandler(){
 	CRITICAL_SECTION_START
 	int gyroData[3];
 
+#if defined (__IMAGEPROC24)
 	/////// Get Gyro data and calc average via filter
         gyroReadXYZ(); //bad design of gyro module; todo: humhu
 	gyroGetIntXYZ(gyroData);
-	
+#elif defined (__IMAGEPROC25)
+        mpuGetGyro(gyroData);
+#endif
 
         lastGyroXValue = gyroData[0];
         lastGyroYValue = gyroData[1];
