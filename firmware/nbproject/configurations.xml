@@ -39,6 +39,7 @@
         <itemPath>../../imageproc-lib/spi_controller.h</itemPath>
         <itemPath>../lib/led.h</itemPath>
         <itemPath>../lib/or_telem.h</itemPath>
+        <itemPath>../lib/ol-vibe.h</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.h</itemPath>
       <itemPath>source/settings.h</itemPath>
@@ -74,6 +75,7 @@
         <itemPath>../../imageproc-lib/carray.c</itemPath>
         <itemPath>../../imageproc-lib/ppool.c</itemPath>
         <itemPath>../../imageproc-lib/mac_packet.c</itemPath>
+        <itemPath>../../imageproc-lib/tih.c</itemPath>
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../../imageproc-lib/delay.s</itemPath>
@@ -91,6 +93,7 @@
         <itemPath>../lib/imu.c</itemPath>
         <itemPath>../lib/or_telem.c</itemPath>
         <itemPath>../lib/adc_pid.c</itemPath>
+        <itemPath>../lib/ol-vibe.c</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.c</itemPath>
       <itemPath>source/main.c</itemPath>
