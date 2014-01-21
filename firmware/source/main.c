@@ -36,6 +36,7 @@
 #include "imu.h"
 #include "spi_controller.h"
 #include "ppool.h"
+#include "ol-vibe.h"
 
 #include <stdlib.h>
 
@@ -46,20 +47,21 @@ int main(void) {
     //wakeTime = 0;
     //dcCounter = 0;
 
+    // Processor Initialization
     SetupClock();
-    
-    SetupPorts();
-    //batSetup();
-
-    int old_ipl;
-    mSET_AND_SAVE_CPU_IP(old_ipl, 1);
-
-    cmdSetup();
-
     SwitchClocks();
+    SetupPorts();
     sclockSetup();
 
-    ppoolInit();
+    LED_1 = 1;
+    LED_2 = 1;
+    LED_3 = 1;
+
+    //int old_ipl;
+    //mSET_AND_SAVE_CPU_IP(old_ipl, 1);
+
+    cmdSetup();
+    
     radioInit(RADIO_TXPQ_MAX_SIZE, RADIO_RXPQ_MAX_SIZE);
     radioSetChannel(RADIO_CHANNEL);
     radioSetSrcPanID(RADIO_PAN_ID);
@@ -72,7 +74,7 @@ int main(void) {
 
     dfmemSetup();
     telemSetup();
-    adcSetup();
+    //adcSetup();
     //pidSetup();
 
     telemSetup(); //Timer 5
@@ -82,8 +84,10 @@ int main(void) {
     //encSetup();
     imuSetup();
 
-    legCtrlSetup(); // Timer 1
-    steeringSetup(); //Timer 5
+    olVibeSetup();
+
+    //legCtrlSetup(); // Timer 1
+    //steeringSetup(); //Timer 5
 
     //Tail control is a special case
     //tailCtrlSetup();
@@ -103,6 +107,10 @@ int main(void) {
     //Sleeping and low power options
     //_VREGS = 1;
     //gyroSleep();
+
+    /////FUNCTION TEST, NOT FOR PRODUCTION
+    //olVibeStart();
+    ////////////////////
 
     while (1) {
         cmdHandleRadioRxBuffer();

@@ -31,6 +31,8 @@ is invalid and void.
 #include "tail_ctrl.h"
 #include "hall.h"
 #include "version.h"
+#include "tih.h"
+#include "ol-vibe.h"
 
 #include "settings.h" //major config defines, sys-service, hall, etc
 
@@ -92,6 +94,7 @@ static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned
 static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame);
 static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned char *frame);
 static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame);
 
 /*-----------------------------------------------------------------------------
  *          Public functions
@@ -133,7 +136,7 @@ unsigned int cmdSetup(void) {
     cmd_func[CMD_SET_TAIL_QUEUE] = &cmdSetTailQueue;
     cmd_func[CMD_SET_TAIL_GAINS] = &cmdSetTailGains;
     cmd_func[CMD_SET_THRUST_HALL] = &cmdSetThrustHall;
-
+    cmd_func[CMD_SET_OL_VIBE]  = &cmdSetOLVibe;
     return 1;
 }
 
@@ -226,11 +229,8 @@ static void cmdSetThrustOpenLoop(unsigned char status, unsigned char length, uns
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustOpenLoop, argsPtr, frame);
 
-    //set motor duty cycles
-    //PDC1 = argsPtr->dc1;
-    //PDC2 = argsPtr->dc1;
-    mcSetDutyCycle(MC_CHANNEL_PWM1, argsPtr->dc1);
-    mcSetDutyCycle(MC_CHANNEL_PWM2, argsPtr->dc2);
+    //set motor duty cycle
+    tiHSetDC(argsPtr->channel, argsPtr->dc);
 }
 
 static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, unsigned char *frame) {
@@ -498,4 +498,12 @@ static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigne
     hallPIDOn(0);
     hallPIDSetInput(1 , argsPtr->chan1, argsPtr->runtime2);
     hallPIDOn(1);
+}
+
+static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame){
+    //Unpack unsigned char* frame into structured values
+    PKT_UNPACK(_args_cmdSetOLVibe, argsPtr, frame);
+
+    olVibeSetAmplitude(argsPtr->channel, argsPtr->amplitude);
+    olVibeSetFrequency(argsPtr->frequency); // no channel, only 1 freq for now
 }

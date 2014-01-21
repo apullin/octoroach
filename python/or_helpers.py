@@ -238,6 +238,14 @@ class Robot:
     def setMotorSpeeds(self, spleft, spright):
         thrust = [spleft, 0, spright, 0, 0]
         self.tx( 0, command.SET_THRUST_CLOSED_LOOP, pack('5h',*thrust))
+		
+    def setTIH(self, channel, dc):
+        thrust = [channel, dc]
+        self.tx( 0, command.SET_THRUST_OPEN_LOOP, pack('2h',*thrust))
+        
+    def setOLVibe(self, chan, freq, amp):
+        thrust = [chan, freq, amp]
+        self.tx( 0, command.SET_OL_VIBE, pack('3h',*thrust))
             
     def query(self, retries = 8):
         self.robot_queried = False
