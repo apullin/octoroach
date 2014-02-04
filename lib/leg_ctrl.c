@@ -24,14 +24,15 @@
 #define ABS(my_val) ((my_val) < 0) ? -(my_val) : (my_val)
 
 //PID container objects
-pidObj motor_pidObjs[NUM_MOTOR_PIDS];
+//pidObj motor_pidObjs[NUM_MOTOR_PIDS];
+legCtrlStruct motorObjs[NUM_MOTOR_PIDS];
 
-#ifdef PID_HARDWARE
+//#ifdef PID_HARDWARE
 //DSP PID stuff
 //These have to be declared here!
-fractional motor_abcCoeffs[NUM_MOTOR_PIDS][3] __attribute__((section(".xbss, bss, xmemory")));
-fractional motor_controlHists[NUM_MOTOR_PIDS][3] __attribute__((section(".ybss, bss, ymemory")));
-#endif
+//fractional motor_abcCoeffs[NUM_MOTOR_PIDS][3] __attribute__((section(".xbss, bss, xmemory")));
+//fractional motor_controlHists[NUM_MOTOR_PIDS][3] __attribute__((section(".ybss, bss, ymemory")));
+//#endif
 
 //Counter for blinking the red LED during motion
 int blinkCtr;
@@ -50,13 +51,13 @@ unsigned long currentMoveStart, moveExpire;
 //BEMF related variables; we store a history of the last 3 values,
 //but also provide variables for the "current" and "last" values for clarity
 //in code below
-int bemf[NUM_MOTOR_PIDS]; //used to store the true, unfiltered speed
-int bemfLast[NUM_MOTOR_PIDS]; // Last post-median-filter value
-int bemfHist[NUM_MOTOR_PIDS][3]; //This is ONLY for applying the median filter to
+//int bemf[NUM_MOTOR_PIDS]; //used to store the true, unfiltered speed
+//int bemfLast[NUM_MOTOR_PIDS]; // Last post-median-filter value
+//int bemfHist[NUM_MOTOR_PIDS][3]; //This is ONLY for applying the median filter to
 int medianFilter3(int*);
 
 //This is an array to map legCtrl controller to PWM output channels
-int legCtrlOutputChannels[NUM_MOTOR_PIDS];
+//int legCtrlOutputChannels[NUM_MOTOR_PIDS];
 
 //Global flag for wether or not the robot is in motion
 volatile char inMotion;
@@ -103,7 +104,8 @@ void legCtrlSetup() {
 #ifdef PID_HARDWARE
         //THe user is REQUIRED to set up these pointers before initializing
         //the object, because the arrays are local to this module.
-        motor_pidObjs[i].dspPID.abcCoefficients =
+        motorObjs[i].controller.dsPID.acbCoefficients
+        motorObjs[i].dspPID.abcCoefficients =
                 motor_abcCoeffs[i];
         motor_pidObjs[i].dspPID.controlHistory =
                 motor_controlHists[i];

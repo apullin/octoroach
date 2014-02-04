@@ -34,7 +34,6 @@
         <itemPath>../lib/tail_queue.h</itemPath>
         <itemPath>../lib/tail_ctrl.h</itemPath>
         <itemPath>../lib/sys_service.h</itemPath>
-        <itemPath>../lib/hall.h</itemPath>
         <itemPath>../lib/imu.h</itemPath>
         <itemPath>../../imageproc-lib/spi_controller.h</itemPath>
         <itemPath>../lib/led.h</itemPath>
@@ -88,7 +87,6 @@
         <itemPath>../lib/steering.c</itemPath>
         <itemPath>../lib/leg_ctrl.c</itemPath>
         <itemPath>../lib/sys_service.c</itemPath>
-        <itemPath>../lib/hall.c</itemPath>
         <itemPath>../lib/imu.c</itemPath>
         <itemPath>../lib/or_telem.c</itemPath>
         <itemPath>../lib/adc_pid.c</itemPath>

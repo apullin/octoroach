@@ -86,7 +86,7 @@ int main(void) {
 
     olVibeSetup();
 
-    //legCtrlSetup(); // Timer 1
+    legCtrlSetup(); // Timer 1
     //steeringSetup(); //Timer 5
 
     //Tail control is a special case
