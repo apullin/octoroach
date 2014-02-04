@@ -35,4 +35,9 @@
 #define TELEM_INCLUDE "or_telem.h"
 #define TELEMPACKFUNC(x) orTelemGetData(x)
 
+//Motor controller output routing
+// The leg controllers can be directed to different motor outputs from here
+#define OCTOROACH_LEG1_MOTOR_CHANNEL 1
+#define OCTOROACH_LEG2_MOTOR_CHANNEL 2
+
 #endif //__SETTINGS_H

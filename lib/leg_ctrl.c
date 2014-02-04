@@ -4,7 +4,8 @@
 
 #include "pid.h"
 #include "leg_ctrl.h"
-#include "motor_ctrl.h"
+//#include "motor_ctrl.h"
+#include "tih.h"
 #include "timer.h"
 #include "adc_pid.h"
 #include "pwm.h"
@@ -15,6 +16,7 @@
 #include "steering.h"
 #include "sys_service.h"
 #include "utils.h"
+#include "settings.h"
 #include <dsp.h>
 #include <stdlib.h> // for malloc
 
@@ -25,7 +27,9 @@
 
 //PID container objects
 //pidObj motor_pidObjs[NUM_MOTOR_PIDS];
-legCtrlStruct motorObjs[NUM_MOTOR_PIDS];
+legCtrlStruct legCtrls[NUM_MOTOR_PIDS];
+//The vars for the DSP core PID controller have to decleared separately, due to the section attribute
+pidHWvars legCtrlsHWvars[NUM_MOTOR_PIDS] __attribute__((section(".xbss, bss, xmemory")));
 
 //#ifdef PID_HARDWARE
 //DSP PID stuff
@@ -70,6 +74,7 @@ static void serviceMoveQueue(void);
 static void moveSynth();
 static void serviceMotionPID();
 static void updateBEMF();
+static void setInitialOffset();
 
 /////////        Leg Control ISR       ////////
 /////////  Installed to Timer1 @ 1Khz  ////////
@@ -98,37 +103,30 @@ static void SetupTimer1(void) {
 
 void legCtrlSetup() {
     int i;
-
     //Setup for PID controllers
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
-#ifdef PID_HARDWARE
-        //THe user is REQUIRED to set up these pointers before initializing
-        //the object, because the arrays are local to this module.
-        motorObjs[i].controller.dsPID.acbCoefficients
-        motorObjs[i].dspPID.abcCoefficients =
-                motor_abcCoeffs[i];
-        motor_pidObjs[i].dspPID.controlHistory =
-                motor_controlHists[i];
-#endif
-        pidInitPIDObj(&(motor_pidObjs[i]), LEG_DEFAULT_KP, LEG_DEFAULT_KI,
-                LEG_DEFAULT_KD, LEG_DEFAULT_KAW, LEG_DEFAULT_KFF);
-        //Set up max's and saturation values
-        motor_pidObjs[i].satValPos = SATTHROT;
-        motor_pidObjs[i].satValNeg = 0;
-        motor_pidObjs[i].maxVal = FULLTHROT;
-        motor_pidObjs[i].minVal = 0;
+        //These pointers have to be assigned to the module-local variables here.
+        //It has to be done this way, due to the section attribute on abcCoeffs and controlHists.
+        legCtrls[i].controller.dspPID.abcCoefficients = legCtrlsHWvars[i].abcCoeffs; //Gains aren't SET here, only a pointer is assigned
+        legCtrls[i].controller.dspPID.controlHistory = legCtrlsHWvars[i].controlHists;
+
+        pidInitPIDObj(&(legCtrls[i].controller), LEG_DEFAULT_KP, LEG_DEFAULT_KI,
+                LEG_DEFAULT_KD, LEG_DEFAULT_KAW, LEG_DEFAULT_KFF); //PID module init function
+        
+        //Set max and saturation values
+        legCtrls[i].controller.satValPos = SATTHROT;
+        legCtrls[i].controller.satValNeg = 0;
+        legCtrls[i].controller.maxVal = FULLTHROT;
+        legCtrls[i].controller.minVal = 0;
     }
 
     //Set which PWM output each PID Object will correspond to
-    legCtrlOutputChannels[0] = MC_CHANNEL_PWM1;
-    //legCtrlOutputChannels[1] = MC_CHANNEL_PWM4;
-    legCtrlOutputChannels[1] = MC_CHANNEL_PWM2;
+    legCtrls[0].outputChannel = OCTOROACH_LEG1_MOTOR_CHANNEL;
+    legCtrls[1].outputChannel = OCTOROACH_LEG2_MOTOR_CHANNEL;
 
     SetupTimer1(); // Timer 1 @ 1 Khz
     int retval;
     retval = sysServiceInstallT1(legCtrlServiceRoutine);
-    //ADC_OffsetL = 1; //prevent divide by zero errors
-    //ADC_OffsetR = 1;
 
     //Move Queue setup and initialization
     moveq = mqInit(32);
@@ -149,19 +147,23 @@ void legCtrlSetup() {
     blinkCtr = 0;
     inMotion = 0;
 
+    //This will set legCtrls[i].controller.inputOffset for i=0,1
+    setInitialOffset();
+
     //Ensure controllers are reset to zero and turned off
     //External function used here since it will zero out the state
-    pidSetInput(&(motor_pidObjs[0]), 0);
-    pidSetInput(&(motor_pidObjs[1]), 0);
-    motor_pidObjs[0].onoff = PID_OFF;
-    motor_pidObjs[1].onoff = PID_OFF;
+    pidSetInput(&(legCtrls[0].controller), 0);
+    pidSetInput(&(legCtrls[1].controller), 0);
+    legCtrls[0].controller.onoff = PID_OFF;
+    legCtrls[1].controller.onoff = PID_OFF;
 
     //Set up filters and histories
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
-        bemfLast[i] = 0;
-        bemfHist[i][0] = 0;
-        bemfHist[i][1] = 0;
-        bemfHist[i][2] = 0;
+        legCtrls[i].bemf = 0;
+        legCtrls[i].bemfLast = 0;
+        legCtrls[i].bemfHist[0] = 0;
+        legCtrls[i].bemfHist[1] = 0;
+        legCtrls[i].bemfHist[2] = 0;
     }
 }
 
@@ -169,26 +171,21 @@ void legCtrlSetup() {
 void serviceMotionPID() {
 
     //Apply steering mixing, without overwriting anything
-    int presteer[2] = {motor_pidObjs[0].input, motor_pidObjs[1].input};
+    int presteer[2] = {legCtrls[0].controller.input, legCtrls[1].controller.input};
     int poststeer[2] = {0, 0};
     steeringApplyCorrection(presteer, poststeer);
-    motor_pidObjs[0].input = poststeer[0];
-    motor_pidObjs[1].input = poststeer[1];
+    legCtrls[0].controller.input = poststeer[0];
+    legCtrls[1].controller.input = poststeer[1];
 
     updateBEMF();
 
     /////////// PID Section //////////
-
     int j;
     for (j = 0; j < NUM_MOTOR_PIDS; j++) {
-        //We are now measuring battery voltage directly via AN0,
-        // so the input offset to each PID loop can actually be tracked, and needs
-        // to be updated. This should compensate for battery voltage drooping over time.
-        motor_pidObjs[j].inputOffset = adcGetVBatt();
 
         //pidobjs[0] : Left side
         //pidobjs[0] : Right side
-        if (motor_pidObjs[j].onoff) {
+        if (legCtrls[j].controller.onoff) {
             //TODO: Do we want to add provisions to track error, even when
             //the output is switched off?
 
@@ -198,21 +195,18 @@ void serviceMotionPID() {
 #elif defined PID_HARDWARE
             //Apply scaling, update, remove scaling for consistency
             int temp;
-            temp = motor_pidObjs[j].input; //Save unscaled input val
-            motor_pidObjs[j].input *= MOTOR_PID_SCALER; //Scale input
-            pidUpdate(&(motor_pidObjs[j]), MOTOR_PID_SCALER* bemf[j]);
-            motor_pidObjs[j].input = temp;  //Reset unscaled input
+            temp = legCtrls[j].controller.input; //Save unscaled input val
+            legCtrls[j].controller.input *= MOTOR_PID_SCALER; //Scale input
+            pidUpdate(&(legCtrls[j].controller), MOTOR_PID_SCALER* legCtrls[j].bemf);
+            legCtrls[j].controller.input = temp;  //Reset unscaled input
 #endif //PID_SOFTWWARE vs PID_HARDWARE
 
             //Set PWM duty cycle
-            SetDCMCPWM(legCtrlOutputChannels[j], motor_pidObjs[j].output, 0);
-            if(motor_pidObjs[j].output > 0){
-            }
-            if((PDC1 > 0) || (PDC2 > 0)){
-            }
+            tiHSetDC(legCtrls[j].outputChannel, legCtrls[j].controller.output);
+
         }//end of if (on / off)
         else if (PID_ZEROING_ENABLE) { //if PID loop is off
-            SetDCMCPWM(legCtrlOutputChannels[j], 0, 0);
+            tiHSetDC(legCtrls[j].outputChannel, 0);
         }
 
     } // end of for(j)
@@ -222,43 +216,45 @@ void updateBEMF() {
     //Back EMF measurements are made automatically by coordination of the ADC, PWM, and DMA.
     //Copy to local variables. Not strictly neccesary, just for clarity.
     //This **REQUIRES** that the divider on the battery & BEMF circuits have the same ratio.
-    bemf[0] = adcGetVBatt() - adcGetBEMFL();
-    bemf[1] = adcGetVBatt() - adcGetBEMFR();
+    legCtrls[0].bemf = adcGetVBatt() - adcGetBEMFL();
+    legCtrls[1].bemf = adcGetVBatt() - adcGetBEMFR();
     //NOTE: at this point, we should have a proper correspondance between
     //   the order of all the structured variable; bemf[i] associated with
     //   pidObjs[i], bemfLast[i], etc.
     //   Any "jumbling" of the inputs can be done in the above assignments.
 
     //Negative ADC measures mean nothing and should never happen anyway
-    if (bemf[0] < 0) {
-        bemf[0] = 0;
-    }
-    if (bemf[1] < 0) {
-        bemf[1] = 0;
-    }
+    //if (bemf[0] < 0) {
+    //    bemf[0] = 0;
+    //}
+    //if (bemf[1] < 0) {
+    //    bemf[1] = 0;
+    //}
 
     //Apply median filter
     int i;
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
-        bemfHist[i][2] = bemfHist[i][1]; //rotate first
-        bemfHist[i][1] = bemfHist[i][0];
-        bemfHist[i][0] = bemf[i]; //include newest value
-        bemf[i] = medianFilter3(bemfHist[i]); //Apply median filter
+
+        legCtrls[i].bemfHist[2] = legCtrls[i].bemfHist[1]; //rotate first
+        legCtrls[i].bemfHist[1] = legCtrls[i].bemfHist[0];
+        legCtrls[i].bemfHist[0] = legCtrls[i].bemf; //include newest value
+        legCtrls[i].bemf = medianFilter3(legCtrls[i].bemfHist); //Apply median filter
     }
 
-    // IIR filter on BEMF: y[n] = 0.2 * y[n-1] + 0.8 * x[n]
-    bemf[0] = (5 * (long) bemfLast[0] / 10) + 5 * (long) bemf[0] / 10;
-    bemf[1] = (5 * (long) bemfLast[1] / 10) + 5 * (long) bemf[1] / 10;
-    bemfLast[0] = bemf[0]; //bemfLast will not be used after here, OK to set
-    bemfLast[1] = bemf[1];
+    // IIR filter on BEMF: y[n] = 0.5 * y[n-1] + 0.5 * x[n]
+    for (i = 0; i < NUM_MOTOR_PIDS; i++) {
+        legCtrls[i].bemf = (5 * (long) legCtrls[i].bemfLast / 10) + 5 * (long) legCtrls[i].bemf / 10;
+        legCtrls[i].bemfLast = legCtrls[i].bemf; //bemfLast will not be used after here, OK to set
+    }
+
 
     //Simple indicator if a leg is "in motion", via the yellow LED.
     //Not functionally necceasry; can be elimited to use the LED for something else.
-    if ((bemf[0] > 0) || (bemf[1] > 0)) {
-        LED_YELLOW = 1;
-    } else {
-        LED_YELLOW = 0;
-    }
+    //if ((bemf[0] > 0) || (bemf[1] > 0)) {
+    //    LED_YELLOW = 1;
+    //} else {
+    //    LED_YELLOW = 0;
+    //}
 }
 
 void serviceMoveQueue(void) {
@@ -310,8 +306,8 @@ void serviceMoveQueue(void) {
 
             //If we are no on an Idle move, turn on controllers
             if (currentMove->type != MOVE_SEG_IDLE) {
-                motor_pidObjs[0].onoff = PID_ON;
-                motor_pidObjs[1].onoff = PID_ON;
+                legCtrls[0].controller.onoff = PID_ON;
+                legCtrls[1].controller.onoff = PID_ON;
             }
         }
     }//Move Queue is empty
@@ -319,10 +315,10 @@ void serviceMoveQueue(void) {
     else if ((getT1_ticks() >= moveExpire) && currentMove != idleMove) {
         //No more moves, go back to idle
         currentMove = idleMove;
-        pidSetInput(&(motor_pidObjs[0]), 0);
-        motor_pidObjs[0].onoff = PID_OFF;
-        pidSetInput(&(motor_pidObjs[1]), 0);
-        motor_pidObjs[1].onoff = PID_OFF;
+        pidSetInput(&(legCtrls[0].controller), 0);
+        legCtrls[0].controller.onoff = PID_OFF;
+        pidSetInput(&(legCtrls[1].controller), 0);
+        legCtrls[1].controller.onoff = PID_OFF;
         moveExpire = 0;
         inMotion = 0; //for sleep, synthesis
         steeringOff();
@@ -383,14 +379,13 @@ static void moveSynth() {
             yR = (unsigned int) temp;
             //unsigned int yL = amp*sin(arg) + ySL;
         }
-        motor_pidObjs[0].input = yL;
-        motor_pidObjs[1].input = yR;
-        if ((motor_pidObjs[0].input < 0) || (motor_pidObjs[1].input < 0)) {
-            Nop();
-            Nop();
-        }
+
+        //Transfer calculated setpoints to the controllers
+        legCtrls[0].controller.input = yL;
+       legCtrls[1].controller.input = yR;
+
     }
-    //Note hhere that pidObjs[n].input is not set if !inMotion, in case another behavior wants to
+    //Note here that pidObjs[n].input is not set if !inMotion, in case another behavior wants to
     // set it.
 }
 
@@ -423,13 +418,31 @@ int medianFilter3(int* a) {
 }
 
 void legCtrlSetInput(unsigned int num, int val) {
-    pidSetInput(&(motor_pidObjs[num]), val);
+    pidSetInput(&(legCtrls[num].controller), val);
 }
 
 void legCtrlOnOff(unsigned int num, unsigned char state) {
-    motor_pidObjs[num].onoff = state;
+   legCtrls[num].controller.onoff = state;
 }
 
 void legCtrlSetGains(unsigned int num, int Kp, int Ki, int Kd, int Kaw, int ff) {
-    pidSetGains(&(motor_pidObjs[num]), Kp, Ki, Kd, Kaw, ff);
+    pidSetGains(&(legCtrls[num].controller), Kp, Ki, Kd, Kaw, ff);
+}
+
+static void setInitialOffset() {
+    int i;
+
+    //Offsets are expected to be ~511 counts for motor stationary.
+    long offset1 = 0;
+    long offset2 = 0;
+    for (i = 0; i < 8; i++) {
+        offset1 += adcGetBEMFL();
+        offset2 += adcGetBEMFR();
+        delay_ms(2);
+    }
+
+    offset1 = offset1 >> 3; // fast div by 8
+    legCtrls[0].controller.inputOffset = offset1;
+    offset1 = offset2 >> 3;
+    legCtrls[1].controller.inputOffset = offset2;
 }

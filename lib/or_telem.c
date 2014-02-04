@@ -17,8 +17,8 @@
 #include "tail_ctrl.h"
 
 // TODO (apullin) : Remove externs by adding getters to other modules
-extern pidObj motor_pidObjs[NUM_MOTOR_PIDS];
-extern int bemf[NUM_MOTOR_PIDS];
+//extern pidObj motor_pidObjs[NUM_MOTOR_PIDS];
+//extern int bemf[NUM_MOTOR_PIDS];
 extern pidObj steeringPID;
 extern pidObj tailPID;
 
