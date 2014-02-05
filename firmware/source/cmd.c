@@ -159,9 +159,6 @@ void cmdHandleRadioRxBuffer(void) {
     return;
 }
 
-//////////////////////////////////
-//typedef struct { int dc1, dc2;} _args_cmdSetThrustOpenLoop;
-/////////////////////////////////
 
 /*-----------------------------------------------------------------------------
  * ----------------------------------------------------------------------------
@@ -387,6 +384,7 @@ static void cmdSleep(unsigned char status, unsigned char length, unsigned char *
 
 // set up velocity profile structure  - assume 4 set points for now, generalize later
 static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigned char *frame) {
+/*
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetVelProfile, argsPtr, frame);
 
@@ -397,12 +395,13 @@ static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigne
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
     radioSendData(RADIO_DST_ADDR, 0, CMD_SET_VEL_PROFILE, length, frame, 0);
+ */
 }
 
 // report motor position and  reset motor position (from Hall effect sensors)
 // note motor_count is long (4 bytes)
 void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame) {
-
+/*
     hallZeroPos(0);
     hallZeroPos(1);
 
@@ -412,7 +411,7 @@ void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
     radioSendData(RADIO_DST_ADDR, 0, CMD_ZERO_POS, 2*sizeof(unsigned long), (unsigned char*)hallCounts, 0);
-
+ */
 }
 
 // alternative telemetry which runs at 1 kHz rate inside PID loop
@@ -437,6 +436,8 @@ void cmdWhoAmI(unsigned char status, unsigned char length, unsigned char *frame)
 }
 
 static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned char *frame) {
+    /*
+    
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetPIDGains, argsPtr, frame);
 
@@ -446,6 +447,7 @@ static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
     radioSendData(RADIO_DST_ADDR, 0, CMD_SET_HALL_GAINS, length, frame, 0);
+     */
 }
 
 static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame) {
@@ -491,6 +493,7 @@ static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned
 
 
 static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigned char *frame) {
+    /*
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustHall, argsPtr, frame);
 
@@ -498,6 +501,7 @@ static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigne
     hallPIDOn(0);
     hallPIDSetInput(1 , argsPtr->chan1, argsPtr->runtime2);
     hallPIDOn(1);
+     */
 }
 
 static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame){

@@ -19,15 +19,17 @@
 // TODO (apullin) : Remove externs by adding getters to other modules
 //extern pidObj motor_pidObjs[NUM_MOTOR_PIDS];
 //extern int bemf[NUM_MOTOR_PIDS];
-extern pidObj steeringPID;
-extern pidObj tailPID;
+//extern pidObj steeringPID;
+//extern pidObj tailPID;
 
 void orTelemGetData(unsigned char* ptr) {
     /////// Get XL data
     orTelemStruct_t* tptr;
     tptr = (orTelemStruct_t*) ptr;
-    tptr->inputL = motor_pidObjs[0].input;
-    tptr->inputR = motor_pidObjs[1].input;
+    //tptr->inputL = motor_pidObjs[0].input;
+    //tptr->inputL = legCtrlGetInput(1);
+    //tptr->inputR = motor_pidObjs[1].input;
+    //tptr->inputL = legCtrlGetInput(2);
     tptr->dcL = PDC1;
     tptr->dcR = PDC2;
     tptr->gyroX = imuGetGyroXValue();
@@ -40,11 +42,11 @@ void orTelemGetData(unsigned char* ptr) {
     tptr->accelX = 0;
     tptr->accelY = 0;
     tptr->accelZ = 0;
-    tptr->bemfL = bemf[0];
-    tptr->bemfR = bemf[1];
+    //tptr->bemfL = legCtrlGetBMEF(1);
+    //tptr->bemfR = legCtrlGetBMEF(2);
     tptr->Vbatt = adcGetVBatt();
-    tptr->steerIn = steeringPID.input;
-    tptr->steerOut = steeringPID.output;
+    //tptr->steerIn = steeringPID.input;
+    //tptr->steerOut = steeringPID.output;
     tptr->motor_count[0] = 0;
     tptr->motor_count[1] = 0;
     tptr->yawAngle = imuGetBodyZPositionDeg();

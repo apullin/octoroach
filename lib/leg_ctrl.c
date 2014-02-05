@@ -19,24 +19,17 @@
 #include "settings.h"
 #include <dsp.h>
 #include <stdlib.h> // for malloc
-
-#define INT_MIN -32768
-#define INT_MAX 32767
+#include <limits.h> //for INT_MAX, etc
 
 #define ABS(my_val) ((my_val) < 0) ? -(my_val) : (my_val)
 
 //PID container objects
-//pidObj motor_pidObjs[NUM_MOTOR_PIDS];
 legCtrlStruct legCtrls[NUM_MOTOR_PIDS];
+#ifdef PID_HARDWARE
 //The vars for the DSP core PID controller have to decleared separately, due to the section attribute
 pidHWvars legCtrlsHWvars[NUM_MOTOR_PIDS] __attribute__((section(".xbss, bss, xmemory")));
+#endif
 
-//#ifdef PID_HARDWARE
-//DSP PID stuff
-//These have to be declared here!
-//fractional motor_abcCoeffs[NUM_MOTOR_PIDS][3] __attribute__((section(".xbss, bss, xmemory")));
-//fractional motor_controlHists[NUM_MOTOR_PIDS][3] __attribute__((section(".ybss, bss, ymemory")));
-//#endif
 
 //Counter for blinking the red LED during motion
 int blinkCtr;
@@ -76,6 +69,9 @@ static void serviceMotionPID();
 static void updateBEMF();
 static void setInitialOffset();
 
+static int pwm_period;
+static int max_pwm;
+
 /////////        Leg Control ISR       ////////
 /////////  Installed to Timer1 @ 1Khz  ////////
 //void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
@@ -103,6 +99,12 @@ static void SetupTimer1(void) {
 
 void legCtrlSetup() {
     int i;
+
+    //Get maximum & saturation values
+    //The factor of 2 is a quirk of the MicroChip PWM module, rising AND falling edges of PWM are counted
+    pwm_period = 2*tiGetPWMPeriod();  //calculation of this value is left to the module that configures the motor control peripheral
+    max_pwm = 2*tiGetPWMMax();
+
     //Setup for PID controllers
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
         //These pointers have to be assigned to the module-local variables here.
@@ -114,10 +116,10 @@ void legCtrlSetup() {
                 LEG_DEFAULT_KD, LEG_DEFAULT_KAW, LEG_DEFAULT_KFF); //PID module init function
         
         //Set max and saturation values
-        legCtrls[i].controller.satValPos = SATTHROT;
-        legCtrls[i].controller.satValNeg = 0;
-        legCtrls[i].controller.maxVal = FULLTHROT;
-        legCtrls[i].controller.minVal = 0;
+        legCtrls[i].controller.satValPos = max_pwm;
+        legCtrls[i].controller.satValNeg = -max_pwm;
+        legCtrls[i].controller.maxVal = pwm_period;
+        legCtrls[i].controller.minVal = -pwm_period;
     }
 
     //Set which PWM output each PID Object will correspond to
@@ -218,18 +220,6 @@ void updateBEMF() {
     //This **REQUIRES** that the divider on the battery & BEMF circuits have the same ratio.
     legCtrls[0].bemf = adcGetVBatt() - adcGetBEMFL();
     legCtrls[1].bemf = adcGetVBatt() - adcGetBEMFR();
-    //NOTE: at this point, we should have a proper correspondance between
-    //   the order of all the structured variable; bemf[i] associated with
-    //   pidObjs[i], bemfLast[i], etc.
-    //   Any "jumbling" of the inputs can be done in the above assignments.
-
-    //Negative ADC measures mean nothing and should never happen anyway
-    //if (bemf[0] < 0) {
-    //    bemf[0] = 0;
-    //}
-    //if (bemf[1] < 0) {
-    //    bemf[1] = 0;
-    //}
 
     //Apply median filter
     int i;
@@ -241,12 +231,16 @@ void updateBEMF() {
         legCtrls[i].bemf = medianFilter3(legCtrls[i].bemfHist); //Apply median filter
     }
 
-    // IIR filter on BEMF: y[n] = 0.5 * y[n-1] + 0.5 * x[n]
+    // IIR filter on BEMF: y[n] = 0.2 * y[n-1] + 0.8 * x[n]
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
-        legCtrls[i].bemf = (5 * (long) legCtrls[i].bemfLast / 10) + 5 * (long) legCtrls[i].bemf / 10;
+        legCtrls[i].bemf = (2 * (long) legCtrls[i].bemfLast / 10) + 8 * (long) legCtrls[i].bemf / 10;
         legCtrls[i].bemfLast = legCtrls[i].bemf; //bemfLast will not be used after here, OK to set
     }
 
+    //Subtract offset
+    //This is relevant for IP2.5, since the motors can go in forward and reverse
+    legCtrls[0].bemf -= legCtrls[0].controller.inputOffset;
+    legCtrls[1].bemf -= legCtrls[1].controller.inputOffset;
 
     //Simple indicator if a leg is "in motion", via the yellow LED.
     //Not functionally necceasry; can be elimited to use the LED for something else.
