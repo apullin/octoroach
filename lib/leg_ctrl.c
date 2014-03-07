@@ -216,10 +216,11 @@ void serviceMotionPID() {
 
 void updateBEMF() {
     //Back EMF measurements are made automatically by coordination of the ADC, PWM, and DMA.
-    //Copy to local variables. Not strictly neccesary, just for clarity.
-    //This **REQUIRES** that the divider on the battery & BEMF circuits have the same ratio.
-    legCtrls[0].bemf = adcGetVBatt() - adcGetBEMFL();
-    legCtrls[1].bemf = adcGetVBatt() - adcGetBEMFR();
+
+    //This assignment here is arbitrary.
+    legCtrls[0].bemf = adcGetMotorA() - legCtrls[0].controller.inputOffset;
+    legCtrls[1].bemf = adcGetMotorB() - legCtrls[1].controller.inputOffset;
+    //Offsets are subtracted, so that BEMF should now in the approx range (
 
     //Apply median filter
     int i;
@@ -427,16 +428,23 @@ static void setInitialOffset() {
     int i;
 
     //Offsets are expected to be ~511 counts for motor stationary.
-    long offset1 = 0;
-    long offset2 = 0;
+    long offsets[NUM_MOTOR_PIDS];
+
+    //Accumulate 8 readings to average out
     for (i = 0; i < 8; i++) {
-        offset1 += adcGetBEMFL();
-        offset2 += adcGetBEMFR();
+        offsets[0] += adcGetMotorA();
+        offsets[1] += adcGetMotorB();
+        offsets[2] += adcGetMotorC();
+        offsets[3] += adcGetMotorD();
         delay_ms(2);
     }
 
-    offset1 = offset1 >> 3; // fast div by 8
-    legCtrls[0].controller.inputOffset = offset1;
-    offset1 = offset2 >> 3;
-    legCtrls[1].controller.inputOffset = offset2;
+    for(i = 0; i<4; i++){
+        offsets[i] = offsets[i] >> 3; // fast div by 8
+        legCtrls[0].controller.inputOffset = offsets[i]; //store
+    }
+
+    Nop();
+    Nop();
+
 }
