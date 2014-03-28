@@ -44,7 +44,7 @@ void orTelemGetData(unsigned char* ptr) {
     tptr->accelZ = 0;
     //tptr->bemfL = legCtrlGetBMEF(1);
     //tptr->bemfR = legCtrlGetBMEF(2);
-    tptr->Vbatt = adcGetVBatt();
+    tptr->Vbatt = adcGetVbatt();
     //tptr->steerIn = steeringPID.input;
     //tptr->steerOut = steeringPID.output;
     tptr->motor_count[0] = 0;

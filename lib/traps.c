@@ -82,7 +82,7 @@ void __attribute__((__interrupt__, no_auto_psv)) _AddressError(void) {
     LED_2 = 0;
     LED_3 = 0;
     INTCON1bits.ADDRERR = 0; //Clear the trap flags
-    while (1) {
+    /*while (1) {
         //asm volatile("btg   PORTF, #1");
         LED_1 ^= 1;
         delay_ms(100);
@@ -91,7 +91,10 @@ void __attribute__((__interrupt__, no_auto_psv)) _AddressError(void) {
         LED_3 ^= 1;
         delay_ms(100);
         //for (k=0; k<100; k++) { delay_ms(5); }   // Waste approximatelly 50ms
-    };
+    };*/
+    Nop();
+    Nop();
+    return;
 }
 
 void __attribute__((__interrupt__, no_auto_psv)) _StackError(void) {

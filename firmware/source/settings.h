@@ -18,8 +18,8 @@
 //Hard-coded destination address, must match basestation or XBee addr
 #define RADIO_DST_ADDR		0x2051
 
-#define RADIO_RXPQ_MAX_SIZE 	20
-#define RADIO_TXPQ_MAX_SIZE	60
+#define RADIO_RXPQ_MAX_SIZE 	8
+#define RADIO_TXPQ_MAX_SIZE	8
 
 /////// System Service settings ///////
 #define SYS_SERVICE_T1 // For legCtrl, hall

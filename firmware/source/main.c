@@ -84,7 +84,7 @@ int main(void) {
     //encSetup();
     imuSetup();
 
-    olVibeSetup();
+    //olVibeSetup();
 
     legCtrlSetup(); // Timer 1
     //steeringSetup(); //Timer 5

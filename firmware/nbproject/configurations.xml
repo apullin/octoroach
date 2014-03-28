@@ -76,11 +76,11 @@
         <itemPath>../../imageproc-lib/ppool.c</itemPath>
         <itemPath>../../imageproc-lib/mac_packet.c</itemPath>
         <itemPath>../../imageproc-lib/tih.c</itemPath>
+        <itemPath>../../imageproc-lib/adc_pid.c</itemPath>
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../../imageproc-lib/delay.s</itemPath>
         <itemPath>../lib/motor_ctrl.c</itemPath>
-        <itemPath>../lib/traps.c</itemPath>
         <itemPath>../lib/move_queue.c</itemPath>
         <itemPath>../lib/estop.c</itemPath>
         <itemPath>../lib/telem.c</itemPath>
@@ -89,9 +89,8 @@
         <itemPath>../lib/sys_service.c</itemPath>
         <itemPath>../lib/imu.c</itemPath>
         <itemPath>../lib/or_telem.c</itemPath>
-        <itemPath>../lib/adc_pid.c</itemPath>
-        <itemPath>../lib/ol-vibe.c</itemPath>
         <itemPath>../../imageproc-lib/mpu6000.c</itemPath>
+        <itemPath>../lib/traps.c</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.c</itemPath>
       <itemPath>source/main.c</itemPath>
@@ -648,6 +647,7 @@
         <property key="UART 1" value="true"/>
         <property key="UART 2" value="true"/>
         <property key="debugoptions.useswbreakpoints" value="false"/>
+        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="hwtoolclock.instructionspeed" value="4"/>
         <property key="hwtoolclock.units" value="mips"/>

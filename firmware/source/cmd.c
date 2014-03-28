@@ -311,7 +311,7 @@ static void cmdSetSteeringGains(unsigned char status, unsigned char length, unsi
     //Send confirmation packet, which is the exact same data payload as what was sent
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
-    radioSendData(RADIO_DST_ADDR, 0, CMD_SET_STEERING_GAINS, length, frame, 0);
+    radioSendData(RADIO_DST_ADDR, 0, CMD_SET_STEERING_GAINS, length, frame, 1);
 }
 
 static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigned char *frame) {
@@ -508,6 +508,6 @@ static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned ch
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetOLVibe, argsPtr, frame);
 
-    olVibeSetAmplitude(argsPtr->channel, argsPtr->amplitude);
-    olVibeSetFrequency(argsPtr->frequency); // no channel, only 1 freq for now
+    //olVibeSetAmplitude(argsPtr->channel, argsPtr->amplitude);
+    //olVibeSetFrequency(argsPtr->frequency); // no channel, only 1 freq for now
 }

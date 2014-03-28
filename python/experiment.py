@@ -49,7 +49,7 @@ def main():
     #motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0] #Hardware PID
     motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0]
 
-    R1.setMotorGains(motorgains, retries = 8)
+    R1.setMotorGains(motorgains, retries = 4)
     #Verify all robots have motor gains set
     verifyAllMotorGainsSet()   #exits on failure
 
@@ -57,7 +57,7 @@ def main():
     #  [ Kp , Ki , Kd , Kaw , Kff]
     steeringGains = [15000,5,0,0,0,  STEER_MODE_SPLIT] # Hardware PID
 
-    R1.setSteeringGains(steeringGains, retries = 8)
+    R1.setSteeringGains(steeringGains, retries = 4)
     #Verify all robots have steering gains set
     verifyAllSteeringGainsSet()  #exits on failure
     
@@ -108,9 +108,9 @@ def main():
     #    85, 85, 6500,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*160.0)),
     #    85, 85, 6200,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*240.0))]
     
-    #numMoves = 1
-    #moveq1 = [numMoves, \
-    #    0, 0, 5000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
+    numMoves = 1
+    moveq1 = [numMoves, \
+        100, 100, 5000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
     
     #No movements, just for static telemetry capture
     #numMoves = 1
@@ -118,7 +118,7 @@ def main():
     #    0, 0, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
      
     #trapezoidal velocity profile
-    [numMoves, moveq1] = trapRun(topspeed = 300, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_YAW_SPLIT)
+    #[numMoves, moveq1] = trapRun(topspeed = 300, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_YAW_SPLIT)
     
 
     #Timing settings
