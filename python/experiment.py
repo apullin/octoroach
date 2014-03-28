@@ -47,7 +47,7 @@ def main():
     #    ----------LEFT----------        ---------_RIGHT----------
     
     #motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0] #Hardware PID
-    motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0]
+    motorgains = [20000,3000,50,0,0,    20000,3000,50,0,0]
 
     R1.setMotorGains(motorgains, retries = 4)
     #Verify all robots have motor gains set
@@ -55,7 +55,7 @@ def main():
 
     #Steering gains format:
     #  [ Kp , Ki , Kd , Kaw , Kff]
-    steeringGains = [15000,5,0,0,0,  STEER_MODE_SPLIT] # Hardware PID
+    steeringGains = [5000,5,0,0,0,  STEER_MODE_SPLIT] # Hardware PID
 
     R1.setSteeringGains(steeringGains, retries = 4)
     #Verify all robots have steering gains set
@@ -110,7 +110,7 @@ def main():
     
     numMoves = 1
     moveq1 = [numMoves, \
-        100, 100, 5000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
+        40, 40, 2000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
     
     #No movements, just for static telemetry capture
     #numMoves = 1

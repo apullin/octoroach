@@ -168,7 +168,7 @@ void cmdHandleRadioRxBuffer(void) {
 -----------------------------------------------------------------------------*/
 
 static void cmdSetThrust(unsigned char status, unsigned char length, unsigned char *frame) {
-
+/*
     unsigned char chr_test[4];
     float *duty_cycle = (float*) chr_test;
 
@@ -179,10 +179,11 @@ static void cmdSetThrust(unsigned char status, unsigned char length, unsigned ch
 
     mcSetDutyCycle(MC_CHANNEL_PWM1, duty_cycle[0]);
     //mcSetDutyCycle(1, duty_cycle[0]);
+ */
 }
 
 static void cmdSteer(unsigned char status, unsigned char length, unsigned char *frame) {
-
+/*
     unsigned char chr_test[4];
     float *steer_value = (float*) chr_test;
 
@@ -192,6 +193,7 @@ static void cmdSteer(unsigned char status, unsigned char length, unsigned char *
     chr_test[3] = frame[3];
 
     mcSteer(steer_value[0]);
+    */
 }
 
 /*-----------------------------------------------------------------------------

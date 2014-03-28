@@ -130,7 +130,7 @@ class Robot:
         self.steeringGains = gains
         while not (self.steering_gains_set) and (tries <= retries):
             self.clAnnounce()
-            print "Setting steering gains...   ",tries,"/8"
+            print "Setting steering gains...   ",tries,"/",retries
             self.tx( 0, command.SET_STEERING_GAINS, pack('6h',*gains))
             tries = tries + 1
             time.sleep(0.3)
@@ -311,7 +311,7 @@ class Robot:
         self.findFileName()
         self.writeFileHeader()
         fileout = open(self.dataFileName, 'a')
-        np.savetxt(fileout , np.array(self.imudata), '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f', delimiter = ',')
+        np.savetxt(fileout , np.array(self.imudata), '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f', delimiter = ',')
         fileout.close()
         self.clAnnounce()
         print "Telemtry data saved to", self.dataFileName
@@ -331,7 +331,7 @@ class Robot:
         fileout.write('%  numSamples    = ' + repr(self.numSamples) + '\n')
         fileout.write('%  moveq         = ' + repr(self.moveq) + '\n')
         fileout.write('% Columns: \n')
-        fileout.write('% time | Llegs | Rlegs | DCL | DCR | GyroX | GyroY | GyroZ | GryoZAvg | AccelX | AccelY |AccelZ | LBEMF | RBEMF | Vbatt | SteerIn | SteerOut | HallL | HallR | YawAngle\n')
+        fileout.write('% time | inputL | inputR| DCA | DCB | DCC | DCD | GyroX | GyroY | GyroZ | GryoZAvg | AccelX | AccelY |AccelZ | BEMFA | BEMFB | BEMFC | BEMFD | SteerIn | SteerOut | Vbatt | YawAngle\n')
         fileout.close()
 
     def setupImudata(self, moveq):

@@ -77,7 +77,7 @@ void __attribute__((__interrupt__, no_auto_psv)) _OscillatorFail(void) {
 }
 
 void __attribute__((__interrupt__, no_auto_psv)) _AddressError(void) {
-    EmergencyStop();
+    //EmergencyStop();
     LED_1 = 0;
     LED_2 = 0;
     LED_3 = 0;

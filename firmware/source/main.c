@@ -22,7 +22,6 @@
 #include "mpu6000.h"
 #include "utils.h"
 #include "sclock.h"
-#include "motor_ctrl.h"
 #include "dfmem.h"
 #include "leg_ctrl.h"
 #include "pid.h"
@@ -36,7 +35,6 @@
 #include "imu.h"
 #include "spi_controller.h"
 #include "ppool.h"
-#include "ol-vibe.h"
 
 #include <stdlib.h>
 
@@ -71,15 +69,14 @@ int main(void) {
 
     mpuSetup();
     tiHSetup();
+    adcSetup();
 
     dfmemSetup();
     telemSetup();
-    //adcSetup();
     //pidSetup();
 
     telemSetup(); //Timer 5
-    mcSetup();
-    adcSetup();
+    
  
     //encSetup();
     imuSetup();

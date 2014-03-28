@@ -21,7 +21,6 @@
         <itemPath>../../imageproc-lib/ppool.h</itemPath>
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
-        <itemPath>../lib/motor_ctrl.h</itemPath>
         <itemPath>../lib/cmd_const.h</itemPath>
         <itemPath>../lib/flashmem.h</itemPath>
         <itemPath>../lib/move_queue.h</itemPath>
@@ -80,7 +79,6 @@
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../../imageproc-lib/delay.s</itemPath>
-        <itemPath>../lib/motor_ctrl.c</itemPath>
         <itemPath>../lib/move_queue.c</itemPath>
         <itemPath>../lib/estop.c</itemPath>
         <itemPath>../lib/telem.c</itemPath>
@@ -116,7 +114,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>RealICEPlatformTool</platformTool>
         <languageToolchain>XC16</languageToolchain>
-        <languageToolchainVersion>1.21</languageToolchainVersion>
+        <languageToolchainVersion>1.11</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -361,7 +359,7 @@
           <property key="optimization-level" value="0"/>
           <property key="post-instruction-scheduling" value="default"/>
           <property key="pre-instruction-scheduling" value="default"/>
-          <property key="preprocessor-macros" value=""/>
+          <property key="preprocessor-macros" value="PID_HARDWARE"/>
           <property key="scalar-model" value="default"/>
         </C30>
         <C30-AS>
@@ -439,7 +437,7 @@
           <property key="optimization-level" value="0"/>
           <property key="post-instruction-scheduling" value="default"/>
           <property key="pre-instruction-scheduling" value="default"/>
-          <property key="preprocessor-macros" value=""/>
+          <property key="preprocessor-macros" value="PID_HARDWARE"/>
           <property key="scalar-model" value="default"/>
         </C30>
         <C30-AS>
@@ -530,10 +528,11 @@
         <property key="false-conditionals" value="false"/>
         <property key="keep-locals" value="false"/>
         <property key="list-assembly" value="false"/>
-        <property key="list-file" value=""/>
         <property key="list-section-info" value="false"/>
         <property key="list-source" value="false"/>
         <property key="list-symbols" value="false"/>
+        <property key="oXC16asm-extra-opts" value=""/>
+        <property key="oXC16asm-list-to-file" value="false"/>
         <property key="omit-debug-dirs" value="false"/>
         <property key="omit-forms" value="false"/>
         <property key="preprocessor-macros" value=""/>
@@ -619,7 +618,7 @@
         <property key="OUTPUT COMPARE 6" value="true"/>
         <property key="OUTPUT COMPARE 7" value="true"/>
         <property key="OUTPUT COMPARE 8" value="true"/>
-        <property key="PWM" value="true"/>
+        <property key="PWM" value="false"/>
         <property key="QEI" value="true"/>
         <property key="RIExTrigs.Five" value="OFF"/>
         <property key="RIExTrigs.Four" value="OFF"/>
@@ -647,7 +646,6 @@
         <property key="UART 1" value="true"/>
         <property key="UART 2" value="true"/>
         <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="hwtoolclock.instructionspeed" value="4"/>
         <property key="hwtoolclock.units" value="mips"/>

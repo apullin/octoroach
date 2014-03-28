@@ -6,8 +6,10 @@
 typedef struct {
     int inputL;
     int inputR;
-    int dcL;
-    int dcR;
+    int dcA;
+    int dcB;
+    int dcC;
+    int dcD;
     int gyroX;
     int gyroY;
     int gyroZ;
@@ -15,12 +17,13 @@ typedef struct {
     int accelX;
     int accelY;
     int accelZ;
-    int bemfL;
-    int bemfR;
+    int bemfA;
+    int bemfB;
+    int bemfC;
+    int bemfD;
     int steerIn;
     int steerOut;
     int Vbatt;
-    unsigned long motor_count[2];
     float yawAngle;
 } orTelemStruct_t;
 

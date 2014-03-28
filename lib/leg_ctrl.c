@@ -29,8 +29,8 @@ pidObj motor_pidObjs[NUM_MOTOR_PIDS];
 #ifdef PID_HARDWARE
 //DSP PID stuff
 //These have to be declared here!
-fractional motor_abcCoeffs[NUM_MOTOR_PIDS][3] __attribute__((section(".xbss, bss, xmemory")));
-fractional motor_controlHists[NUM_MOTOR_PIDS][3] __attribute__((section(".ybss, bss, ymemory")));
+static fractional motor_abcCoeffs[NUM_MOTOR_PIDS][3] __attribute__((section(".xbss, bss, xmemory")));
+static fractional motor_controlHists[NUM_MOTOR_PIDS][3] __attribute__((section(".ybss, bss, ymemory")));
 #endif
 
 
@@ -105,8 +105,8 @@ void legCtrlSetup() {
 
     //Get maximum & saturation values
     //The factor of 2 is a quirk of the MicroChip PWM module, rising AND falling edges of PWM are counted
-    pwm_period = 2*tiGetPWMPeriod();  //calculation of this value is left to the module that configures the motor control peripheral
-    max_pwm = 2*tiGetPWMMax();
+    pwm_period = tiHGetPWMPeriod();  //calculation of this value is left to the module that configures the motor control peripheral
+    max_pwm = tiHGetPWMMax();
 
     //Setup for PID controllers
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
@@ -115,6 +115,7 @@ void legCtrlSetup() {
 #ifdef PID_HARDWARE
         //THe user is REQUIRED to set up these pointers before initializing
         //the object, because the arrays are local to this module.
+        
         motor_pidObjs[i].dspPID.abcCoefficients =
                 motor_abcCoeffs[i];
         motor_pidObjs[i].dspPID.controlHistory =
@@ -230,24 +231,26 @@ void updateBEMF() {
     //Offsets are subtracted later; currently, all readings will be > 0
 
     //Apply median filter
-    int i;
-    for (i = 0; i < NUM_MOTOR_PIDS; i++) {
-        bemfHist[i][2] = bemfHist[i][1]; //rotate first
-        bemfHist[i][1] = bemfHist[i][0];
-        bemfHist[i][0] = bemf[i]; //include newest value
-        bemf[i] = medianFilter3(bemfHist[i]); //Apply median filter
-    }
+    //int i;
+    //for (i = 0; i < NUM_MOTOR_PIDS; i++) {
+    //    bemfHist[i][2] = bemfHist[i][1]; //rotate first
+    //    bemfHist[i][1] = bemfHist[i][0];
+    //    bemfHist[i][0] = bemf[i]; //include newest value
+    //    bemf[i] = medianFilter3(bemfHist[i]); //Apply median filter
+    //}
 
 // IIR filter on BEMF: y[n] = 0.2 * y[n-1] + 0.8 * x[n]
-    bemf[0] = (2 * (long) bemfLast[0] / 10) + 8 * (long) bemf[0] / 10;
-    bemf[1] = (2 * (long) bemfLast[1] / 10) + 8 * (long) bemf[1] / 10;
+    //bemf[0] = (2 * (long) bemfLast[0] / 10) + 8 * (long) bemf[0] / 10;
+    //bemf[1] = (2 * (long) bemfLast[1] / 10) + 8 * (long) bemf[1] / 10;
     bemfLast[0] = bemf[0]; //bemfLast will not be used after here, OK to set
     bemfLast[1] = bemf[1];
 
     //Subtract offset
     //This is relevant for IP2.5, since the motors can go in forward and reverse
-    bemf[0] -= motor_pidObjs[0].inputOffset;
-    bemf[1] -= motor_pidObjs[1].inputOffset;
+    //  EXTRA NEGATIVE HERE is to make gains positive
+    //   TODO: Understand exactly why this is the case
+    bemf[0] = -(bemf[0] - motor_pidObjs[0].inputOffset);
+    bemf[1] = -(bemf[1] - motor_pidObjs[1].inputOffset);
     //*.bemf now should be in range (-415, 415)
     // See wiki for more details
 
@@ -298,7 +301,7 @@ void serviceMoveQueue(void) {
             currentMoveStart = getT1_ticks();
 
             ///// Steering settings from Move Queue
-            steeringSetInput(currentMove->steeringRate); //THIS TURNS THE STEERING ON!
+            steeringSetInput(currentMove->steeringRate); 
             if (currentMove->steeringType == STEERMODE_OFF) {
                 steeringOff();
             }
@@ -460,4 +463,9 @@ static void setInitialOffset() {
     Nop();
     Nop();
 
+}
+
+int legCtrlGetInput(unsigned int channel){
+    int idx = channel - 1;
+    return motor_pidObjs[idx].input;
 }
