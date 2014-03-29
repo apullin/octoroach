@@ -120,8 +120,8 @@ class Robot:
         self.motorGains = gains
         while not(self.motor_gains_set) and (tries <= retries):
             self.clAnnounce()
-            print "Setting motor gains...   ",tries,"/8"
-            self.tx( 0, command.SET_PID_GAINS, pack('10h',*gains))
+            print "Setting motor gains...   ",tries,"/",retries
+            self.tx( 0, command.SET_PID_GAINS, pack('15h',*gains))
             tries = tries + 1
             time.sleep(0.3)
         
@@ -164,7 +164,7 @@ class Robot:
         self.tx( 0, command.SPECIAL_TELEMETRY, pack('L',self.numSamples))
         
     def sendMoveQueue(self, moveq):
-        SEG_LENGTH = 9  #might be changed in the future
+        SEG_LENGTH = 10  #might be changed in the future
         
         n = moveq[0]
         if len(moveq[1:]) != n * SEG_LENGTH:
@@ -193,7 +193,7 @@ class Robot:
             packet = [numToSend]
             packet.extend(toSend)    #Full moveq format to be given to pack()
             #Actual TX
-            self.tx( 0, command.SET_MOVE_QUEUE, pack('=h'+numToSend*'hhLhhhhhh', *packet))
+            self.tx( 0, command.SET_MOVE_QUEUE, pack('=h'+numToSend*'hhhLhhhhhh', *packet))
             time.sleep(0.01)                #simple holdoff, probably not neccesary
             segments = segments[4:]         #remanining unsent ones
             toSend = segments[0:4]          #Due to python indexing, this could be from 1-4
@@ -235,9 +235,9 @@ class Robot:
             toSend = segments[0:4]          #Due to python indexing, this could be from 1-4
             pktCount = pktCount + 1
         
-    def setMotorSpeeds(self, spleft, spright):
-        thrust = [spleft, 0, spright, 0, 0]
-        self.tx( 0, command.SET_THRUST_CLOSED_LOOP, pack('5h',*thrust))
+    def setMotorSpeeds(self, spleft, spright, sp3):
+        thrust = [spleft, 0, spright, 0, sp3, 0, 0]
+        self.tx( 0, command.SET_THRUST_CLOSED_LOOP, pack('7h',*thrust))
 		
     def setTIH(self, channel, dc):
         thrust = [channel, dc]
@@ -311,7 +311,7 @@ class Robot:
         self.findFileName()
         self.writeFileHeader()
         fileout = open(self.dataFileName, 'a')
-        np.savetxt(fileout , np.array(self.imudata), '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f', delimiter = ',')
+        np.savetxt(fileout , np.array(self.imudata), '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f', delimiter = ',')
         fileout.close()
         self.clAnnounce()
         print "Telemtry data saved to", self.dataFileName

@@ -236,11 +236,14 @@ static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, u
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustClosedLoop, argsPtr, frame);
 
-    legCtrlSetInput(LEG_CTRL_LEFT, argsPtr->chan1);
-    legCtrlOnOff(LEG_CTRL_LEFT, PID_ON); //Motor PID #1 -> ON
+    legCtrlSetInput(OCTOROACH_LEG1_MOTOR_CHANNEL, argsPtr->chan1);
+    legCtrlOnOff(OCTOROACH_LEG1_MOTOR_CHANNEL, PID_ON); //Motor PID #1 -> ON
 
-    legCtrlSetInput(LEG_CTRL_RIGHT, argsPtr->chan2);
-    legCtrlOnOff(LEG_CTRL_RIGHT, PID_ON); //Motor PID #2 -> ON
+    legCtrlSetInput(OCTOROACH_LEG2_MOTOR_CHANNEL, argsPtr->chan2);
+    legCtrlOnOff(OCTOROACH_LEG2_MOTOR_CHANNEL, PID_ON); //Motor PID #2 -> ON
+    
+    legCtrlSetInput(TAYLROACH_TAIL_MOTOR_CHANNELC, argsPtr->chan2);
+    legCtrlOnOff(TAYLROACH_TAIL_MOTOR_CHANNELC, PID_ON); //Motor PID #2 -> ON
 }
 
 static void cmdSetPIDGains(unsigned char status, unsigned char length, unsigned char *frame) {
@@ -249,6 +252,7 @@ static void cmdSetPIDGains(unsigned char status, unsigned char length, unsigned 
 
     legCtrlSetGains(0, argsPtr->Kp1, argsPtr->Ki1, argsPtr->Kd1, argsPtr->Kaw1, argsPtr->Kff1);
     legCtrlSetGains(1, argsPtr->Kp2, argsPtr->Ki2, argsPtr->Kd2, argsPtr->Kaw2, argsPtr->Kff2);
+    legCtrlSetGains(2, argsPtr->Kp2, argsPtr->Ki2, argsPtr->Kd2, argsPtr->Kaw2, argsPtr->Kff2);
 
     //Send confirmation packet, which is the exact same data payload as what was sent
     //Note that the destination is the hard-coded RADIO_DST_ADDR
@@ -332,6 +336,8 @@ static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigne
     paySetStatus(pld, 0);
     
     while(!radioEnqueueTxPacket(response)) { radioProcess(); }
+
+    delay_ms(20);
 
 #ifndef __DEBUG
     __asm__ volatile ("reset");

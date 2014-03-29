@@ -18,7 +18,7 @@ enum tailSegT{
 
 typedef struct
 {
-    float angle; 
+    int velocity;
     unsigned long duration;
     enum tailSegT type;
     int params[3];

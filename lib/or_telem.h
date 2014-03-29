@@ -4,8 +4,9 @@
 
 // Data structure type
 typedef struct {
-    int inputL;
-    int inputR;
+    int input1;
+    int input2;
+    int input3;
     int dcA;
     int dcB;
     int dcC;

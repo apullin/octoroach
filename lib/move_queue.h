@@ -20,7 +20,7 @@ enum moveSegT{
 
 typedef struct
 {
-	int inputL, inputR;
+	int inputs[3];
 	unsigned long duration;
 	enum moveSegT type;
 	int params[3];

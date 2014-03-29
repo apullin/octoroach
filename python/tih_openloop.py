@@ -36,11 +36,10 @@ def main():
     #Verify all robots can be queried
     verifyAllQueried()  #exits on failure
 
-    R1.setTIH(1,600)
-    R1.setTIH(2,0)
-    raw_input()
-    R1.setTIH(1,0)
-    R1.setTIH(2,0)
+    R1.setTIH(3,1000)
+    time.sleep(1)
+    R1.setTIH(3,0)
+
 
     if EXIT_WAIT:  #Pause for a Ctrl + Cif specified
         while True:

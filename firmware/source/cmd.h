@@ -82,6 +82,8 @@ typedef struct{
         unsigned int runtime1;
         int chan2;
         unsigned int runtime2;
+        int chan3;
+        unsigned int runtime3;
         unsigned int telem_samples;
 } _args_cmdSetThrustClosedLoop;
 
@@ -89,6 +91,7 @@ typedef struct{
 typedef struct{
 	int Kp1, Ki1, Kd1, Kaw1, Kff1;
 	int Kp2, Ki2, Kd2, Kaw2, Kff2;
+        int Kp3, Ki3, Kd3, Kaw3, Kff3;
 } _args_cmdSetPIDGains;
 
 //cmdGetPIDTelemetry
@@ -108,7 +111,7 @@ typedef struct{
 //NOTE: This is not for the entire packet, just for one moveQ items,
 // the cmd handler will stride across the packet, unpacking these
 typedef struct{
-	int inputL, inputR;
+	int inputs[3];
 	unsigned long duration;
 	enum moveSegT type;
 	int params[3];

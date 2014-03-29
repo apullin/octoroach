@@ -21,7 +21,7 @@ pktFormat = { \
     command.TX_SAVED_STATE_DATA:    'l3f', \
     command.SET_THRUST_OPEN_LOOP:   '', \
     command.SET_THRUST_CLOSED_LOOP: '', \
-    command.SET_PID_GAINS:          '10h', \
+    command.SET_PID_GAINS:          '15h', \
     command.GET_PID_TELEMETRY:      '', \
     command.SET_CTRLD_TURN_RATE:    '=h', \
     command.SET_MOVE_QUEUE:         '', \

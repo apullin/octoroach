@@ -104,7 +104,6 @@ void legCtrlSetup() {
     int i;
 
     //Get maximum & saturation values
-    //The factor of 2 is a quirk of the MicroChip PWM module, rising AND falling edges of PWM are counted
     pwm_period = tiHGetPWMPeriod();  //calculation of this value is left to the module that configures the motor control peripheral
     max_pwm = tiHGetPWMMax();
 
@@ -134,6 +133,7 @@ void legCtrlSetup() {
     //Set which PWM output each PID Object will correspond to
     legCtrlOutputChannels[0] = OCTOROACH_LEG1_MOTOR_CHANNEL;
     legCtrlOutputChannels[1] = OCTOROACH_LEG2_MOTOR_CHANNEL;
+    legCtrlOutputChannels[2] = TAYLROACH_TAIL_MOTOR_CHANNELC;
 
     SetupTimer1(); // Timer 1 @ 1 Khz
     int retval;
@@ -142,8 +142,7 @@ void legCtrlSetup() {
     //Move Queue setup and initialization
     moveq = mqInit(32);
     idleMove = malloc(sizeof (moveCmdStruct));
-    idleMove->inputL = 0;
-    idleMove->inputR = 0;
+    idleMove->inputs[0] = 0; idleMove->inputs[1] = 0; idleMove->inputs[2] = 0;
     idleMove->duration = 0;
     idleMove->type = MOVE_SEG_IDLE;
     idleMove->params[0] = 0;
@@ -165,8 +164,10 @@ void legCtrlSetup() {
     //External function used here since it will zero out the state
     pidSetInput(&(motor_pidObjs[0]), 0);
     pidSetInput(&(motor_pidObjs[1]), 0);
+    pidSetInput(&(motor_pidObjs[2]), 0);
     motor_pidObjs[0].onoff = PID_OFF;
     motor_pidObjs[1].onoff = PID_OFF;
+    motor_pidObjs[2].onoff = PID_OFF;
 
     //Set up filters and histories
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
@@ -228,6 +229,7 @@ void updateBEMF() {
     //This assignment here is arbitrary.
     bemf[0] = adcGetMotorA();
     bemf[1] = adcGetMotorB();
+    bemf[2] = adcGetMotorC();
     //Offsets are subtracted later; currently, all readings will be > 0
 
     //Apply median filter
@@ -244,6 +246,7 @@ void updateBEMF() {
     //bemf[1] = (2 * (long) bemfLast[1] / 10) + 8 * (long) bemf[1] / 10;
     bemfLast[0] = bemf[0]; //bemfLast will not be used after here, OK to set
     bemfLast[1] = bemf[1];
+    bemfLast[2] = bemf[2];
 
     //Subtract offset
     //This is relevant for IP2.5, since the motors can go in forward and reverse
@@ -251,6 +254,7 @@ void updateBEMF() {
     //   TODO: Understand exactly why this is the case
     bemf[0] = -(bemf[0] - motor_pidObjs[0].inputOffset);
     bemf[1] = -(bemf[1] - motor_pidObjs[1].inputOffset);
+    bemf[2] = -(bemf[2] - motor_pidObjs[2].inputOffset);
     //*.bemf now should be in range (-415, 415)
     // See wiki for more details
 
@@ -314,6 +318,7 @@ void serviceMoveQueue(void) {
             if (currentMove->type != MOVE_SEG_IDLE) {
                 motor_pidObjs[0].onoff = PID_ON;
                 motor_pidObjs[1].onoff = PID_ON;
+                motor_pidObjs[2].onoff = PID_ON;
             }
         }
     }//Move Queue is empty
@@ -325,6 +330,8 @@ void serviceMoveQueue(void) {
         motor_pidObjs[0].onoff = PID_OFF;
         pidSetInput(&(motor_pidObjs[1]), 0);
         motor_pidObjs[1].onoff = PID_OFF;
+        pidSetInput(&(motor_pidObjs[2]), 0);
+        motor_pidObjs[2].onoff = PID_OFF;
         moveExpire = 0;
         inMotion = 0; //for sleep, synthesis
         steeringOff();
@@ -332,69 +339,41 @@ void serviceMoveQueue(void) {
 }
 
 static void moveSynth() {
+
+    //////////////
     //Move segment synthesis
-    long ySL = currentMove->inputL; //store in local variable to limit lookups
-    long ySR = currentMove->inputR; // "
-    int yL = 0;
-    int yR = 0;
 
-    if (inMotion) {
-        if (currentMove->type == MOVE_SEG_IDLE) {
-            yL = 0;
-            yR = 0;
-        }
-        if (currentMove->type == MOVE_SEG_CONSTANT) {
-            yL = ySL;
-            yR = ySR;
+    int i;
+    for (i = 0; i < NUM_MOTOR_PIDS; i++) {
+        long yinitial = currentMove->inputs[i];
+        int y = 0;
 
-        }
-
-        if (currentMove->type == MOVE_SEG_RAMP) {
-            long rateL = (long) currentMove->params[0];
-            long rateR = (long) currentMove->params[1];
-            //Do division last to prevent integer math underflow
-            yL = rateL * ((long) getT1_ticks() - (long) currentMoveStart) / 1000 + ySL;
-            yR = rateR * ((long) getT1_ticks() - (long) currentMoveStart) / 1000 + ySR;
-        }
-        if (currentMove->type == MOVE_SEG_SIN) {
-            //float temp = 1.0/1000.0;
-            float amp = (float) currentMove->params[0];
-            //float F = (float)currentMove->params[1] / 1000;
-            float F = (float) currentMove->params[1] * 0.001;
-#define BAMS16_TO_FLOAT 1/10430.367658761737
-            float phase = BAMS16_TO_FLOAT * (float) currentMove->params[2]; //binary angle
-            //Must be very careful about underflow & overflow here!
-            float fyL = amp * sin(2 * 3.1415 * F * (float) (getT1_ticks() - currentMoveStart)*0.001 - phase) + ySL;
-            float fyR = amp * sin(2 * 3.1415 * F * (float) (getT1_ticks() - currentMoveStart)*0.001 - phase) + ySR;
-
-
-            //fractional arg = 2*(long)F*((long)getT1_ticks()-(long)currentMoveStart) *
-            //fractional temp = _Q15sinPI(arg);
-            //fractional wave = (int)((long)temp*(long)amp >> 15);
-
-            //Clipping
-            int temp = (int) fyL;
-            if (temp < 0) {
-                temp = 0;
+        if (inMotion) {
+            if (currentMove->type == MOVE_SEG_IDLE) {
+                y = 0;
             }
-            yL = (unsigned int) temp;
-            temp = (int) fyR;
-            if (temp < 0) {
-                temp = 0;
+            if (currentMove->type == MOVE_SEG_CONSTANT) {
+                y = yinitial;
             }
-            yR = (unsigned int) temp;
-            //unsigned int yL = amp*sin(arg) + ySL;
-        }
+            if (currentMove->type == MOVE_SEG_RAMP) {
+                long rate = (long) currentMove->params[i];
+                //Do division last to prevent integer math underflow
+                y = rate * ((long) getT1_ticks() - (long) currentMoveStart) / 1000 + yinitial;
+            }
+            if (currentMove->type == MOVE_SEG_SIN) {
+                //nothing, currently
+            }
 
-        //Transfer calculated setpoints to the controllers
-      motor_pidObjs[0].input = yL;
-      motor_pidObjs[1].input = yR;
+            //Transfer calculated setpoints to the controllers
+            motor_pidObjs[i].input = y;
+            //Note: NOT using pidSetInput here because we want to preserve the controller state!
+        }
 
     }
+
     //Note here that pidObjs[n].input is not set if !inMotion, in case another behavior wants to
     // set it.
 }
-
 
 
 //Poor implementation of a median filter for a 3-array of values
@@ -447,16 +426,15 @@ static void setInitialOffset() {
     delay_ms(10);
 
     //Accumulate 8 readings to average out
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 32; i++) {
         offsets[0] += adcGetMotorA();
         offsets[1] += adcGetMotorB();
-        Nop();
-        Nop();
+        offsets[2] += adcGetMotorB();
         delay_ms(2);
     }
 
     for(i = 0; i<NUM_MOTOR_PIDS; i++){
-        offsets[i] = offsets[i] >> 3; // fast div by 8
+        offsets[i] = offsets[i] >> 5; // fast div by 8
         motor_pidObjs[i].inputOffset = offsets[i]; //store
     }
 

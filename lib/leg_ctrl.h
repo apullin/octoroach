@@ -3,14 +3,8 @@
 #ifndef __LEG_CTRL_H
 #define __LEG_CTRL_H
 
-#define NUM_MOTOR_PIDS 2
-
-// These defines will make a correspondance for other modules calling the
-// functions below that take in a "num" for a given motor.
-//motor_pidObjs[0] --> Left Legs
-//motor_pidObjs[1] --> Right legs
-#define LEG_CTRL_LEFT  0
-#define LEG_CTRL_RIGHT 1
+//MAST 2014 TAYLROACH hack, run tail in velocity control mode like another set of legs
+#define NUM_MOTOR_PIDS 3
 
 //Default gains
 #ifdef PID_SOFTWARE

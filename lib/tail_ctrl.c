@@ -2,15 +2,11 @@
 
 #include "tail_ctrl.h"
 #include "pid.h"
-//#include "motor_ctrl.h"
 #include "timer.h"
 #include "tail_queue.h"
 #include "math.h"
 #include "sys_service.h"
 #include "move_queue.h"
-//#include "ams-enc.h"
-#include "motor_ctrl.h"
-#include "gyro.h"
 #include "dfilter_avg.h"
 #include "imu.h"
 #include <stdlib.h> // for malloc
@@ -49,19 +45,9 @@ fractional tail_controlHists[3] __attribute__((section(".ybss, bss, ymemory")));
 TailQueue tailq;
 tailCmdT currentTail, idleTail;
 unsigned long currentTailStart, tailExpire;
-float lastTailPos;
-float tailTorque = 0.0;
 
-float bodyPosDeadband = 5.0;
-float bodyPosition = 0.0;
-//float dt = 0.001;
-// how do I get this from python
-float refBodyPosition = 0.0;
-float initialBodyPosition = 0.0;
-int gyroCtrlTorque;
-int tailCtrlFlag = 0;
-
- 
+static int pwm_period;
+static int max_pwm;
 
 //Function to be installed into T1, and setup function
 static void SetupTimer1(void);
@@ -71,15 +57,12 @@ static void serviceTailQueue(void);
 static void tailSynth();
 static void serviceTailPID();
 
+int tailCtrlOutputChannel = TAYLROACH_TAIL_MOTOR_CHANNELC;
+
 //volatile char tailInMotion;
 
 /////////        Leg Control ISR       ////////
 /////////  Installed to Timer1 @ 1Khz  ////////
-//void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
-
-
-
-
 static void tailCtrlServiceRoutine(void) {
     serviceTailQueue(); //Update controllers
     tailSynth();
@@ -105,17 +88,17 @@ static void SetupTimer1(void) {
 ////////////////////////////////////////////////////////////
 
 
-
-
 void tailCtrlSetup() {
 
     SetupTimer1(); // Timer 1 @ 1 Khz
-    
+
+    pwm_period = tiHGetPWMPeriod();  //calculation of this value is left to the module that configures the motor control peripheral
+    max_pwm = tiHGetPWMMax();
 
     //Tail queue
-    tailq = tailqInit(16);
+    tailq = tailqInit(8);
     idleTail = malloc(sizeof (tailCmdStruct));
-    idleTail->angle = 0.0;
+    idleTail->velocity = 0;
     idleTail->duration = 0;
     idleTail->type = TAIL_SEG_IDLE;
     idleTail->params[0] = 0;
@@ -132,10 +115,10 @@ void tailCtrlSetup() {
 #endif
     pidInitPIDObj(&tailPID, TAIL_DEFAULT_KP, TAIL_DEFAULT_KI,
             TAIL_DEFAULT_KD, TAIL_DEFAULT_KAW, TAIL_DEFAULT_KFF);
-    tailPID.satValPos = 32767;
-    tailPID.satValNeg = -32768;
-    tailPID.maxVal = 32767;
-    tailPID.minVal = -32768;
+    tailPID.satValPos = max_pwm;
+    tailPID.satValNeg = -max_pwm;
+    tailPID.maxVal = pwm_period;
+    tailPID.minVal = -pwm_period;
 
     tailPID.onoff = PID_ON;
 
@@ -270,15 +253,13 @@ void tailCtrlSetInput(int val){
     pidSetInput(&tailPID, val);
 }
 
-
-
 static void serviceTailPID() {
 
-	//update tail position
-	//lastTailPos = encGetFloatPos(4);
-	
-	int encAngle = (int) (lastTailPos*10.0);
-	//Update the setpoints
+    //update tail position
+    //lastTailPos = encGetFloatPos(4);
+
+    int encAngle = (int) (lastTailPos * 10.0);
+    //Update the setpoints
     //if((currentMove->inputL != 0) && (currentMove->inputR != 0)){
     if (currentTail != idleTail) {
         //Only update steering controller if we are in motion
@@ -291,30 +272,29 @@ static void serviceTailPID() {
         temp = tailPID.input; //Save unscaled input val
         tailPID.input *= TAIL_PID_SCALER; //Scale input
         pidUpdate(&tailPID,
-                 TAIL_PID_SCALER * encAngle); //Update with scaled feedback, sets tailPID.output
-       tailPID.input = temp;  //Reset unscaled input
-		
+                TAIL_PID_SCALER * encAngle); //Update with scaled feedback, sets tailPID.output
+        tailPID.input = temp; //Reset unscaled input
+
 
 #endif   //PID_SOFTWWARE vs PID_HARDWARE
 
-	
-	}
-	else {
-		tailPID.output = 0; //no output if idling
+
+    } else {
+        tailPID.output = 0; //no output if idling
     }
 
-	tailTorque = tailPID.output*PIDOUT2HBRIDGETORQUE;
+    tailTorque = tailPID.output*PIDOUT2HBRIDGETORQUE;
 
-	if(tailTorque > 100.0) {
-		tailTorque = 100.0;
-	}
+    if (tailTorque > 100.0) {
+        tailTorque = 100.0;
+    }
 
-	if(tailTorque < -100.0) {
-		tailTorque = -100.0;
-	}
+    if (tailTorque < -100.0) {
+        tailTorque = -100.0;
+    }
 
-	
-	if (tailCtrlFlag == 1) {
+
+    if (tailCtrlFlag == 1) {
 
         // HOW DO I DO THIS "AND" CORRECTLY IN C
 
