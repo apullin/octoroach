@@ -20,8 +20,11 @@ EXIT_WAIT   = False
 
 MAXTHROT = 100
 
+BUTTON_Y = 3
+BUTTON_B = 1
 BUTTON_L1 = 4
 BUTTON_R1 = 5
+
 
 def main():
     global MAXTHROT
@@ -29,7 +32,7 @@ def main():
     shared.xb = xb
     
     R1 = Robot('\x20\x52', xb)
-    #R1 = Robot('\x20\x27', xb)
+
     shared.ROBOTS = [R1]
 
     if RESET_ROBOT:
@@ -37,7 +40,7 @@ def main():
         R1.reset()
         time.sleep(0.5)
 
-    motorgains = [15000,100,0,0,10 , 15000,5,0,0,10]
+    motorgains = [20000,100,0,0,10 , 20000,100,0,0,10]
     #motorgains = [25000,50,0,0,25,    25000,50,0,0,25]
 
     R1.setMotorGains(motorgains, retries = 8)
@@ -64,27 +67,60 @@ def main():
             pygame.event.pump()
             
             thrustInput = -j.get_axis(1)
-            turnInput = -j.get_axis(2)
+            turnInput = -j.get_axis(4)
             
-            if j.get_button(BUTTON_L1) == 1 and MAXTHROT > 0:
+            if j.get_button(BUTTON_B) == 1 and MAXTHROT > 0:
                 MAXTHROT = MAXTHROT - tinc
-            elif j.get_button(BUTTON_R1) ==1 and MAXTHROT < 950:
+            elif j.get_button(BUTTON_Y) ==1 and MAXTHROT < 416:
                 MAXTHROT = MAXTHROT + tinc
+            
+            #TAIL FLICK
+            ## Hard:
+            tailOutPWM = 4000
+            tailOutTime = 0.07
+            tailStopPWM = -1500
+            tailStopTime = 0.04
+            ## Soft:
+            #tailOutPWM = 1000
+            #tailOutTime = 0.07
+            #tailStopPWM = -300
+            #tailStopTime = 0.04
+            if j.get_button(BUTTON_L1) == 1:
+                #Tail flick right
+                print "TAIL FLICK RIGHT"
+                R1.setTIH(3,tailOutPWM)
+                time.sleep(tailOutTime)
+                R1.setTIH(3,tailStopPWM)
+                time.sleep(tailStopTime)
+                R1.setTIH(3,0)
+            if j.get_button(BUTTON_R1) == 1:
+                print "TAIL FLICK LEFT"
+                #Tail flick left
+                R1.setTIH(3,-tailOutPWM)
+                time.sleep(tailOutTime)
+                R1.setTIH(3,-tailStopPWM)
+                time.sleep(tailStopTime)
+                R1.setTIH(3,0)
             
             DEADBAND = 0.05
             if abs(turnInput) < DEADBAND:
                 turnInput = 0
-            if (abs(thrustInput) < DEADBAND) or (thrustInput < 0):
+            if (abs(thrustInput) < DEADBAND):
                 thrustInput = 0
             
-            
-            left_throt = int((1-turnInput) * MAXTHROT * thrustInput )
-            right_throt = int((1+turnInput) * MAXTHROT * thrustInput )
+            left_throt = int(-turnInput * MAXTHROT + MAXTHROT*thrustInput )
+            right_throt = int(turnInput * MAXTHROT + MAXTHROT*thrustInput )
+            #left_throt = int((1-turnInput) * MAXTHROT * thrustInput )
+            #right_throt = int((1+turnInput) * MAXTHROT * thrustInput )
             
             if left_throt > MAXTHROT:
                 left_throt = MAXTHROT
+            if left_throt < -MAXTHROT:
+                left_throt = -MAXTHROT
             if right_throt > MAXTHROT:
                 right_throt = MAXTHROT
+            if right_throt < -MAXTHROT:
+                right_throt = -MAXTHROT
             
             sys.stdout.write(" "*60 + "\r")
             sys.stdout.flush()
@@ -95,10 +131,10 @@ def main():
             
             throt = [left_throt,right_throt]
             if throt != lastthrot: #Only send new packet if throttles have changed
-                R1.setMotorSpeeds(left_throt, right_throt)
+                #R1.setMotorSpeeds(left_throt, right_throt)
                 lastthrot = throt
                 
-            time.sleep(0.2)
+            time.sleep(0.1)
 
 
 def setupJoystick():
