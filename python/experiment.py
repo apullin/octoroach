@@ -55,7 +55,7 @@ def main():
 
     #Steering gains format:
     #  [ Kp , Ki , Kd , Kaw , Kff]
-    steeringGains = [5000,5,0,0,0,  STEER_MODE_SPLIT] # Hardware PID
+    steeringGains = [0,0,0,0,0,  STEER_MODE_OFF] # Hardware PID
 
     R1.setSteeringGains(steeringGains, retries = 4)
     #Verify all robots have steering gains set
@@ -108,9 +108,9 @@ def main():
     #    85, 85, 6500,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*160.0)),
     #    85, 85, 6200,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*240.0))]
     
-    numMoves = 1
-    moveq1 = [numMoves, \
-        40, 40, 2000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
+    #numMoves = 1
+    #moveq1 = [numMoves, \
+    #    40, 40, 2000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
     
     #No movements, just for static telemetry capture
     #numMoves = 1
@@ -118,7 +118,7 @@ def main():
     #    0, 0, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
      
     #trapezoidal velocity profile
-    #[numMoves, moveq1] = trapRun(topspeed = 300, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_YAW_SPLIT)
+    [numMoves, moveq1] = trapRun(topspeed = 150, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_OFF)
     
 
     #Timing settings
@@ -151,6 +151,17 @@ def main():
     #Send the move queue to the robot; robot will start processing it
     #as soon as it is received
     R1.sendMoveQueue(moveq1)
+    
+    
+    #
+    print "--------- BEGIN TAIL SECTION -----------"
+    time.sleep(1000/1000.0)
+    tailOutPWM = 4000
+    tailOutTime = 0.15
+    R1.setTIH(3,-tailOutPWM)
+    time.sleep(tailOutTime) #No negative pulse, worm gear stops tail
+    R1.setTIH(3,0)
+    
     
     if SAVE_DATA1:
         maxtime = 0

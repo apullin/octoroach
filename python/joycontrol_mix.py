@@ -40,7 +40,7 @@ def main():
         R1.reset()
         time.sleep(0.5)
 
-    motorgains = [20000,100,0,0,10 , 20000,100,0,0,10]
+    motorgains = [15000,1000,500,0,0,    15000,1000,500,0,0]
     #motorgains = [25000,50,0,0,25,    25000,50,0,0,25]
 
     R1.setMotorGains(motorgains, retries = 8)
@@ -74,33 +74,62 @@ def main():
             elif j.get_button(BUTTON_Y) ==1 and MAXTHROT < 416:
                 MAXTHROT = MAXTHROT + tinc
             
-            #TAIL FLICK
-            ## Hard:
-            tailOutPWM = 4000
-            tailOutTime = 0.07
-            tailStopPWM = -1500
-            tailStopTime = 0.04
-            ## Soft:
-            #tailOutPWM = 1000
-            #tailOutTime = 0.07
-            #tailStopPWM = -300
-            #tailStopTime = 0.04
-            if j.get_button(BUTTON_L1) == 1:
-                #Tail flick right
-                print "TAIL FLICK RIGHT"
-                R1.setTIH(3,tailOutPWM)
-                time.sleep(tailOutTime)
-                R1.setTIH(3,tailStopPWM)
-                time.sleep(tailStopTime)
-                R1.setTIH(3,0)
-            if j.get_button(BUTTON_R1) == 1:
-                print "TAIL FLICK LEFT"
-                #Tail flick left
-                R1.setTIH(3,-tailOutPWM)
-                time.sleep(tailOutTime)
-                R1.setTIH(3,-tailStopPWM)
-                time.sleep(tailStopTime)
-                R1.setTIH(3,0)
+            ######### Tail Flick ##########
+            
+            WORM_GEAR_TAIL = True
+            
+            if WORM_GEAR_TAIL:
+                #TAIL FLICK
+                tailOutPWM = 4000
+                tailOutTime = 0.08
+                if j.get_button(BUTTON_L1) == 1:
+                    #Tail flick right
+                    print "TAIL FLICK RIGHT"
+                    R1.setTIH(3,tailOutPWM)
+                    time.sleep(tailOutTime) #No negative pulse, worm gear stops tail
+                    R1.setTIH(3,0)
+                if j.get_button(BUTTON_R1) == 1:
+                    print "TAIL FLICK LEFT"
+                    #Tail flick left
+                    R1.setTIH(3,-tailOutPWM)
+                    time.sleep(tailOutTime) #No negative pulse, worm gear stops tail
+                    R1.setTIH(3,0)
+            
+            if not WORM_GEAR_TAIL:
+                #TAIL FLICK
+                ## Hard:
+                #tailOutPWM = 4000
+                #tailOutTime = 0.07
+                #tailStopPWM = -1500
+                #tailStopTime = 0.04
+                ## Medium:
+                tailOutPWM = 4000
+                tailOutTime = 0.07
+                tailStopPWM = -3000
+                tailStopTime = 0.04
+                ## Soft:
+                #tailOutPWM = 1000
+                #tailOutTime = 0.07
+                #tailStopPWM = -300
+                #tailStopTime = 0.04
+                if j.get_button(BUTTON_L1) == 1:
+                    #Tail flick right
+                    print "TAIL FLICK RIGHT"
+                    R1.setTIH(3,tailOutPWM)
+                    time.sleep(tailOutTime)
+                    R1.setTIH(3,tailStopPWM)
+                    time.sleep(tailStopTime)
+                    R1.setTIH(3,0)
+                if j.get_button(BUTTON_R1) == 1:
+                    print "TAIL FLICK LEFT"
+                    #Tail flick left
+                    R1.setTIH(3,-tailOutPWM)
+                    time.sleep(tailOutTime)
+                    R1.setTIH(3,-tailStopPWM)
+                    time.sleep(tailStopTime)
+                    R1.setTIH(3,0)
+            
+            
             
             DEADBAND = 0.05
             if abs(turnInput) < DEADBAND:
@@ -110,8 +139,6 @@ def main():
             
             left_throt = int(-turnInput * MAXTHROT + MAXTHROT*thrustInput )
             right_throt = int(turnInput * MAXTHROT + MAXTHROT*thrustInput )
-            #left_throt = int((1-turnInput) * MAXTHROT * thrustInput )
-            #right_throt = int((1+turnInput) * MAXTHROT * thrustInput )
             
             if left_throt > MAXTHROT:
                 left_throt = MAXTHROT
@@ -131,10 +158,10 @@ def main():
             
             throt = [left_throt,right_throt]
             if throt != lastthrot: #Only send new packet if throttles have changed
-                #R1.setMotorSpeeds(left_throt, right_throt)
+                R1.setMotorSpeeds(left_throt, right_throt)
                 lastthrot = throt
                 
-            time.sleep(0.1)
+            time.sleep(0.150)
 
 
 def setupJoystick():
