@@ -127,8 +127,8 @@ void legCtrlSetup() {
         //Set max and saturation values
         motor_pidObjs[i].satValPos = max_pwm;
         motor_pidObjs[i].satValNeg = -max_pwm;
-        motor_pidObjs[i].maxVal = pwm_period;
-        motor_pidObjs[i].minVal = -pwm_period;
+        motor_pidObjs[i].maxVal = 2*pwm_period; //dsPIC PWM module specific, pwm counts on up and down edge
+        motor_pidObjs[i].minVal = -2*pwm_period;
     }
 
     //Set which PWM output each PID Object will correspond to
@@ -236,14 +236,8 @@ void updateBEMF() {
     //    bemfHist[i][2] = bemfHist[i][1]; //rotate first
     //    bemfHist[i][1] = bemfHist[i][0];
     //    bemfHist[i][0] = bemf[i]; //include newest value
-    //    bemf[i] = medianFilter3(bemfHist[i]); //Apply median filter
-    //}
-
-// IIR filter on BEMF: y[n] = 0.2 * y[n-1] + 0.8 * x[n]
-    //bemf[0] = (2 * (long) bemfLast[0] / 10) + 8 * (long) bemf[0] / 10;
-    //bemf[1] = (2 * (long) bemfLast[1] / 10) + 8 * (long) bemf[1] / 10;
-    bemfLast[0] = bemf[0]; //bemfLast will not be used after here, OK to set
-    bemfLast[1] = bemf[1];
+        //bemf[i] = medianFilter3(bemfHist[i]); //Apply median filter
+   // }
 
     //Subtract offset
     //This is relevant for IP2.5, since the motors can go in forward and reverse
@@ -251,8 +245,33 @@ void updateBEMF() {
     //   TODO: Understand exactly why this is the case
     bemf[0] = -(bemf[0] - motor_pidObjs[0].inputOffset);
     bemf[1] = -(bemf[1] - motor_pidObjs[1].inputOffset);
-    //*.bemf now should be in range (-415, 415)
+    //bemf now should be in range (-415, 415)
     // See wiki for more details
+
+    // IIR filter on BEMF: y[n] = 0.2 * y[n-1] + 0.8 * x[n]
+    bemf[0] = (5 * (long) bemfLast[0] / 10) + 5 * (long) bemf[0] / 10;
+    bemf[1] = (5 * (long) bemfLast[1] / 10) + 5 * (long) bemf[1] / 10;
+    bemfLast[0] = bemf[0]; //bemfLast will not be used after here, OK to set
+    bemfLast[1] = bemf[1];
+
+    //BEMF deadband
+    // This is a hack for MAST 2014 demo
+    // Currently, the legs seem to drift all the time.
+
+    int bemftemp[2];
+    bemftemp[0] = ABS(bemf[0]);
+    bemftemp[1] = ABS(bemf[1]);
+    Nop();
+    Nop();
+
+#define BEMF_DEADBAND 7
+    if(bemftemp[0] <= BEMF_DEADBAND){
+        bemf[0] = 0;
+    }
+    if(bemftemp[1] <= BEMF_DEADBAND){
+        bemf[1] = 0;
+    }
+
 
     //Simple indicator if a leg is "in motion", via the yellow LED.
     //Not functionally necceasry; can be elimited to use the LED for something else.

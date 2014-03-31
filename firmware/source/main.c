@@ -64,16 +64,12 @@ int main(void) {
     radioSetChannel(RADIO_CHANNEL);
     radioSetSrcPanID(RADIO_PAN_ID);
     radioSetSrcAddr(RADIO_SRC_ADDR);
-    
-    dfmemSetup();
 
     mpuSetup();
     tiHSetup();
     adcSetup();
 
-    dfmemSetup();
-    telemSetup();
-    //pidSetup();
+    //dfmemSetup();
 
     telemSetup(); //Timer 5
     
@@ -84,7 +80,7 @@ int main(void) {
     //olVibeSetup();
 
     legCtrlSetup(); // Timer 1
-    //steeringSetup(); //Timer 5
+    steeringSetup(); //Timer 5
 
     //Tail control is a special case
     //tailCtrlSetup();
