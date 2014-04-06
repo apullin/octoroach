@@ -69,6 +69,8 @@ def main():
             thrustInput = -j.get_axis(1)
             turnInput = -j.get_axis(4)
             
+            turnInput = turnInput * 0.8
+            
             if j.get_button(BUTTON_B) == 1 and MAXTHROT > 0:
                 MAXTHROT = MAXTHROT - tinc
             elif j.get_button(BUTTON_Y) ==1 and MAXTHROT < 416:
@@ -81,7 +83,7 @@ def main():
             if WORM_GEAR_TAIL:
                 #TAIL FLICK
                 tailOutPWM = 4000
-                tailOutTime = 0.08
+                tailOutTime = 0.09
                 if j.get_button(BUTTON_L1) == 1:
                     #Tail flick right
                     print "TAIL FLICK RIGHT"
@@ -98,15 +100,15 @@ def main():
             if not WORM_GEAR_TAIL:
                 #TAIL FLICK
                 ## Hard:
-                #tailOutPWM = 4000
-                #tailOutTime = 0.07
-                #tailStopPWM = -1500
-                #tailStopTime = 0.04
-                ## Medium:
                 tailOutPWM = 4000
                 tailOutTime = 0.07
-                tailStopPWM = -3000
+                tailStopPWM = -1500
                 tailStopTime = 0.04
+                ## Medium:
+                #tailOutPWM = 4000
+                #tailOutTime = 0.07
+                #tailStopPWM = -3000
+                #tailStopTime = 0.04
                 ## Soft:
                 #tailOutPWM = 1000
                 #tailOutTime = 0.07

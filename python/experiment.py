@@ -118,7 +118,7 @@ def main():
     #    0, 0, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
      
     #trapezoidal velocity profile
-    [numMoves, moveq1] = trapRun(topspeed = 150, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_OFF)
+    [numMoves, moveq1] = trapRun(topspeed = 150, tstime = 2200, acceltime=1500, deceltime=750,steertype = STEER_MODE_OFF)
     
 
     #Timing settings
@@ -139,6 +139,19 @@ def main():
     raw_input("  Press ENTER to start run ...")
     print ""
     
+    print "TAIL PREP"
+    R1.setTIH(3,1500)
+    time.sleep(0.5) #No negative pulse, worm gear stops tail
+    R1.setTIH(3,0)
+    R1.setTIH(3,1500)
+    time.sleep(0.5) #No negative pulse, worm gear stops tail
+    R1.setTIH(3,0)
+    R1.setTIH(3,1500)
+    time.sleep(0.5) #No negative pulse, worm gear stops tail
+    R1.setTIH(3,0)
+    
+    raw_input("  Press ENTER to start run ...")
+    
     # Trigger telemetry save, which starts as soon as it is received
     
     #### Make when saving anything, this if is set ####
@@ -148,6 +161,7 @@ def main():
         R1.startTelemetrySave()
         
     time.sleep(R1.leadinTime / 1000.0)
+    time.sleep(1.0)
     #Send the move queue to the robot; robot will start processing it
     #as soon as it is received
     R1.sendMoveQueue(moveq1)
@@ -155,9 +169,9 @@ def main():
     
     #
     print "--------- BEGIN TAIL SECTION -----------"
-    time.sleep(1000/1000.0)
+    time.sleep(2000/1000.0)
     tailOutPWM = 4000
-    tailOutTime = 0.15
+    tailOutTime = 0.12
     R1.setTIH(3,-tailOutPWM)
     time.sleep(tailOutTime) #No negative pulse, worm gear stops tail
     R1.setTIH(3,0)
