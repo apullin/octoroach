@@ -62,16 +62,17 @@ static void imuISRHandler() {
 
     int gyroData[3];
     int xlData[3];
-//CRITICAL_SECTION_START
+
 #if defined (__IMAGEPROC24)
             /////// Get Gyro data and calc average via filter
             gyroReadXYZ(); //bad design of gyro module; todo: humhu
     gyroGetIntXYZ(gyroData);
 #elif defined (__IMAGEPROC25)
+    mpuBeginUpdate();
     mpuGetGyro(gyroData);
     mpuGetXl(xlData);
 #endif
-//CRITICAL_SECTION_END
+
 
     lastGyro[0] = gyroData[0];
     lastGyro[1] = gyroData[1];
@@ -115,7 +116,7 @@ static void SetupTimer4(){
     //T4PERvalue = 2083; // ~300Hz (40e6/(64*2083) where 64 is the prescaler
     T4PERvalue = 2083*3; // ~100Hz (40e6/(64*3*2083) where 64 is the prescaler
     int retval;
-    retval = sysServiceConfigT4(T4CON1value, T4PERvalue, T4_INT_PRIOR_6 & T4_INT_ON);
+    retval = sysServiceConfigT4(T4CON1value, T4PERvalue, T4_INT_PRIOR_3 & T4_INT_ON);
 }
 
 ////   Public functions

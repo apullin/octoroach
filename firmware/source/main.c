@@ -55,9 +55,6 @@ int main(void) {
     LED_2 = 1;
     LED_3 = 1;
 
-    //int old_ipl;
-    //mSET_AND_SAVE_CPU_IP(old_ipl, 1);
-
     cmdSetup();
     
     radioInit(RADIO_TXPQ_MAX_SIZE, RADIO_RXPQ_MAX_SIZE);
@@ -66,21 +63,23 @@ int main(void) {
     radioSetSrcAddr(RADIO_SRC_ADDR);
 
     mpuSetup();
+    imuSetup();
+    
     tiHSetup();
     adcSetup();
 
-    //dfmemSetup();
+    dfmemSetup();
 
     telemSetup(); //Timer 5
     
  
     //encSetup();
-    imuSetup();
+    
 
     //olVibeSetup();
 
-    legCtrlSetup(); // Timer 1
-    steeringSetup(); //Timer 5
+    legCtrlSetup(); // Timer 1  , TIMER DISABLED FOR SPI DEBUG!
+    steeringSetup();
 
     //Tail control is a special case
     //tailCtrlSetup();

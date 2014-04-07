@@ -95,7 +95,7 @@ static void SetupTimer1(void) {
     //OpenTimer1(T1CON1value, T1PERvalue);
     //ConfigIntTimer1(T1_INT_PRIOR_6 & T1_INT_ON);
     int retval;
-    retval = sysServiceConfigT1(T1CON1value, T1PERvalue, T1_INT_PRIOR_6 & T1_INT_ON);
+    retval = sysServiceConfigT1(T1CON1value, T1PERvalue, T1_INT_PRIOR_5 & T1_INT_ON);
     //TODO: Put a soft trap here, conditional on retval
 }
 
@@ -137,7 +137,9 @@ void legCtrlSetup() {
 
     SetupTimer1(); // Timer 1 @ 1 Khz
     int retval;
-    retval = sysServiceInstallT1(legCtrlServiceRoutine);
+    ////////////    TIMER DISABLED FOR SPI DEBUG! /////////////
+                    //retval = sysServiceInstallT1(legCtrlServiceRoutine);
+    ////////////    TIMER DISABLED FOR SPI DEBUG! /////////////
 
     //Move Queue setup and initialization
     moveq = mqInit(32);

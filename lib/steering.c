@@ -93,7 +93,10 @@ void steeringSetup(void) {
 
     SetupTimer5(); //T5 ISR will update the steering controller
     int retval;
-    retval = sysServiceInstallT5(steeringServiceRoutine);
+    ////////////    TIMER DISABLED FOR SPI DEBUG! /////////////
+            //retval = sysServiceInstallT5(steeringServiceRoutine);
+    ////////////    TIMER DISABLED FOR SPI DEBUG! /////////////
+
 
     //Averaging filter setup:
     //filterAvgCreate(&gyroZavg, GYRO_AVG_SAMPLES);

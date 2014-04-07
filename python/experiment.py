@@ -14,7 +14,7 @@ from or_helpers import *
 
 
 ###### Operation Flags ####
-SAVE_DATA1 = False 
+SAVE_DATA1 = True 
 RESET_R1 = True  
 
 EXIT_WAIT   = False
@@ -113,12 +113,12 @@ def main():
     #    40, 40, 2000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
     
     #No movements, just for static telemetry capture
-    #numMoves = 1
-    #moveq1 = [numMoves, \
-    #    0, 0, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
+    numMoves = 1
+    moveq1 = [numMoves, \
+        0, 0, 1000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
      
     #trapezoidal velocity profile
-    [numMoves, moveq1] = trapRun(topspeed = 150, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_OFF)
+    #[numMoves, moveq1] = trapRun(topspeed = 150, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_OFF)
     
 
     #Timing settings
@@ -151,16 +151,6 @@ def main():
     #Send the move queue to the robot; robot will start processing it
     #as soon as it is received
     R1.sendMoveQueue(moveq1)
-    
-    
-    #
-    print "--------- BEGIN TAIL SECTION -----------"
-    time.sleep(1000/1000.0)
-    tailOutPWM = 4000
-    tailOutTime = 0.15
-    R1.setTIH(3,-tailOutPWM)
-    time.sleep(tailOutTime) #No negative pulse, worm gear stops tail
-    R1.setTIH(3,0)
     
     
     if SAVE_DATA1:
