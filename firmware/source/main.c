@@ -63,14 +63,14 @@ int main(void) {
     radioSetSrcAddr(RADIO_SRC_ADDR);
 
     mpuSetup();
-    imuSetup();
+    //imuSetup();
     
     tiHSetup();
     adcSetup();
 
-    dfmemSetup();
+    //dfmemSetup();
 
-    telemSetup(); //Timer 5
+    //telemSetup(); //Timer 5
     
  
     //encSetup();

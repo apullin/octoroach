@@ -95,7 +95,7 @@ void telemSetup() {
 
     //Install telemetry service handler
     int retval;
-    retval = sysServiceInstallT5(telemServiceRoutine);
+    //retval = sysServiceInstallT5(telemServiceRoutine);
     SetupTimer5();
 }
 
