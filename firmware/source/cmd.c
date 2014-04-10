@@ -17,7 +17,6 @@ is invalid and void.
 #include "gyro.h"
 #include "xl.h"
 #include "sclock.h"
-#include "led.h"
 #include "motor_ctrl.h"
 #include "sensors.h"
 #include "dfmem.h"
@@ -146,7 +145,7 @@ void cmdHandleRadioRxBuffer(void) {
     unsigned char command, status;
     
     if ((packet = radioDequeueRxPacket()) != NULL) {
-        LED_ORANGE = 1;
+        //LED_YELLOW = 1;
         pld = macGetPayload(packet);
         status = payGetStatus(pld);
         command = payGetType(pld);
@@ -361,7 +360,7 @@ static void cmdEraseSector(unsigned char status, unsigned char length, unsigned 
 }
 
 static void cmdFlashReadback(unsigned char status, unsigned char length, unsigned char *frame) {
-    LED_YELLOW = 1;
+    //LED_YELLOW = 1;
     PKT_UNPACK(_args_cmdFlashReadback, argsPtr, frame);
 
     telemReadbackSamples(argsPtr->samples);

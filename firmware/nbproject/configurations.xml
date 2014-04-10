@@ -35,7 +35,6 @@
         <itemPath>../lib/sys_service.h</itemPath>
         <itemPath>../lib/imu.h</itemPath>
         <itemPath>../../imageproc-lib/spi_controller.h</itemPath>
-        <itemPath>../lib/led.h</itemPath>
         <itemPath>../lib/or_telem.h</itemPath>
         <itemPath>../lib/ol-vibe.h</itemPath>
         <itemPath>../../imageproc-lib/mpu6000.h</itemPath>
@@ -115,7 +114,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>RealICEPlatformTool</platformTool>
         <languageToolchain>XC16</languageToolchain>
-        <languageToolchainVersion>1.11</languageToolchainVersion>
+        <languageToolchainVersion>1.21</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>

@@ -104,7 +104,10 @@ void __attribute__((__interrupt__, no_auto_psv)) _StackError(void) {
 
 void __attribute__((__interrupt__, no_auto_psv)) _MathError(void) {
     INTCON1bits.MATHERR = 0; //Clear the trap flag
-    while (1);
+    //while (1);
+    Nop();
+    Nop();
+    return;
 }
 
 void __attribute__((__interrupt__, no_auto_psv)) _DMACError(void) {

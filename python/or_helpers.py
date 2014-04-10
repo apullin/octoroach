@@ -67,7 +67,9 @@ class Robot:
     dataFileName = ''
     imudata = [ [] ]
     numSamples = 0
+    telemSampleFreq = 300
     VERBOSE = True
+    telemFormatString = '%d,' + '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f'
     
     def __init__(self, address, xb):
         self.DEST_ADDR = address
@@ -268,7 +270,7 @@ class Robot:
         shared.last_packet_time = dlStart
         #bytesIn = 0
         while self.imudata.count([]) > 0:
-            time.sleep(0.02)
+            time.sleep(0.1)
             dlProgress(self.numSamples - self.imudata.count([]) , self.numSamples)
             if (time.time() - shared.last_packet_time) > timeout:
                 print ""
@@ -311,7 +313,7 @@ class Robot:
         self.findFileName()
         self.writeFileHeader()
         fileout = open(self.dataFileName, 'a')
-        np.savetxt(fileout , np.array(self.imudata), '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f', delimiter = ',')
+        np.savetxt(fileout , np.array(self.imudata), self.telemFormatString, delimiter = ',')
         fileout.close()
         self.clAnnounce()
         print "Telemtry data saved to", self.dataFileName
@@ -341,7 +343,7 @@ class Robot:
         self.runtime = sum([moveq[i] for i in [(ind*MOVE_QUEUE_ENTRY_LEN)+3 for ind in range(0,moveq[0])]])
        
         #calculate the number of telemetry packets we expect
-        self.numSamples = int(ceil(50 * (self.runtime + self.leadinTime + self.leadoutTime) / 1000.0))
+        self.numSamples = int(ceil(self.telemSampleFreq * (self.runtime + self.leadinTime + self.leadoutTime) / 1000.0))
         #allocate an array to write the downloaded telemetry data into
         self.imudata = [ [] ] * self.numSamples
         self.clAnnounce()

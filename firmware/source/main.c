@@ -51,9 +51,9 @@ int main(void) {
     SetupPorts();
     sclockSetup();
 
-    LED_1 = 1;
-    LED_2 = 1;
-    LED_3 = 1;
+    LED_1 = 0;
+    LED_2 = 0;
+    LED_3 = 0;
 
     cmdSetup();
     
@@ -62,24 +62,23 @@ int main(void) {
     radioSetSrcPanID(RADIO_PAN_ID);
     radioSetSrcAddr(RADIO_SRC_ADDR);
 
+    dfmemSetup();
+    telemSetup(); //Timer 5, HW priority 4
+
     mpuSetup();
-    //imuSetup();
+    imuSetup();   //Timer 4, HW priority 3
     
     tiHSetup();
     adcSetup();
 
-    //dfmemSetup();
-
-    //telemSetup(); //Timer 5
-    
- 
+    //AMS Encoders
     //encSetup();
-    
 
+    //"Open Loop" vibration & jitter generator, AP 2014
     //olVibeSetup();
 
-    legCtrlSetup(); // Timer 1  , TIMER DISABLED FOR SPI DEBUG!
-    steeringSetup();
+    legCtrlSetup();  //Timer 1, HW priority 5
+    steeringSetup(); //Timer 5, HW priority 4
 
     //Tail control is a special case
     //tailCtrlSetup();

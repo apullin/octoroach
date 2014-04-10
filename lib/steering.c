@@ -94,7 +94,7 @@ void steeringSetup(void) {
     SetupTimer5(); //T5 ISR will update the steering controller
     int retval;
     ////////////    TIMER DISABLED FOR SPI DEBUG! /////////////
-            //retval = sysServiceInstallT5(steeringServiceRoutine);
+    retval = sysServiceInstallT5(steeringServiceRoutine);
     ////////////    TIMER DISABLED FOR SPI DEBUG! /////////////
 
 

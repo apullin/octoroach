@@ -1,7 +1,6 @@
 // Authors: nkohut
 
 #include "utils.h"
-#include "led.h"
 #include "pid.h"
 #include "dfilter_avg.h"
 #include "adc_pid.h"
@@ -114,7 +113,7 @@ static void SetupTimer4(){
     T4CON1value = T4_ON & T4_IDLE_CON & T4_GATE_OFF & T4_PS_1_64 & T4_SOURCE_INT;
     // Period is set so that period = 3.3ms (300Hz), MIPS = 40
     //T4PERvalue = 2083; // ~300Hz (40e6/(64*2083) where 64 is the prescaler
-    T4PERvalue = 2083*3; // ~100Hz (40e6/(64*3*2083) where 64 is the prescaler
+    T4PERvalue = 2083; // ~100Hz (40e6/(64*3*2083) where 64 is the prescaler
     int retval;
     retval = sysServiceConfigT4(T4CON1value, T4PERvalue, T4_INT_PRIOR_3 & T4_INT_ON);
 }
