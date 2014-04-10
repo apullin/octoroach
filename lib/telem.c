@@ -13,7 +13,7 @@
 #include "debugpins.h"
 
 //Timer parameters
-#define TIMER_FREQUENCY     300                 // 400 Hz
+#define TIMER_FREQUENCY     1000.0                // 1000 Hz
 #define TIMER_PERIOD        1/TIMER_FREQUENCY
 #define DEFAULT_SKIP_NUM    1 //Default to 150 Hz save rate
 
@@ -21,7 +21,7 @@
 #if defined(__RADIO_HIGH_DATA_RATE)
 #define READBACK_DELAY_TIME_MS 3
 #else
-#define READBACK_DELAY_TIME_MS 6
+#define READBACK_DELAY_TIME_MS 4
 #endif
 
 telemStruct_t telemBuffer;
@@ -75,7 +75,8 @@ static void SetupTimer5() {
     // prescale 1:64
     T5CON1value = T5_ON & T5_IDLE_CON & T5_GATE_OFF & T5_PS_1_64 & T5_SOURCE_INT;
     // Period is set so that period = 5ms (200Hz), MIPS = 40
-    T5PERvalue = 2083; // ~300Hz
+    //T5PERvalue = 2083; // ~300Hz
+    T5PERvalue = 625; //1Khz
     int retval;
     retval = sysServiceConfigT5(T5CON1value, T5PERvalue, T5_INT_PRIOR_4 & T5_INT_ON);
 }
@@ -103,9 +104,6 @@ void telemReadbackSamples(unsigned long numSamples) {
     int delaytime_ms = READBACK_DELAY_TIME_MS;
     unsigned long i = 0; //will actually be the same as the sampleIndex
 
-    //Disable motion interrupts for readback
-    //_T1IE = 0; _T5IE=0; //TODO: what is a cleaner way to do this?
-    _T4IE = 0;
     telemStruct_t sampleData;
 
     for (i = 0; i < numSamples; i++) {
@@ -119,45 +117,19 @@ void telemReadbackSamples(unsigned long numSamples) {
             delaytime_ms += 0;
             //debugpins1_clr();
         } while (trxGetLastACKd() == 0);
+        
         delaytime_ms = READBACK_DELAY_TIME_MS;
     }
-
-    _T4IE = 1;
 }
 
 void telemSendDataDelay(telemStruct_t* sample, int delaytime_ms) {
-    // Create Payload, set status and type (don't cares)
-    /*
-    MacPacket pkt = radioRequestPacket(telemPacketSize);
-    if(pkt == NULL) { return; }
-    macSetDestPan(pkt, RADIO_PAN_ID);
-    macSetDestAddr(pkt, RADIO_DST_ADDR);
-    Payload pld = macGetPayload(pkt);
-
-    paySetData(pld, telemPacketSize, (unsigned char*) sample);
-    paySetType(pld, CMD_SPECIAL_TELEMETRY); 
-    paySetStatus(pld, 0);
-
-    //Force immediate send
-    while(!radioEnqueueTxPacket(pkt)) { 
-        radioReturnPacket(pkt);	// Delete packet if append fails
-    }
-
-    radioProcess();
-    */
-    //unsigned int dest_addr, unsigned char status,
-                             //unsigned char type, unsigned int datalen,
-                             //unsigned char* dataptr, unsigned char fast_fail
-    LED_YELLOW = 1;
     radioSendData(RADIO_DST_ADDR, 0, CMD_SPECIAL_TELEMETRY, telemPacketSize, (unsigned char *)sample, 0);
-    LED_YELLOW = 0;
     delay_ms(delaytime_ms); // allow radio transmission time
-
 }
 
 
 //Saves telemetry data structure into flash memory, in order
-
+//Position in flash memory is maintained by dfmem module
 void telemSaveData(telemStruct_t * telemPkt) {
     
     //Write the packet header info to the DFMEM
@@ -214,7 +186,7 @@ void telemErase(unsigned long numSamples) {
 
     //Leadout flash, should blink faster than above, indicating the last sector
     while (!dfmemIsReady()) {
-        LED_2 = ~LED_2;
+        LED_GREEN = ~LED_GREEN;
         delay_ms(50);
     }
     LED_GREEN = 0; //Green LED off

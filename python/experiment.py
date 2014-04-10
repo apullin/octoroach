@@ -15,7 +15,7 @@ from or_helpers import *
 
 ###### Operation Flags ####
 SAVE_DATA1 = True 
-RESET_R1 = True  
+RESET_R1 = False
 
 EXIT_WAIT   = False
 
@@ -115,7 +115,7 @@ def main():
     #No movements, just for static telemetry capture
     numMoves = 1
     moveq1 = [numMoves, \
-        0, 0, 1000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
+        0, 0, 500,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
      
     #trapezoidal velocity profile
     #[numMoves, moveq1] = trapRun(topspeed = 150, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_OFF)

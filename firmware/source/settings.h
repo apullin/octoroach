@@ -23,9 +23,9 @@
 
 /////// System Service settings ///////
 #define SYS_SERVICE_T1 // For legCtrl, hall
-#define SYS_SERVICE_T2 // For hall, 400 Hz tick counter
 #define SYS_SERVICE_T4 // For IMU, 300Hz
-#define SYS_SERVICE_T5 // For steering, telemetry
+#define SYS_SERVICE_T5 // For telemetry
+#define SYS_SERVICE_T6 // For steerubg
 
 /////// Configuration options ///////
 //Configure project-wide for Hall Sensor operation

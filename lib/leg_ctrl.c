@@ -133,7 +133,7 @@ void legCtrlSetup() {
 
     SetupTimer1(); // Timer 1 @ 1 Khz
     int retval;
-    //retval = sysServiceInstallT1(legCtrlServiceRoutine);
+    retval = sysServiceInstallT1(legCtrlServiceRoutine);
 
     //Move Queue setup and initialization
     moveq = mqInit(32);

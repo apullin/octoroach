@@ -59,6 +59,8 @@ static void imuServiceRoutine(void){
 
 static void imuISRHandler() {
 
+    LED_GREEN = 1;
+
     int gyroData[3];
     int xlData[3];
 
@@ -103,6 +105,7 @@ static void imuISRHandler() {
 
     lastBodyZPositionDeg = lastBodyZPositionDeg + lastGyroDeg[2]*TIMER_PERIOD;
 
+    LED_GREEN = 0;
 }
 
 static void SetupTimer4(){
@@ -113,7 +116,7 @@ static void SetupTimer4(){
     T4CON1value = T4_ON & T4_IDLE_CON & T4_GATE_OFF & T4_PS_1_64 & T4_SOURCE_INT;
     // Period is set so that period = 3.3ms (300Hz), MIPS = 40
     //T4PERvalue = 2083; // ~300Hz (40e6/(64*2083) where 64 is the prescaler
-    T4PERvalue = 2083; // ~100Hz (40e6/(64*3*2083) where 64 is the prescaler
+    T4PERvalue = 625;  // 1Khz
     int retval;
     retval = sysServiceConfigT4(T4CON1value, T4PERvalue, T4_INT_PRIOR_3 & T4_INT_ON);
 }

@@ -37,7 +37,7 @@ extern moveCmdT currentMove, idleMove;
 extern char inMotion;
 
 //Function to be installed into T5, and setup function
-static void SetupTimer5();
+static void SetupTimer6();
 static void steeringServiceRoutine(void);  //To be installed with sysService
 //The following local functions are called by the service routine:
 static void steeringHandleISR();
@@ -58,17 +58,17 @@ static void steeringServiceRoutine(void){
     steeringHandleISR();
 }
 
-static void SetupTimer5(){
+static void SetupTimer6(){
     ///// Timer 5 setup, Steering ISR, 300Hz /////
     // period value = Fcy/(prescale*Ftimer)
-    unsigned int T5CON1value, T5PERvalue;
+    unsigned int T6CON1value, T6PERvalue;
     // prescale 1:64
-    T5CON1value = T5_ON & T5_IDLE_CON & T5_GATE_OFF & T5_PS_1_64 & T5_SOURCE_INT;
+    T6CON1value = T6_ON & T6_IDLE_CON & T6_GATE_OFF & T6_PS_1_64 & T6_SOURCE_INT;
     // Period is set so that period = 5ms (200Hz), MIPS = 40
     //period = 3125; // 200Hz
-    T5PERvalue = 2083; // ~300Hz
+    T6PERvalue = 2083; // ~300Hz
     int retval;
-    retval = sysServiceConfigT5(T5CON1value, T5PERvalue, T5_INT_PRIOR_4 & T5_INT_ON);
+    retval = sysServiceConfigT6(T6CON1value, T6PERvalue, T6_INT_PRIOR_4 & T6_INT_ON);
 }
 
 
@@ -91,12 +91,10 @@ void steeringSetup(void) {
 
     steeringSetInput(0);
 
-    SetupTimer5(); //T5 ISR will update the steering controller
+    SetupTimer6(); //T5 ISR will update the steering controller
     int retval;
-    ////////////    TIMER DISABLED FOR SPI DEBUG! /////////////
-    retval = sysServiceInstallT5(steeringServiceRoutine);
-    ////////////    TIMER DISABLED FOR SPI DEBUG! /////////////
-
+    
+    retval = sysServiceInstallT6(steeringServiceRoutine);
 
     //Averaging filter setup:
     //filterAvgCreate(&gyroZavg, GYRO_AVG_SAMPLES);

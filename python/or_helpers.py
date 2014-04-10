@@ -67,7 +67,7 @@ class Robot:
     dataFileName = ''
     imudata = [ [] ]
     numSamples = 0
-    telemSampleFreq = 300
+    telemSampleFreq = 1000
     VERBOSE = True
     telemFormatString = '%d,' + '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f'
     
@@ -277,9 +277,9 @@ class Robot:
                 self.clAnnounce()
                 print "Readback timeout exceeded, restarting."
                 print "Missed", self.imudata.count([]), "packets."
-                for index,item in enumerate(self.imudata):
-                    if item == []:
-                        print "Didn't get packet#",index+1
+                #for index,item in enumerate(self.imudata):
+                #    if item == []:
+                #        print "Didn't get packet#",index+1
             
                 raw_input("Press Enter to start readback ...")
                 self.imudata = [ [] ] * self.numSamples
