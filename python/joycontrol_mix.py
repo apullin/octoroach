@@ -24,6 +24,8 @@ BUTTON_Y = 3
 BUTTON_B = 1
 BUTTON_L1 = 4
 BUTTON_R1 = 5
+BUTTON_X = 2
+BUTTON_A = 0
 
 
 def main():
@@ -39,27 +41,31 @@ def main():
         print "Resetting robot..."
         R1.reset()
         time.sleep(0.5)
-
-    motorgains = [15000,1000,500,0,0,    15000,1000,500,0,0]
-    #motorgains = [25000,50,0,0,25,    25000,50,0,0,25]
-
-    R1.setMotorGains(motorgains, retries = 8)
-    
-    verifyAllMotorGainsSet()  #exits on failure
-    
-    steeringgains = [0, 0, 0, 0, 0, 0]
-    R1.setSteeringGains(steeringgains)
-    
-    verifyAllSteeringGainsSet()  #exits on failure
         
     # Send robot a WHO_AM_I command, verify communications
-    R1.query()
+    R1.query(retries = 1)
 
+    motorgains = [22000,0,500,0,0,    22000,0,500,0,0]
+    #motorgains = [25000,50,0,0,25,    25000,50,0,0,25]
+
+    R1.setMotorGains(motorgains, retries = 1)
+    
+    #verifyAllMotorGainsSet()  #exits on failure
+    
+    steeringgains = [0, 0, 0, 0, 0, 0]
+    #R1.setSteeringGains(steeringgains)
+    
+    #verifyAllSteeringGainsSet()  #exits on failure
+        
     j = setupJoystick()
     
     lastthrot = [0, 0]
     
     tinc = 25;
+    olVibeFreq = 20;
+    vinc = 2.5;
+    LAST_BUTTON_R1 = 0;
+    VIBRATION_ON = 0;
 
     while True:
 
@@ -73,61 +79,6 @@ def main():
                 MAXTHROT = MAXTHROT - tinc
             elif j.get_button(BUTTON_Y) ==1 and MAXTHROT < 416:
                 MAXTHROT = MAXTHROT + tinc
-            
-            ######### Tail Flick ##########
-            
-            WORM_GEAR_TAIL = True
-            
-            if WORM_GEAR_TAIL:
-                #TAIL FLICK
-                tailOutPWM = 4000
-                tailOutTime = 0.08
-                if j.get_button(BUTTON_L1) == 1:
-                    #Tail flick right
-                    print "TAIL FLICK RIGHT"
-                    R1.setTIH(3,tailOutPWM)
-                    time.sleep(tailOutTime) #No negative pulse, worm gear stops tail
-                    R1.setTIH(3,0)
-                if j.get_button(BUTTON_R1) == 1:
-                    print "TAIL FLICK LEFT"
-                    #Tail flick left
-                    R1.setTIH(3,-tailOutPWM)
-                    time.sleep(tailOutTime) #No negative pulse, worm gear stops tail
-                    R1.setTIH(3,0)
-            
-            if not WORM_GEAR_TAIL:
-                #TAIL FLICK
-                ## Hard:
-                #tailOutPWM = 4000
-                #tailOutTime = 0.07
-                #tailStopPWM = -1500
-                #tailStopTime = 0.04
-                ## Medium:
-                tailOutPWM = 4000
-                tailOutTime = 0.07
-                tailStopPWM = -3000
-                tailStopTime = 0.04
-                ## Soft:
-                #tailOutPWM = 1000
-                #tailOutTime = 0.07
-                #tailStopPWM = -300
-                #tailStopTime = 0.04
-                if j.get_button(BUTTON_L1) == 1:
-                    #Tail flick right
-                    print "TAIL FLICK RIGHT"
-                    R1.setTIH(3,tailOutPWM)
-                    time.sleep(tailOutTime)
-                    R1.setTIH(3,tailStopPWM)
-                    time.sleep(tailStopTime)
-                    R1.setTIH(3,0)
-                if j.get_button(BUTTON_R1) == 1:
-                    print "TAIL FLICK LEFT"
-                    #Tail flick left
-                    R1.setTIH(3,-tailOutPWM)
-                    time.sleep(tailOutTime)
-                    R1.setTIH(3,-tailStopPWM)
-                    time.sleep(tailStopTime)
-                    R1.setTIH(3,0)
             
             
             
@@ -149,19 +100,45 @@ def main():
             if right_throt < -MAXTHROT:
                 right_throt = -MAXTHROT
             
+            #### OL Vibe seciton ####
+            amp = 3000
+            if j.get_button(BUTTON_X) == 1:
+                olVibeFreq = olVibeFreq + vinc
+            if j.get_button(BUTTON_A) == 1:
+                olVibeFreq = olVibeFreq - vinc
+            if olVibeFreq < 0:
+                olVibeFreq = 0;
+            
+            
+            #if  (j.get_button(BUTTON_R1) == 1) and (LAST_BUTTON_R1 == 0):
+            if  (j.get_button(BUTTON_R1) == 1):
+                VIBRATION_ON = 1
+                R1.setOLVibe(1, olVibeFreq, amp)
+                R1.setOLVibe(2, olVibeFreq, amp)
+            #if (j.get_button(BUTTON_R1) == 0) and (LAST_BUTTON_R1 == 1):
+            if (j.get_button(BUTTON_R1) == 0):
+                VIBRATION_ON = 0
+                R1.setOLVibe(1, olVibeFreq, 0)
+                R1.setOLVibe(2, olVibeFreq, 0)
+                
+            #LAST_BUTTON_R1 = j.get_button(BUTTON_R1)
+            
             sys.stdout.write(" "*60 + "\r")
             sys.stdout.flush()
-            outstring = "L: {0:3d}  |   R: {1:3d}  ".format(left_throt,right_throt)
-            outstring = outstring + "(" + str(MAXTHROT) + ")\r"
+            outstring = "L: {0:3d}  |   R: {1:3d}   MAX: {2:1d}    Vibe: {3:0.1f}".format(left_throt,right_throt,MAXTHROT,olVibeFreq)
+            #outstring = outstring + "(" + str(MAXTHROT) + ")\r"
+            if VIBRATION_ON == 1:
+                outstring = outstring + "    ((!!))"
+            outstring = outstring + "\r"
             sys.stdout.write(outstring)
             sys.stdout.flush()
             
             throt = [left_throt,right_throt]
-            if throt != lastthrot: #Only send new packet if throttles have changed
+            if throt != lastthrot and (VIBRATION_ON == 0): #Only send new packet if throttles have changed
                 R1.setMotorSpeeds(left_throt, right_throt)
                 lastthrot = throt
                 
-            time.sleep(0.150)
+            time.sleep(.1)
 
 
 def setupJoystick():
