@@ -2,28 +2,30 @@
 
 //or_telem.h , OctoRoACH specific telemetry packet format header
 
+#include <stdint.h>
+
 // Data structure type
 typedef struct {
-    int inputL;
-    int inputR;
-    int dcA;
-    int dcB;
-    int dcC;
-    int dcD;
-    int gyroX;
-    int gyroY;
-    int gyroZ;
-    int gyroAvg;
-    int accelX;
-    int accelY;
-    int accelZ;
-    int bemfA;
-    int bemfB;
-    int bemfC;
-    int bemfD;
-    int steerIn;
-    int steerOut;
-    int Vbatt;
+    int16_t inputL;
+    int16_t inputR;
+    int16_t dcA;
+    int16_t dcB;
+    int16_t dcC;
+    int16_t dcD;
+    int16_t gyroX;
+    int16_t gyroY;
+    int16_t gyroZ;
+    int16_t gyroAvg;
+    int16_t accelX;
+    int16_t accelY;
+    int16_t accelZ;
+    int16_t bemfA;
+    int16_t bemfB;
+    int16_t bemfC;
+    int16_t bemfD;
+    int16_t steerIn;
+    int16_t steerOut;
+    int16_t Vbatt;
     float yawAngle;
 } orTelemStruct_t;
 
