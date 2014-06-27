@@ -150,6 +150,10 @@ void telemErase(unsigned long numSamples) {
     //                  samples will fit into memory!
 
     //Green LED will be used as progress indicator
+
+    //Horibble hack: Disable IMU while erasing flash
+    _T4IE = 0;
+
     LED_GREEN = 1;
     unsigned int firstPageOfSector, i;
 
@@ -193,6 +197,9 @@ void telemErase(unsigned long numSamples) {
 
     //Since we've erased, reset our place keeper vars
     dfmemZeroIndex();
+
+    //Horibble hack: Disable IMU while erasing flash
+    _T4IE = 1;
 }
 
 

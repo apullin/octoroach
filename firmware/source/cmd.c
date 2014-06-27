@@ -363,7 +363,13 @@ static void cmdFlashReadback(unsigned char status, unsigned char length, unsigne
     //LED_YELLOW = 1;
     PKT_UNPACK(_args_cmdFlashReadback, argsPtr, frame);
 
+    //Horibble hack: Disable IMU while erading back telem
+    _T4IE = 0;
+
     telemReadbackSamples(argsPtr->samples);
+
+    //Horibble hack: Disable IMU while erading back telem
+    _T4IE = 1;
 }
 
 static void cmdSleep(unsigned char status, unsigned char length, unsigned char *frame) {
@@ -509,6 +515,6 @@ static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned ch
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetOLVibe, argsPtr, frame);
 
-    //olVibeSetAmplitude(argsPtr->channel, argsPtr->amplitude);
-    //olVibeSetFrequency(argsPtr->frequency); // no channel, only 1 freq for now
+    olVibeSetAmplitude(argsPtr->channel, argsPtr->amplitude);
+    olVibeSetFrequency(argsPtr->frequency); // no channel, only 1 freq for now
 }
