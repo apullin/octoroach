@@ -40,7 +40,7 @@ int blinkCtr;
 //This is an option to force the PID outputs back to zero when there is no input.
 //This was an attempt to stop bugs w/ motor twitching, or controller wandering.
 //It may not be needed anymore.
-#define PID_ZEROING_ENABLE 1
+#define PID_ZEROING_ENABLE 0
 
 //Move queue variables, global
 //TODO: move these into a move queue interface module

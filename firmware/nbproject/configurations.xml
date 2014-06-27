@@ -124,6 +124,7 @@
         </linkerTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
+          <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
       </compileType>
@@ -174,6 +175,8 @@
           <property key="preprocessor-macros" value=""/>
           <property key="scalar-model" value="default"/>
         </C30>
+        <C30-AR>
+        </C30-AR>
         <C30-AS>
           <property key="assembler-symbols" value=""/>
           <property key="expand-macros" value="false"/>
@@ -268,6 +271,8 @@
           <property key="preprocessor-macros" value=""/>
           <property key="scalar-model" value="default"/>
         </C30>
+        <C30-AR>
+        </C30-AR>
         <C30-AS>
           <property key="assembler-symbols" value=""/>
           <property key="expand-macros" value="false"/>
@@ -362,6 +367,8 @@
           <property key="preprocessor-macros" value="PID_HARDWARE"/>
           <property key="scalar-model" value="default"/>
         </C30>
+        <C30-AR>
+        </C30-AR>
         <C30-AS>
         </C30-AS>
         <C30-LD>
@@ -440,6 +447,8 @@
           <property key="preprocessor-macros" value="PID_HARDWARE"/>
           <property key="scalar-model" value="default"/>
         </C30>
+        <C30-AR>
+        </C30-AR>
         <C30-AS>
         </C30-AS>
         <C30-LD>
@@ -520,6 +529,9 @@
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
       </C30>
+      <C30-AR>
+        <property key="additional-options-chop-files" value="false"/>
+      </C30-AR>
       <C30-AS>
         <property key="assembler-symbols" value=""/>
         <property key="expand-macros" value="false"/>
@@ -646,7 +658,6 @@
         <property key="UART 1" value="true"/>
         <property key="UART 2" value="true"/>
         <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="hwtoolclock.instructionspeed" value="4"/>
         <property key="hwtoolclock.units" value="mips"/>
@@ -666,6 +677,7 @@
                   value="${memories.programmemory.partition2.start.value}"/>
         <property key="memories.programmemory.start" value="0x0"/>
         <property key="poweroptions.powerenable" value="false"/>
+        <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preserveeeprom" value="false"/>
         <property key="programoptions.preserveprogramrange" value="false"/>

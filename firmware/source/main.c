@@ -75,7 +75,7 @@ int main(void) {
     //encSetup();
 
     //"Open Loop" vibration & jitter generator, AP 2014
-    //olVibeSetup();
+    olVibeSetup();
 
     legCtrlSetup();  //Timer 1, HW priority 5
     steeringSetup(); //Timer 5, HW priority 4

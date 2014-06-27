@@ -145,7 +145,7 @@ def main():
     #### to the proper "SAVE_DATA"                 ####
     
     if SAVE_DATA1:
-        R1.startTelemetrySave()
+        R1.startTelemetrySave(timeout = 1000)
         
     time.sleep(R1.leadinTime / 1000.0)
     #Send the move queue to the robot; robot will start processing it

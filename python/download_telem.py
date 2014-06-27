@@ -51,7 +51,7 @@ def main():
         raw_input("  Press ENTER to start download ...")
         print ""
 
-        R1.downloadTelemetry()
+        R1.downloadTelemetry(retry = False)
 
     if EXIT_WAIT:  #Pause for a Ctrl + Cif specified
         while True:

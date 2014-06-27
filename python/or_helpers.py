@@ -259,7 +259,7 @@ class Robot:
             tries = tries + 1
             time.sleep(0.3)   
     
-    def downloadTelemetry(self, timeout = 5):
+    def downloadTelemetry(self, timeout = 5, retry = True):
         #supress callback output messages for the duration of download
         self.VERBOSE = False
         self.clAnnounce()
@@ -270,33 +270,41 @@ class Robot:
         shared.last_packet_time = dlStart
         #bytesIn = 0
         while self.imudata.count([]) > 0:
-            time.sleep(0.1)
+            time.sleep(0.02)
             dlProgress(self.numSamples - self.imudata.count([]) , self.numSamples)
             if (time.time() - shared.last_packet_time) > timeout:
                 print ""
+                #Terminal message about missed packets
                 self.clAnnounce()
-                print "Readback timeout exceeded, restarting."
+                print "Readback timeout exceeded"
                 print "Missed", self.imudata.count([]), "packets."
-                #for index,item in enumerate(self.imudata):
-                #    if item == []:
-                #        print "Didn't get packet#",index+1
-            
-                raw_input("Press Enter to start readback ...")
-                self.imudata = [ [] ] * self.numSamples
-                self.clAnnounce()
-                print "Started telemetry download"
-                dlStart = time.time()
-                shared.last_packet_time = dlStart
-                self.tx( 0, command.FLASH_READBACK, pack('=L',self.numSamples))
+                print "Didn't get packets:"
+                for index,item in enumerate(self.imudata):
+                    if item == []:
+                        print "#",index+1,
+                print "" 
+                break
+                # Retry telem download            
+                if retry == True:
+                    raw_input("Press Enter to restart telemetry readback ...")
+                    self.imudata = [ [] ] * self.numSamples
+                    self.clAnnounce()
+                    print "Started telemetry download"
+                    dlStart = time.time()
+                    shared.last_packet_time = dlStart
+                    self.tx( 0, command.FLASH_READBACK, pack('=L',self.numSamples))
+                else: #retry == false
+                    print "Not trying telemetry download."          
 
         dlEnd = time.time()
         dlTime = dlEnd - dlStart
         #Final update to download progress bar to make it show 100%
         dlProgress(self.numSamples-self.imudata.count([]) , self.numSamples)
-        totBytes = 52*self.numSamples
+        #totBytes = 52*self.numSamples
+        totBytes = 52*(self.numSamples - self.imudata.count([]))
         datarate = totBytes / dlTime / 1000.0
         print '\n'
-        self.clAnnounce()
+        #self.clAnnounce()
         #print "Got ",self.numSamples,"samples in ",dlTime,"seconds"
         self.clAnnounce()
         print "DL rate: {0:.2f} KB/s".format(datarate)
@@ -313,7 +321,18 @@ class Robot:
         self.findFileName()
         self.writeFileHeader()
         fileout = open(self.dataFileName, 'a')
-        np.savetxt(fileout , np.array(self.imudata), self.telemFormatString, delimiter = ',')
+        sanitized = [item for item in self.imudata if len(item) == 22]
+
+        np.savetxt(fileout , np.array(sanitized), self.telemFormatString, delimiter = ',')
+        #try:
+        #    np.savetxt(fileout , np.array(sanitized), self.telemFormatString, delimiter = ',')
+        #except ValueError:
+        #    print "Error saving data to file"
+        #    temp = np.array(self.imudata)
+        #    print "terminal length: ", len(temp[-1])
+        #    print "terminal array: ", temp[-1]
+        #    print "lengths : ", map(len, self.imudata)
+
         fileout.close()
         self.clAnnounce()
         print "Telemtry data saved to", self.dataFileName
