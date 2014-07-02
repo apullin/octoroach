@@ -89,6 +89,7 @@
         <itemPath>../lib/or_telem.c</itemPath>
         <itemPath>../../imageproc-lib/mpu6000.c</itemPath>
         <itemPath>../lib/traps.c</itemPath>
+        <itemPath>../lib/ol-vibe.c</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.c</itemPath>
       <itemPath>source/main.c</itemPath>
