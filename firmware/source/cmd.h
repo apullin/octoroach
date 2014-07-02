@@ -183,8 +183,9 @@ typedef struct{
 //cmdSetOLVibe
 typedef struct{
 	int channel;
-        int frequency;
+        int incr;
         int amplitude;
+        int phase;
 } _args_cmdSetOLVibe;
 
 #endif // __CMD_H

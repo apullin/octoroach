@@ -245,9 +245,14 @@ class Robot:
         thrust = [channel, dc]
         self.tx( 0, command.SET_THRUST_OPEN_LOOP, pack('2h',*thrust))
         
-    def setOLVibe(self, chan, freq, amp):
-        thrust = [chan, freq, amp]
-        self.tx( 0, command.SET_OL_VIBE, pack('3h',*thrust))
+    def setOLVibe(self, chan, freq, amp, phase):
+        # freq should be a float in the range {0.0190738, 1250.}
+        # phase should be a float in the range {-1.0, 1.0}
+        freqconv = 52.428;
+        inc = int(round(float(freqconv) * float(freq)))
+        phase_fixed = int(32768 * phase);
+        thrust = [chan, inc, amp, phase_fixed]
+        self.tx( 0, command.SET_OL_VIBE, pack('4h',*thrust))
             
     def query(self, retries = 8):
         self.robot_queried = False

@@ -35,6 +35,7 @@
 #include "imu.h"
 #include "spi_controller.h"
 #include "ppool.h"
+#include "ol-vibe.h"
 
 #include <stdlib.h>
 

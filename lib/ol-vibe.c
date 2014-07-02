@@ -21,15 +21,15 @@
 //#define MAXPWM 0xf80 //10khz pwm
 
 //static unsigned int maxDC; // from define, MAXPWM
-static unsigned int olvfreq;
+//static unsigned int olvfreq;
 static int chan1amp, chan2amp;
 static int chan1dc, chan2dc;
 static _Q15 chan1arg, chan2arg;
 static _Q15 chan1_delta, chan2_delta;
 
-//static unsigned char running = 0;
+static unsigned char running = 0;
 
-static unsigned char olphase = 0; // 0 = in phase, 1 = antiphase
+//static unsigned char olphase = 0; // 0 = in phase, 1 = antiphase
 
 //Private functions
 static void SetupTimer3(void);
@@ -45,14 +45,17 @@ void olVibeSetup() {
     //Default to 50hz @ 0% drive
     olVibeSetAmplitude(1, 0);
     olVibeSetAmplitude(2, 0);
-    olVibeSetFrequency(50);
-    //_T3IE = 1;
+    olVibeSetFrequency(1,2621); //50 hz
+    olVibeSetFrequency(2,2621); //50 hz
+    
     olVibeStart();
 }
 
 void olVibeStart(void) {
     //_OC1IE = 1;
+    TMR3 = 0; //reset timer counter, so sin arg starts at 0
     T3CONbits.TON = 1;
+    _T3IE = 1;
 }
 
 void olVibeStop(void) {
@@ -60,23 +63,14 @@ void olVibeStop(void) {
     T3CONbits.TON = 0;
 }
 
-void olVibeSetFrequency(unsigned int freq) {
-    T3CONbits.TON = 0; //stop timer
+void olVibeSetFrequency(unsigned int channel, unsigned int incr) {
 
-    float infreq = (float)freq;
+     if (channel == 1) {
+        chan1_delta = incr;
+    } else if (channel == 2) {
+        chan2_delta = incr;
+    }
 
-    olvfreq = freq;
-
-    //PR3 = 65535 --> 2.384222171358816 hz
-    //27486.95184 ticks per Hz
-    //This gives an error of roughly 7/5th for some reason??
-    //So, just adjust magic number to 38976.49770912
-    //Factor of 2 is because of the toggle ain the OC periph
-    PR3 = (unsigned int)(38976.49770912 / infreq * 2);
-    OC1R = PR3 >> 1;
-
-    TMR3 = 0;
-    T3CONbits.TON = 1; //start timer
 }
 
 void olVibeSetAmplitude(unsigned int channel, unsigned int amp) {
@@ -86,12 +80,20 @@ void olVibeSetAmplitude(unsigned int channel, unsigned int amp) {
         chan2amp = amp;
     }
 
+    if(amp != 0){
+        running = 1;
+    }
+    else{
+        running = 0;
+    }
+
 }
 
 void olVibeSetAmplitudeFloat(unsigned int channel, float famp) {
-
+    //unimplemented
 }
 
+/*
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void) {
     chan1amp = -chan1amp; //toggle direction
     tiHSetDC(1, chan1amp);
@@ -100,35 +102,26 @@ void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void) {
 
     IFS0bits.OC1IF = 0; // Clear OC1 interrupt flag
 }
+*/
 
-void olVibeSetPhase(unsigned char phase) {
-    //running = 0;
-    //Don't need to do anything if frequencies are not the same.
-    //Dissimilar frequencies will naturally cross.
+void olVibeSetPhase(unsigned int channel, _Q15 phase) {
+    //phase should be a _Q15, correpsonding to [-pi, pi]
 
-    olphase = phase; //store locally
-
-    _OC1IE = 0;
-    if (phase == 0) {
-        chan1amp = ABS(chan1amp);
-        chan2amp = ABS(chan2amp);
-    } else //antiphase
-    {
-        chan1amp = ABS(chan1amp);
-        chan2amp = -ABS(chan2amp);
+    if (channel == 1) {
+        chan1arg += phase;
+    } else if (channel == 2) {
+        chan2arg += phase;
     }
 
-    //running = 1;
-    _OC1IE = 1;
 }
 
 //Private funcitons
 
 void SetupTimer3() {
     unsigned int T3CON1value, T3PERvalue;
-    T3CON1value = T3_ON & T3_SOURCE_INT & T3_PS_1_256 & T3_GATE_OFF &
-            T1_SYNC_EXT_OFF & T3_INT_PRIOR_2;
-    T3PERvalue = UINT16_MAX; //65535
+    T3CON1value = T3_ON & T3_SOURCE_INT & T3_PS_1_8 & T3_GATE_OFF &
+            T1_SYNC_EXT_OFF & T3_INT_PRIOR_6;
+    T3PERvalue = 4000; //1250 Hz for 1:8 divider
     OpenTimer3(T3CON1value, T3PERvalue);
     _T3IE = 0;
 }
@@ -149,25 +142,29 @@ static void SetupOC1(void) {
 
 
 void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void) {
-    chan1amp = -chan1amp; //toggle direction
-    tiHSetDC(1, chan1amp);
+    //chan1amp = -chan1amp; //toggle direction
+    //tiHSetDC(1, chan1amp);
 
-    chan1arg += chan1_delta;
-    chan2arg += chan2_delta;
+    if(running){
+        Nop();
+        chan1arg += chan1_delta;
+        chan2arg += chan2_delta;
 
+        chan1dc = _Q15sinPI(chan1arg);
+        long temp = (long)(chan1dc) * (long)chan1amp;
+        chan1dc = (int)(temp >> 15);
 
+        chan2dc = _Q15sinPI(chan2arg);
+        temp = (long)(chan2dc) * (long)chan2amp;
+        chan2dc = (int)(temp >> 15);
 
-
-    chan1dc = _Q15sinPI(arg1);
-    long temp = (long)(chan1dc) * (long)chan1amp;
-    chan1dc = (int)(temp >> 15);
-
-    chan2dc = _Q15sinPI(arg2);
-    temp = (long)(chan2dc) * (long)chan2amp;
-    chan2dc = (int)(temp >> 15);
-
-    tiHSetDC(1, chan1dc);
-    tiHSetDC(2, chan2dc);
-
+        tiHSetDC(1, chan1dc);
+        tiHSetDC(2, chan2dc);
+        Nop();
+    }
+    else{
+        tiHSetDC(1, 0);
+        tiHSetDC(2, 0);
+    }
     _T3IF = 0;
 }

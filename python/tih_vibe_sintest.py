@@ -15,7 +15,7 @@ from or_helpers import *
 
 ###### Operation Flags ####
 RESET_R1 = True  
-SAVE_DATA1 = True
+SAVE_DATA1 = False
 EXIT_WAIT   = False
 
 def main():    
@@ -37,24 +37,37 @@ def main():
     verifyAllQueried()  #exits on failure
 
     ##### Manually set number of samples to save , TODO: make this a function in or_helpers
-    R1.runtime = 2000;
+    R1.runtime = 5;
     R1.numSamples = int((1000*R1.runtime + (0.25 + 0.25)*1000))
     #allocate an array to write the downloaded telemetry data into
     R1.imudata = [ [] ] * R1.numSamples
     R1.moveq = ['none']
-    R1.eraseFlashMem(timeout = 1000)
+    if SAVE_DATA1:
+        R1.eraseFlashMem(timeout = 1000)
     
     raw_input("Press enter to start vibe...")
+    if SAVE_DATA1:
+        R1.startTelemetrySave()
+        
+    #Lead-in
+    time.sleep(0.25)
     
-    #R1.setTIH(3,3999)
-    freq = 30
+    freq = 20.0
     amp = 1000
-    R1.setOLVibe(1, freq, amp)
-    R1.setOLVibe(2, freq, amp)
-    time.sleep(2)
-    R1.setOLVibe(1, freq, 0)
-    R1.setOLVibe(2, freq, 0)
-    #R1.setTIH(3,0)
+    phase = 0.0
+    R1.setOLVibe(1, freq, amp, phase)
+    R1.setOLVibe(2, freq, amp, phase)
+    time.sleep(5)
+    R1.setOLVibe(1, freq, 0, phase)
+    R1.setOLVibe(2, freq, 0, phase)
+    
+    #Lead-out
+    time.sleep(0.25)
+    
+    #telemetry download
+    if SAVE_DATA1:
+        raw_input("Press Enter to start telemtry readback ...")
+        R1.downloadTelemetry(retry = False)
 
     if EXIT_WAIT:  #Pause for a Ctrl + Cif specified
         while True:

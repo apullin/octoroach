@@ -515,6 +515,7 @@ static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned ch
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetOLVibe, argsPtr, frame);
 
+    olVibeSetFrequency(argsPtr->channel, argsPtr->incr);
+    olVibeSetPhase(argsPtr->channel, argsPtr->phase);
     olVibeSetAmplitude(argsPtr->channel, argsPtr->amplitude);
-    olVibeSetFrequency(argsPtr->frequency); // no channel, only 1 freq for now
 }
