@@ -63,8 +63,7 @@ static void cmdSteer(unsigned char status, unsigned char length, unsigned char *
 
 static void cmdEraseMemSector(unsigned char status, unsigned char length, unsigned char *frame);
 
-//static void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
-//void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
 
 static void cmdNop(unsigned char status, unsigned char length, unsigned char *frame);
 
