@@ -46,12 +46,8 @@ unsigned char tx_frame_[127];
 
 extern MoveQueue moveq;
 extern TailQueue tailq;
-extern int offsz;
 
-extern moveCmdT currentMove, idleMove;
-extern tailCmdT currentTail, idleTail;
-
-extern volatile char g_radio_duty_cycle;
+//extern volatile char g_radio_duty_cycle;
 
 #define _cmdSetupHandler(CODE, funcPointer)  cmd_func[CODE] = &funcPointer;
 
