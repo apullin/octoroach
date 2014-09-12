@@ -52,14 +52,15 @@ def main():
     #Lead-in
     time.sleep(0.25)
     
-    freq = 20.0
-    amp = 1000
+    freqL = 60.0
+    freqR = 60.0
+    amp = 3900
     phase = 0.0
-    R1.setOLVibe(1, freq, amp, phase)
-    R1.setOLVibe(2, freq, amp, phase)
-    time.sleep(5)
-    R1.setOLVibe(1, freq, 0, phase)
-    R1.setOLVibe(2, freq, 0, phase)
+    R1.setOLVibe(1, freqL, amp, phase)
+    R1.setOLVibe(2, freqR, amp, phase)
+    time.sleep(15)
+    R1.setOLVibe(1, freqL, 0, phase)
+    R1.setOLVibe(2, freqR, 0, phase)
     
     #Lead-out
     time.sleep(0.25)
