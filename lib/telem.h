@@ -10,10 +10,12 @@
 #error "A telemtry type is not defined."
 #endif
 
+#include <stdint.h>
+
 //Telemetry packet structure
 typedef struct {
-    unsigned long sampleIndex;
-    unsigned long timestamp;
+    uint32_t sampleIndex;
+    uint32_t timestamp;
     TELEM_TYPE telemData;
 } telemStruct_t;
 

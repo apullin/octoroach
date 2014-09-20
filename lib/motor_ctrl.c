@@ -8,7 +8,6 @@
 #include "motor_ctrl.h"
 #include "pwm.h"
 #include "ports.h"
-#include "led.h"
 
 
 #define LEFT_TURN           _LATE2 = 1; _LATE4 = 0

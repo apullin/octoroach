@@ -42,6 +42,7 @@ is invalid and void.
 #define CMD_SET_TAIL_QUEUE          0x92
 #define CMD_SET_TAIL_GAINS          0x93
 #define CMD_SET_THRUST_HALL         0x94
+#define CMD_SET_OL_VIBE             0x95
 
 //Argument lengths
 //lenghts are in bytes
@@ -64,15 +65,13 @@ is invalid and void.
 
 unsigned int cmdSetup(void);
 void cmdHandleRadioRxBuffer(void);
-void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
-
 
 
 /////// Argument structures
 
 //cmdSetThrustOpenLoop
 typedef struct{
-	int dc1, dc2;
+	int channel, dc;
 } _args_cmdSetThrustOpenLoop;
 
 //cmdSetThrustClosedLoop
@@ -178,6 +177,13 @@ typedef struct{
         int chan2;
         unsigned int runtime2;
 } _args_cmdSetThrustHall;
+
+//cmdSetOLVibe
+typedef struct{
+	int channel;
+        int frequency;
+        int amplitude;
+} _args_cmdSetOLVibe;
 
 #endif // __CMD_H
 

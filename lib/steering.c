@@ -23,8 +23,8 @@
 //Steering controller variables
 pidObj steeringPID;
 
-fractional steering_abcCoeffs[3] __attribute__((section(".xbss, bss, xmemory")));
-fractional steering_controlHists[3] __attribute__((section(".ybss, bss, ymemory")));
+static fractional steering_abcCoeffs[3] __attribute__((section(".xbss, bss, xmemory")));
+static fractional steering_controlHists[3] __attribute__((section(".ybss, bss, ymemory")));
 
 //#define GYRO_AVG_SAMPLES 	32
 
@@ -99,7 +99,7 @@ void steeringSetup(void) {
     //filterAvgCreate(&gyroZavg, GYRO_AVG_SAMPLES);
     //This is now owned by imu.c
 
-    steeringPID.onoff = PID_ON; //OFF by default
+    steeringPID.onoff = PID_OFF; //OFF by default
 
     steeringMode = STEERMODE_DECREASE;
 }
@@ -251,3 +251,10 @@ void steeringOn() {
     steeringPID.output = 0;
 }
 
+int steeringGetInput(){
+    return steeringPID.input;
+}
+
+int steeringGetOutput(){
+    return steeringPID.output;
+}

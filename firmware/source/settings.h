@@ -18,8 +18,8 @@
 //Hard-coded destination address, must match basestation or XBee addr
 #define RADIO_DST_ADDR		0x2051
 
-#define RADIO_RXPQ_MAX_SIZE 	20
-#define RADIO_TXPQ_MAX_SIZE	60
+#define RADIO_RXPQ_MAX_SIZE 	8
+#define RADIO_TXPQ_MAX_SIZE	8
 
 /////// System Service settings ///////
 #define SYS_SERVICE_T1 // For legCtrl, hall
@@ -34,5 +34,10 @@
 #define TELEM_TYPE orTelemStruct_t
 #define TELEM_INCLUDE "or_telem.h"
 #define TELEMPACKFUNC(x) orTelemGetData(x)
+
+//Motor controller output routing
+// The leg controllers can be directed to different motor outputs from here
+#define OCTOROACH_LEG1_MOTOR_CHANNEL 1
+#define OCTOROACH_LEG2_MOTOR_CHANNEL 2
 
 #endif //__SETTINGS_H

@@ -2,8 +2,6 @@
 
 #include "utils.h"
 #include "led.h"
-#include "gyro.h"
-#include "xl.h"
 #include "pid.h"
 #include "dfilter_avg.h"
 #include "adc_pid.h"
@@ -12,25 +10,30 @@
 //#include "ams-enc.h"
 #include "imu.h"
 
-#define TIMER_FREQUENCY     300.0                 // 300 Hz
+#if defined (__IMAGEPROC24)
+    #include "gyro.h"
+    #include "xl.h"
+#elif defined (__IMAGEPROC25)
+    #include "mpu6000.h"
+#endif
+
+#define TIMER_FREQUENCY     100.0                 // 300 Hz
 #define TIMER_PERIOD        1/TIMER_FREQUENCY   //This is used for numerical integration
 
 //Setup for Gyro Z averaging filter
 #define GYRO_AVG_SAMPLES 	4
 
+#define ABS(my_val) ((my_val) < 0) ? -(my_val) : (my_val)
 
 //Filter stuctures for gyro variables
 static dfilterAvgInt_t gyroZavg;
 
 
 //TODO: change these to arrays
-static int lastGyroXValue = 0;
-static int lastGyroYValue = 0;
-static int lastGyroZValue = 0;
+static int lastGyro[3] = {0,0,0};
+static int lastXL[3] = {0,0,0};
 
-static float lastGyroXValueDeg = 0.0;
-static float lastGyroYValueDeg = 0.0;
-static float lastGyroZValueDeg = 0.0;
+static float lastGyroDeg[3] = {0,0,0};
 
 static int lastGyroZValueAvg = 0;
 
@@ -55,44 +58,51 @@ static void imuServiceRoutine(void){
     imuISRHandler();
 }
 
-static void imuISRHandler(){
-	CRITICAL_SECTION_START
-	int gyroData[3];
+static void imuISRHandler() {
 
-	/////// Get Gyro data and calc average via filter
-        gyroReadXYZ(); //bad design of gyro module; todo: humhu
-	gyroGetIntXYZ(gyroData);
-	
+    int gyroData[3];
+    int xlData[3];
+//CRITICAL_SECTION_START
+#if defined (__IMAGEPROC24)
+            /////// Get Gyro data and calc average via filter
+            gyroReadXYZ(); //bad design of gyro module; todo: humhu
+    gyroGetIntXYZ(gyroData);
+#elif defined (__IMAGEPROC25)
+    mpuGetGyro(gyroData);
+    mpuGetXl(xlData);
+#endif
+//CRITICAL_SECTION_END
 
-        lastGyroXValue = gyroData[0];
-        lastGyroYValue = gyroData[1];
-        lastGyroZValue = gyroData[2];
+    lastGyro[0] = gyroData[0];
+    lastGyro[1] = gyroData[1];
+    lastGyro[2] = gyroData[2];
 
+    lastXL[0] = xlData[0];
+    lastXL[1] = xlData[1];
+    lastXL[2] = xlData[2];
+
+
+    int i;
+    for (i = 0; i < 3; i++) {
         //Threshold:
-        
-        if((lastGyroXValue < GYRO_DRIFT_THRESH) && (lastGyroXValue > -GYRO_DRIFT_THRESH)){
-            lastGyroXValue = lastGyroXValue >> 1; //fast divide by 2
+        if (ABS(lastGyro[i]) < GYRO_DRIFT_THRESH) {
+            lastGyro[0] = lastGyro[i] >> 1; //fast divide by 2
         }
-        if((lastGyroYValue < GYRO_DRIFT_THRESH) && (lastGyroYValue > -GYRO_DRIFT_THRESH)){
-            lastGyroYValue = lastGyroYValue >> 1; //fast divide by 2
-        }
-        if((lastGyroZValue < GYRO_DRIFT_THRESH) && (lastGyroZValue > -GYRO_DRIFT_THRESH)){
-            lastGyroZValue = lastGyroZValue >> 1; //fast divide by 2
-        }
-        
+    }
 
-        lastGyroXValueDeg = (float) (lastGyroXValue*LSB2DEG);
-        lastGyroYValueDeg = (float) (lastGyroYValue*LSB2DEG);
-        lastGyroZValueDeg = (float) (lastGyroZValue*LSB2DEG); 
 
-        dfilterAvgUpdate(&gyroZavg, gyroData[2]);
+    lastGyroDeg[0] = (float) (lastGyro[0] * LSB2DEG);
+    lastGyroDeg[1] = (float) (lastGyro[1] * LSB2DEG);
+    lastGyroDeg[2] = (float) (lastGyro[2] * LSB2DEG);
 
-        lastGyroZValueAvg = dfilterAvgCalc(&gyroZavg);
+    dfilterAvgUpdate(&gyroZavg, gyroData[2]);
 
-        lastGyroZValueAvgDeg = (float)lastGyroZValueAvg*LSB2DEG;
+    lastGyroZValueAvg = dfilterAvgCalc(&gyroZavg);
 
-        lastBodyZPositionDeg = lastBodyZPositionDeg + lastGyroZValueDeg*TIMER_PERIOD;
-        CRITICAL_SECTION_END
+    lastGyroZValueAvgDeg = (float) lastGyroZValueAvg*LSB2DEG;
+
+    lastBodyZPositionDeg = lastBodyZPositionDeg + lastGyroDeg[2]*TIMER_PERIOD;
+
 }
 
 static void SetupTimer4(){
@@ -102,7 +112,8 @@ static void SetupTimer4(){
     // prescale 1:64
     T4CON1value = T4_ON & T4_IDLE_CON & T4_GATE_OFF & T4_PS_1_64 & T4_SOURCE_INT;
     // Period is set so that period = 3.3ms (300Hz), MIPS = 40
-    T4PERvalue = 2083; // ~300Hz (40e6/(64*2083) where 64 is the prescaler
+    //T4PERvalue = 2083; // ~300Hz (40e6/(64*2083) where 64 is the prescaler
+    T4PERvalue = 2083*3; // ~100Hz (40e6/(64*3*2083) where 64 is the prescaler
     int retval;
     retval = sysServiceConfigT4(T4CON1value, T4PERvalue, T4_INT_PRIOR_6 & T4_INT_ON);
 }
@@ -117,28 +128,28 @@ void imuSetup(){
 }
 
 int imuGetGyroXValue() {
-    return lastGyroXValue;
+    return lastGyro[0];
 }
 
 int imuGetGyroYValue() {
-    return lastGyroYValue;
+    return lastGyro[1];
 }
 
 int imuGetGyroZValue() {
-    return lastGyroZValue;
+    return lastGyro[2];
 }
 
 
 float imuGetGyroXValueDeg() {
-    return lastGyroXValueDeg;
+    return lastGyroDeg[0];
 }
 
 float imuGetGyroYValueDeg() {
-    return lastGyroYValueDeg;
+    return lastGyroDeg[1];
 }
 
 float imuGetGyroZValueDeg() {
-    return lastGyroZValueDeg;
+    return lastGyroDeg[2];
 }
 
 
@@ -157,4 +168,16 @@ float imuGetBodyZPositionDeg() {
 
 void imuResetGyroZAvg(){
     dfilterZero(&gyroZavg);
+}
+
+int imuGetXLXValue() {
+    return lastXL[0];
+}
+
+int imuGetXLYValue() {
+    return lastXL[1];
+}
+
+int imuGetXLZValue() {
+    return lastXL[2];
 }
