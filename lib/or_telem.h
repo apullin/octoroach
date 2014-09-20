@@ -6,6 +6,7 @@
 
 // Data structure type
 typedef struct {
+//START_PARSE
     int16_t inputL;
     int16_t inputR;
     int16_t dcA;
