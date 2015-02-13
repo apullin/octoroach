@@ -78,6 +78,7 @@
         <itemPath>../../imageproc-lib/mac_packet.c</itemPath>
         <itemPath>../../imageproc-lib/tih.c</itemPath>
         <itemPath>../../imageproc-lib/adc_pid.c</itemPath>
+        <itemPath>../../imageproc-lib/traps.c</itemPath>
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../../imageproc-lib/delay.s</itemPath>
@@ -91,7 +92,6 @@
         <itemPath>../lib/or_telem.c</itemPath>
         <itemPath>../../imageproc-lib/mpu6000.c</itemPath>
         <itemPath>../lib/ol-vibe.c</itemPath>
-        <itemPath>../../imageproc-lib/traps.c</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.c</itemPath>
       <itemPath>source/main.c</itemPath>
