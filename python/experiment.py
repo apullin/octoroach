@@ -6,9 +6,13 @@ Contents of this file are copyright Andrew Pullin, 2013
 
 """
 from lib import command
-import time,sys
+import time,sys,os
 import serial
-import shared
+
+# Path to imageproc-settings repo must be added
+sys.path.append(os.path.dirname("../../imageproc-settings/"))
+sys.path.append(os.path.dirname("../imageproc-settings/"))  
+import shared_multi as shared
 
 from or_helpers import *
 
@@ -202,16 +206,17 @@ def trapRun(topspeed = 0, tstime = 0, acceltime = 0, deceltime = 0, steertype = 
 #Provide a try-except over the whole main function
 # for clean exit. The Xbee module should have better
 # provisions for handling a clean exit, but it doesn't.
+#TODO: provide a more informative exit here; stack trace, exception type, etc
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
         print "\nRecieved Ctrl+C, exiting."
-        shared.xb.halt()
-        shared.ser.close()
     except Exception as args:
-        print "\nGeneral exception:",args
-        print "Attemping to exit cleanly..."
-        shared.xb.halt()
-        shared.ser.close()
-        sys.exit()
+        print "\nGeneral exception from main:\n",args,'\n'
+        print "\n    ******    TRACEBACK    ******    "
+        traceback.print_exc()
+        print "    *****************************    \n"
+        print "Attempting to exit cleanly..."
+    finally:
+        xb_safe_exit(shared.xb)

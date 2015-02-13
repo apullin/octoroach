@@ -9,12 +9,18 @@ Portions of this file were derived from exp.py, author Stan Baek.
 
 import glob
 import time
-import sys
+import sys,os
 from lib import command
 from callbackFunc import xbee_received
 import datetime
 import serial
-import shared
+
+# Path to imageproc-settings repo must be added
+sys.path.append(os.path.dirname("../../imageproc-settings/"))
+sys.path.append(os.path.dirname("../imageproc-settings/"))  
+
+import shared_multi as shared
+
 from struct import pack,unpack
 from xbee import XBee
 from math import ceil,floor
@@ -408,13 +414,16 @@ def setupSerial(COMPORT , BAUDRATE , timeout = 3, rtscts = 0):
     return XBee(ser, callback = xbee_received)
     
     
-
-    
-def xb_safe_exit():
+  
+def xb_safe_exit(xb):
     print "Halting xb"
-    shared.xb.halt()
+    if xb is not None:
+        xb.halt()
+        
     print "Closing serial"
-    shared.ser.close()
+    if xb.serial is not None:
+        xb.serial.close()
+        
     print "Exiting..."
     sys.exit(1)
 
