@@ -6,10 +6,14 @@ Contents of this file are copyright Andrew Pullin, 2013
 """
 
 from lib import command
-import time,sys
+import time,sys,os
 import serial
-import shared
 import pygame
+
+# Path to imageproc-settings repo must be added
+sys.path.append(os.path.dirname("../../imageproc-settings/"))
+sys.path.append(os.path.dirname("../imageproc-settings/"))  
+import shared_multi as shared
 
 from or_helpers import *
 
@@ -20,12 +24,17 @@ EXIT_WAIT   = False
 
 MAXTHROT = 100
 
-BUTTON_Y = 3
-BUTTON_B = 1
-BUTTON_L1 = 4
-BUTTON_R1 = 5
-BUTTON_X = 2
-BUTTON_A = 0
+#For PS3 controller
+BUTTON_X = 0
+BUTTON_CIRC = 1
+BUTTON_SQUARE = 2
+BUTTON_TRI = 3
+# up, down, left, right are in a "hat"
+# L1, R1 are axes
+BUTTON_L2 = 4
+BUTTON_L3 =  8
+BUTTON_R2 = 5
+BUTTON_R3 =   9
 
 
 def main():
@@ -73,14 +82,19 @@ def main():
             pygame.event.pump()
             
             thrustInput = -j.get_axis(1)
-            turnInput = -j.get_axis(4)
+            turnInput = j.get_axis(4)
             
-            if j.get_button(BUTTON_B) == 1 and MAXTHROT > 0:
-                MAXTHROT = MAXTHROT - tinc
-            elif j.get_button(BUTTON_Y) ==1 and MAXTHROT < 416:
+            hatval = j.get_hat(0)
+            
+            if hatval[1] == 1:
                 MAXTHROT = MAXTHROT + tinc
+            elif hatval[1] == -1:
+                MAXTHROT = MAXTHROT - tinc
             
-            
+            if MAXTHROT < 0:
+                MAXTHROT = 0
+            if MAXTHROT > 450:
+                MAXTHROT = 450
             
             DEADBAND = 0.05
             if abs(turnInput) < DEADBAND:
@@ -88,9 +102,10 @@ def main():
             if (abs(thrustInput) < DEADBAND):
                 thrustInput = 0
             
-            left_throt = int(-turnInput * MAXTHROT + MAXTHROT*thrustInput )
-            right_throt = int(turnInput * MAXTHROT + MAXTHROT*thrustInput )
+            left_throt = int(turnInput * MAXTHROT + MAXTHROT*thrustInput )
+            right_throt = int(-turnInput * MAXTHROT + MAXTHROT*thrustInput )
             
+            # positive and negative clipping
             if left_throt > MAXTHROT:
                 left_throt = MAXTHROT
             if left_throt < -MAXTHROT:
@@ -100,41 +115,16 @@ def main():
             if right_throt < -MAXTHROT:
                 right_throt = -MAXTHROT
             
-            #### OL Vibe seciton ####
-            amp = 3000
-            if j.get_button(BUTTON_X) == 1:
-                olVibeFreq = olVibeFreq + vinc
-            if j.get_button(BUTTON_A) == 1:
-                olVibeFreq = olVibeFreq - vinc
-            if olVibeFreq < 0:
-                olVibeFreq = 0;
-            
-            
-            #if  (j.get_button(BUTTON_R1) == 1) and (LAST_BUTTON_R1 == 0):
-            if  (j.get_button(BUTTON_R1) == 1):
-                VIBRATION_ON = 1
-                R1.setOLVibe(1, olVibeFreq, amp)
-                R1.setOLVibe(2, olVibeFreq, amp)
-            #if (j.get_button(BUTTON_R1) == 0) and (LAST_BUTTON_R1 == 1):
-            if (j.get_button(BUTTON_R1) == 0):
-                VIBRATION_ON = 0
-                R1.setOLVibe(1, olVibeFreq, 0)
-                R1.setOLVibe(2, olVibeFreq, 0)
-                
-            #LAST_BUTTON_R1 = j.get_button(BUTTON_R1)
-            
             sys.stdout.write(" "*60 + "\r")
             sys.stdout.flush()
-            outstring = "L: {0:3d}  |   R: {1:3d}   MAX: {2:1d}    Vibe: {3:0.1f}".format(left_throt,right_throt,MAXTHROT,olVibeFreq)
+            outstring = "L: {0:3d}  |   R: {1:3d}   MAX: {2:1d} ".format(left_throt,right_throt,MAXTHROT)
             #outstring = outstring + "(" + str(MAXTHROT) + ")\r"
-            if VIBRATION_ON == 1:
-                outstring = outstring + "    ((!!))"
             outstring = outstring + "\r"
             sys.stdout.write(outstring)
             sys.stdout.flush()
             
             throt = [left_throt,right_throt]
-            if throt != lastthrot and (VIBRATION_ON == 0): #Only send new packet if throttles have changed
+            if throt != lastthrot: #Only send new packet if throttles have changed
                 R1.setMotorSpeeds(left_throt, right_throt)
                 lastthrot = throt
                 
