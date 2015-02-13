@@ -67,7 +67,9 @@ class Robot:
     dataFileName = ''
     imudata = [ [] ]
     numSamples = 0
+    telemSampleFreq = 1000
     VERBOSE = True
+    telemFormatString = '%d,' + '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f'
     
     def __init__(self, address, xb):
         self.DEST_ADDR = address
@@ -130,7 +132,7 @@ class Robot:
         self.steeringGains = gains
         while not (self.steering_gains_set) and (tries <= retries):
             self.clAnnounce()
-            print "Setting steering gains...   ",tries,"/8"
+            print "Setting steering gains...   ",tries,"/",retries
             self.tx( 0, command.SET_STEERING_GAINS, pack('6h',*gains))
             tries = tries + 1
             time.sleep(0.3)
@@ -238,6 +240,19 @@ class Robot:
     def setMotorSpeeds(self, spleft, spright):
         thrust = [spleft, 0, spright, 0, 0]
         self.tx( 0, command.SET_THRUST_CLOSED_LOOP, pack('5h',*thrust))
+		
+    def setTIH(self, channel, dc):
+        thrust = [channel, dc]
+        self.tx( 0, command.SET_THRUST_OPEN_LOOP, pack('2h',*thrust))
+        
+    def setOLVibe(self, chan, freq, amp, phase):
+        # freq should be a float in the range {0.0190738, 1250.}
+        # phase should be a float in the range {-1.0, 1.0}
+        freqconv = 52.428;
+        inc = int(round(float(freqconv) * float(freq)))
+        phase_fixed = int(32768 * phase);
+        thrust = [chan, inc, amp, phase_fixed]
+        self.tx( 0, command.SET_OL_VIBE, pack('4h',*thrust))
             
     def query(self, retries = 8):
         self.robot_queried = False
@@ -249,7 +264,7 @@ class Robot:
             tries = tries + 1
             time.sleep(0.3)   
     
-    def downloadTelemetry(self, timeout = 5):
+    def downloadTelemetry(self, timeout = 5, retry = True):
         #supress callback output messages for the duration of download
         self.VERBOSE = False
         self.clAnnounce()
@@ -264,29 +279,37 @@ class Robot:
             dlProgress(self.numSamples - self.imudata.count([]) , self.numSamples)
             if (time.time() - shared.last_packet_time) > timeout:
                 print ""
+                #Terminal message about missed packets
                 self.clAnnounce()
-                print "Readback timeout exceeded, restarting."
+                print "Readback timeout exceeded"
                 print "Missed", self.imudata.count([]), "packets."
+                print "Didn't get packets:"
                 for index,item in enumerate(self.imudata):
                     if item == []:
-                        print "Didn't get packet#",index+1
-            
-                raw_input("Press Enter to start readback ...")
-                self.imudata = [ [] ] * self.numSamples
-                self.clAnnounce()
-                print "Started telemetry download"
-                dlStart = time.time()
-                shared.last_packet_time = dlStart
-                self.tx( 0, command.FLASH_READBACK, pack('=L',self.numSamples))
+                        print "#",index+1,
+                print "" 
+                break
+                # Retry telem download            
+                if retry == True:
+                    raw_input("Press Enter to restart telemetry readback ...")
+                    self.imudata = [ [] ] * self.numSamples
+                    self.clAnnounce()
+                    print "Started telemetry download"
+                    dlStart = time.time()
+                    shared.last_packet_time = dlStart
+                    self.tx( 0, command.FLASH_READBACK, pack('=L',self.numSamples))
+                else: #retry == false
+                    print "Not trying telemetry download."          
 
         dlEnd = time.time()
         dlTime = dlEnd - dlStart
         #Final update to download progress bar to make it show 100%
         dlProgress(self.numSamples-self.imudata.count([]) , self.numSamples)
-        totBytes = 52*self.numSamples
+        #totBytes = 52*self.numSamples
+        totBytes = 52*(self.numSamples - self.imudata.count([]))
         datarate = totBytes / dlTime / 1000.0
         print '\n'
-        self.clAnnounce()
+        #self.clAnnounce()
         #print "Got ",self.numSamples,"samples in ",dlTime,"seconds"
         self.clAnnounce()
         print "DL rate: {0:.2f} KB/s".format(datarate)
@@ -303,7 +326,18 @@ class Robot:
         self.findFileName()
         self.writeFileHeader()
         fileout = open(self.dataFileName, 'a')
-        np.savetxt(fileout , np.array(self.imudata), '%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f', delimiter = ',')
+        sanitized = [item for item in self.imudata if len(item) == 22]
+
+        np.savetxt(fileout , np.array(sanitized), self.telemFormatString, delimiter = ',')
+        #try:
+        #    np.savetxt(fileout , np.array(sanitized), self.telemFormatString, delimiter = ',')
+        #except ValueError:
+        #    print "Error saving data to file"
+        #    temp = np.array(self.imudata)
+        #    print "terminal length: ", len(temp[-1])
+        #    print "terminal array: ", temp[-1]
+        #    print "lengths : ", map(len, self.imudata)
+
         fileout.close()
         self.clAnnounce()
         print "Telemtry data saved to", self.dataFileName
@@ -323,7 +357,7 @@ class Robot:
         fileout.write('%  numSamples    = ' + repr(self.numSamples) + '\n')
         fileout.write('%  moveq         = ' + repr(self.moveq) + '\n')
         fileout.write('% Columns: \n')
-        fileout.write('% time | Llegs | Rlegs | DCL | DCR | GyroX | GyroY | GyroZ | GryoZAvg | AccelX | AccelY |AccelZ | LBEMF | RBEMF | Vbatt | SteerIn | SteerOut | HallL | HallR | YawAngle\n')
+        fileout.write('% time | inputL | inputR| DCA | DCB | DCC | DCD | GyroX | GyroY | GyroZ | GryoZAvg | AccelX | AccelY |AccelZ | BEMFA | BEMFB | BEMFC | BEMFD | SteerIn | SteerOut | Vbatt | YawAngle\n')
         fileout.close()
 
     def setupImudata(self, moveq):
@@ -333,7 +367,7 @@ class Robot:
         self.runtime = sum([moveq[i] for i in [(ind*MOVE_QUEUE_ENTRY_LEN)+3 for ind in range(0,moveq[0])]])
        
         #calculate the number of telemetry packets we expect
-        self.numSamples = int(ceil(300 * (self.runtime + self.leadinTime + self.leadoutTime) / 1000.0))
+        self.numSamples = int(ceil(self.telemSampleFreq * (self.runtime + self.leadinTime + self.leadoutTime) / 1000.0))
         #allocate an array to write the downloaded telemetry data into
         self.imudata = [ [] ] * self.numSamples
         self.clAnnounce()

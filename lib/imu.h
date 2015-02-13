@@ -18,6 +18,10 @@ float imuGetGyroXValueDeg();
 float imuGetGyroYValueDeg();
 float imuGetGyroZValueDeg();
 
+int imuGetXLXValue();
+int imuGetXLYValue();
+int imuGetXLZValue();
+
 int imuGetGyroZValueAvg();
 float imuGetGyroZValueAvgDeg();
 

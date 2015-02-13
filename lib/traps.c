@@ -92,6 +92,9 @@ void __attribute__((__interrupt__, no_auto_psv)) _AddressError(void) {
         delay_ms(100);
         //for (k=0; k<100; k++) { delay_ms(5); }   // Waste approximatelly 50ms
     };
+    //Nop();
+    //Nop();
+    //return;
 }
 
 void __attribute__((__interrupt__, no_auto_psv)) _StackError(void) {
@@ -102,6 +105,9 @@ void __attribute__((__interrupt__, no_auto_psv)) _StackError(void) {
 void __attribute__((__interrupt__, no_auto_psv)) _MathError(void) {
     INTCON1bits.MATHERR = 0; //Clear the trap flag
     while (1);
+    //Nop();
+    //Nop();
+    //return;
 }
 
 void __attribute__((__interrupt__, no_auto_psv)) _DMACError(void) {

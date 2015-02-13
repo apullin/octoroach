@@ -17,7 +17,6 @@ is invalid and void.
 #include "gyro.h"
 #include "xl.h"
 #include "sclock.h"
-#include "led.h"
 #include "motor_ctrl.h"
 #include "sensors.h"
 #include "dfmem.h"
@@ -31,6 +30,8 @@ is invalid and void.
 #include "tail_ctrl.h"
 #include "hall.h"
 #include "version.h"
+#include "tih.h"
+#include "ol-vibe.h"
 
 #include "settings.h" //major config defines, sys-service, hall, etc
 
@@ -92,6 +93,7 @@ static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned
 static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame);
 static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned char *frame);
 static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame);
 
 /*-----------------------------------------------------------------------------
  *          Public functions
@@ -133,7 +135,7 @@ unsigned int cmdSetup(void) {
     cmd_func[CMD_SET_TAIL_QUEUE] = &cmdSetTailQueue;
     cmd_func[CMD_SET_TAIL_GAINS] = &cmdSetTailGains;
     cmd_func[CMD_SET_THRUST_HALL] = &cmdSetThrustHall;
-
+    cmd_func[CMD_SET_OL_VIBE]  = &cmdSetOLVibe;
     return 1;
 }
 
@@ -143,7 +145,7 @@ void cmdHandleRadioRxBuffer(void) {
     unsigned char command, status;
     
     if ((packet = radioDequeueRxPacket()) != NULL) {
-        LED_ORANGE = 1;
+        //LED_YELLOW = 1;
         pld = macGetPayload(packet);
         status = payGetStatus(pld);
         command = payGetType(pld);
@@ -156,9 +158,6 @@ void cmdHandleRadioRxBuffer(void) {
     return;
 }
 
-//////////////////////////////////
-//typedef struct { int dc1, dc2;} _args_cmdSetThrustOpenLoop;
-/////////////////////////////////
 
 /*-----------------------------------------------------------------------------
  * ----------------------------------------------------------------------------
@@ -168,7 +167,7 @@ void cmdHandleRadioRxBuffer(void) {
 -----------------------------------------------------------------------------*/
 
 static void cmdSetThrust(unsigned char status, unsigned char length, unsigned char *frame) {
-
+/*
     unsigned char chr_test[4];
     float *duty_cycle = (float*) chr_test;
 
@@ -179,10 +178,11 @@ static void cmdSetThrust(unsigned char status, unsigned char length, unsigned ch
 
     mcSetDutyCycle(MC_CHANNEL_PWM1, duty_cycle[0]);
     //mcSetDutyCycle(1, duty_cycle[0]);
+ */
 }
 
 static void cmdSteer(unsigned char status, unsigned char length, unsigned char *frame) {
-
+/*
     unsigned char chr_test[4];
     float *steer_value = (float*) chr_test;
 
@@ -192,6 +192,7 @@ static void cmdSteer(unsigned char status, unsigned char length, unsigned char *
     chr_test[3] = frame[3];
 
     mcSteer(steer_value[0]);
+    */
 }
 
 /*-----------------------------------------------------------------------------
@@ -226,11 +227,8 @@ static void cmdSetThrustOpenLoop(unsigned char status, unsigned char length, uns
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustOpenLoop, argsPtr, frame);
 
-    //set motor duty cycles
-    //PDC1 = argsPtr->dc1;
-    //PDC2 = argsPtr->dc1;
-    mcSetDutyCycle(MC_CHANNEL_PWM1, argsPtr->dc1);
-    mcSetDutyCycle(MC_CHANNEL_PWM2, argsPtr->dc2);
+    //set motor duty cycle
+    tiHSetDC(argsPtr->channel, argsPtr->dc);
 }
 
 static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, unsigned char *frame) {
@@ -314,7 +312,7 @@ static void cmdSetSteeringGains(unsigned char status, unsigned char length, unsi
     //Send confirmation packet, which is the exact same data payload as what was sent
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
-    radioSendData(RADIO_DST_ADDR, 0, CMD_SET_STEERING_GAINS, length, frame, 0);
+    radioSendData(RADIO_DST_ADDR, 0, CMD_SET_STEERING_GAINS, length, frame, 1);
 }
 
 static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigned char *frame) {
@@ -362,10 +360,16 @@ static void cmdEraseSector(unsigned char status, unsigned char length, unsigned 
 }
 
 static void cmdFlashReadback(unsigned char status, unsigned char length, unsigned char *frame) {
-    LED_YELLOW = 1;
+    //LED_YELLOW = 1;
     PKT_UNPACK(_args_cmdFlashReadback, argsPtr, frame);
 
+    //Horibble hack: Disable IMU while erading back telem
+    _T4IE = 0;
+
     telemReadbackSamples(argsPtr->samples);
+
+    //Horibble hack: Disable IMU while erading back telem
+    _T4IE = 1;
 }
 
 static void cmdSleep(unsigned char status, unsigned char length, unsigned char *frame) {
@@ -387,6 +391,7 @@ static void cmdSleep(unsigned char status, unsigned char length, unsigned char *
 
 // set up velocity profile structure  - assume 4 set points for now, generalize later
 static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigned char *frame) {
+/*
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetVelProfile, argsPtr, frame);
 
@@ -397,12 +402,13 @@ static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigne
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
     radioSendData(RADIO_DST_ADDR, 0, CMD_SET_VEL_PROFILE, length, frame, 0);
+ */
 }
 
 // report motor position and  reset motor position (from Hall effect sensors)
 // note motor_count is long (4 bytes)
 void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame) {
-
+/*
     hallZeroPos(0);
     hallZeroPos(1);
 
@@ -412,7 +418,7 @@ void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
     radioSendData(RADIO_DST_ADDR, 0, CMD_ZERO_POS, 2*sizeof(unsigned long), (unsigned char*)hallCounts, 0);
-
+ */
 }
 
 // alternative telemetry which runs at 1 kHz rate inside PID loop
@@ -437,6 +443,8 @@ void cmdWhoAmI(unsigned char status, unsigned char length, unsigned char *frame)
 }
 
 static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned char *frame) {
+    /*
+    
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetPIDGains, argsPtr, frame);
 
@@ -446,9 +454,13 @@ static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
     radioSendData(RADIO_DST_ADDR, 0, CMD_SET_HALL_GAINS, length, frame, 0);
+     */
 }
 
 static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame) {
+    //Tail control being deprecated from mainline project
+    //TODO () : figure out an easy way of switching in tail control
+    /*
     //The count is read via standard pointer math
     unsigned int count;
     count = (unsigned int) (*(frame));
@@ -468,9 +480,13 @@ static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned
         //idx =+ sizeof(_args_cmdSetMoveQueue);
         idx += sizeof (tailCmdStruct);
     }
+  */
 }
 
 static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned char *frame) {
+    //Tail control being deprecated from mainline project
+    //TODO () : figure out an easy way of switching in tail control
+    /*
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetTailGains, argsPtr, frame);
 
@@ -479,10 +495,12 @@ static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
     radioSendData(RADIO_DST_ADDR, 0, CMD_SET_TAIL_GAINS, length, frame, 0);
+     */
 }
 
 
 static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigned char *frame) {
+    /*
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustHall, argsPtr, frame);
 
@@ -490,4 +508,14 @@ static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigne
     hallPIDOn(0);
     hallPIDSetInput(1 , argsPtr->chan1, argsPtr->runtime2);
     hallPIDOn(1);
+     */
+}
+
+static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame){
+    //Unpack unsigned char* frame into structured values
+    PKT_UNPACK(_args_cmdSetOLVibe, argsPtr, frame);
+
+    olVibeSetFrequency(argsPtr->channel, argsPtr->incr);
+    olVibeSetPhase(argsPtr->channel, argsPtr->phase);
+    olVibeSetAmplitude(argsPtr->channel, argsPtr->amplitude);
 }

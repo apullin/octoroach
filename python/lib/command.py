@@ -73,5 +73,6 @@ ZERO_POS =                  0x90
 SET_HALL_GAINS =            0x91
 SET_TAIL_QUEUE =            0x92
 SET_TAIL_GAINS =            0x93
+SET_OL_VIBE =               0x95
 
 # CMD values of 0xF0(240) - 0xFF(255) are reserved for future use

@@ -6,7 +6,6 @@
 #include "telem.h"
 #include "radio.h"
 #include "at86rf231_driver.h"
-#include "led.h"
 #include "sclock.h"
 #include "sys_service.h"
 #include "cmd.h" //for CMD codes
@@ -14,7 +13,7 @@
 #include "debugpins.h"
 
 //Timer parameters
-#define TIMER_FREQUENCY     300                 // 400 Hz
+#define TIMER_FREQUENCY     1000.0                // 1000 Hz
 #define TIMER_PERIOD        1/TIMER_FREQUENCY
 #define DEFAULT_SKIP_NUM    1 //Default to 150 Hz save rate
 
@@ -22,7 +21,7 @@
 #if defined(__RADIO_HIGH_DATA_RATE)
 #define READBACK_DELAY_TIME_MS 3
 #else
-#define READBACK_DELAY_TIME_MS 9
+#define READBACK_DELAY_TIME_MS 4
 #endif
 
 telemStruct_t telemBuffer;
@@ -76,12 +75,10 @@ static void SetupTimer5() {
     // prescale 1:64
     T5CON1value = T5_ON & T5_IDLE_CON & T5_GATE_OFF & T5_PS_1_64 & T5_SOURCE_INT;
     // Period is set so that period = 5ms (200Hz), MIPS = 40
-    //period = 3125; // 200Hz
-    T5PERvalue = 2083; // ~300Hz
+    //T5PERvalue = 2083; // ~300Hz
+    T5PERvalue = 625; //1Khz
     int retval;
     retval = sysServiceConfigT5(T5CON1value, T5PERvalue, T5_INT_PRIOR_4 & T5_INT_ON);
-    //OpenTimer5(con_reg, period);
-    //ConfigIntTimer5(T5_INT_PRIOR_5 & T5_INT_ON);
 }
 
 void telemSetup() {
@@ -107,10 +104,6 @@ void telemReadbackSamples(unsigned long numSamples) {
     int delaytime_ms = READBACK_DELAY_TIME_MS;
     unsigned long i = 0; //will actually be the same as the sampleIndex
 
-    LED_GREEN = 1;
-    //Disable motion interrupts for readback
-    //_T1IE = 0; _T5IE=0; //TODO: what is a cleaner way to do this?
-
     telemStruct_t sampleData;
 
     for (i = 0; i < numSamples; i++) {
@@ -124,39 +117,19 @@ void telemReadbackSamples(unsigned long numSamples) {
             delaytime_ms += 0;
             //debugpins1_clr();
         } while (trxGetLastACKd() == 0);
+        
         delaytime_ms = READBACK_DELAY_TIME_MS;
     }
-
-    LED_GREEN = 0;
-
 }
 
 void telemSendDataDelay(telemStruct_t* sample, int delaytime_ms) {
-    // Create Payload, set status and type (don't cares)
-    MacPacket pkt = radioRequestPacket(telemPacketSize);
-    if(pkt == NULL) { return; }
-    macSetDestPan(pkt, RADIO_PAN_ID);
-    macSetDestAddr(pkt, RADIO_DST_ADDR);
-    Payload pld = macGetPayload(pkt);
-
-    paySetData(pld, telemPacketSize, (unsigned char*) sample);
-    paySetType(pld, CMD_SPECIAL_TELEMETRY); 
-    paySetStatus(pld, 0);
-
-    //Force immediate send
-    while(!radioEnqueueTxPacket(pkt)) { 
-        radioReturnPacket(pkt);	// Delete packet if append fails
-    }
-
-    radioProcess();
-
+    radioSendData(RADIO_DST_ADDR, 0, CMD_SPECIAL_TELEMETRY, telemPacketSize, (unsigned char *)sample, 0);
     delay_ms(delaytime_ms); // allow radio transmission time
-
 }
 
 
 //Saves telemetry data structure into flash memory, in order
-
+//Position in flash memory is maintained by dfmem module
 void telemSaveData(telemStruct_t * telemPkt) {
     
     //Write the packet header info to the DFMEM
@@ -175,7 +148,13 @@ void telemErase(unsigned long numSamples) {
     //dfmemEraseSectorsForSamples(numSamples, sizeof (telemU));
     // TODO (apullin) : Add an explicit check to see if the number of saved
     //                  samples will fit into memory!
-    LED_2 = 1;
+
+    //Green LED will be used as progress indicator
+
+    //Horibble hack: Disable IMU while erasing flash
+    _T4IE = 0;
+
+    LED_GREEN = 1;
     unsigned int firstPageOfSector, i;
 
     //avoid trivial case
@@ -193,28 +172,34 @@ void telemErase(unsigned long numSamples) {
     //Note that numSectors will be the actual number of sectors to erase,
     //   even though the sectors themselves are numbered starting at '0'
     dfmemEraseSector(0); //Erase Sector 0a
+    LED_GREEN = ~LED_GREEN;
     dfmemEraseSector(8); //Erase Sector 0b
+    LED_GREEN = ~LED_GREEN;
 
-    //Start erasing the rest from Sector 1:
-    for (i = 1; i <= numSectors; i++) {
+    //Start erasing the rest from Sector 1,
+    // The (numsectors-1) here is because sectors are numbered from 0, whereas
+    // numSectors is the actual count of sectors to erase; fencepost error.
+    for (i = 1; i <= (numSectors-1); i++) {
         firstPageOfSector = mem_geo.pages_per_sector * i;
-        //hold off until dfmem is ready for secort erase command
-        //while (!dfmemIsReady());
+        //hold off until dfmem is ready for sector erase command
         //LED should blink indicating progress
-        LED_2 = ~LED_2;
         //Send actual erase command
         dfmemEraseSector(firstPageOfSector);
+        LED_GREEN = ~LED_GREEN;
     }
 
     //Leadout flash, should blink faster than above, indicating the last sector
-    //while (!dfmemIsReady()) {
-    //    LED_2 = ~LED_2;
-    //    delay_ms(75);
-    //}
-    LED_2 = 0; //Green LED off
+    while (!dfmemIsReady()) {
+        LED_GREEN = ~LED_GREEN;
+        delay_ms(50);
+    }
+    LED_GREEN = 0; //Green LED off
 
     //Since we've erased, reset our place keeper vars
-    //dfmemZeroIndex();
+    dfmemZeroIndex();
+
+    //Horibble hack: Disable IMU while erasing flash
+    _T4IE = 1;
 }
 
 
