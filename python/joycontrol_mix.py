@@ -54,7 +54,7 @@ def main():
     # Send robot a WHO_AM_I command, verify communications
     R1.query(retries = 1)
 
-    motorgains = [22000,0,500,0,0,    22000,0,500,0,0]
+    motorgains = [25000,200,100,0,0,    25000,200,100,0,0]
     #motorgains = [25000,50,0,0,25,    25000,50,0,0,25]
 
     R1.setMotorGains(motorgains, retries = 1)
@@ -102,8 +102,8 @@ def main():
             if (abs(thrustInput) < DEADBAND):
                 thrustInput = 0
             
-            left_throt = int(turnInput * MAXTHROT + MAXTHROT*thrustInput )
-            right_throt = int(-turnInput * MAXTHROT + MAXTHROT*thrustInput )
+            left_throt = int(-turnInput * MAXTHROT + MAXTHROT*thrustInput )
+            right_throt = int(turnInput * MAXTHROT + MAXTHROT*thrustInput )
             
             # positive and negative clipping
             if left_throt > MAXTHROT:
