@@ -102,8 +102,8 @@ def main():
             if (abs(thrustInput) < DEADBAND):
                 thrustInput = 0
             
-            left_throt = int(-turnInput * MAXTHROT + MAXTHROT*thrustInput )
             right_throt = int(turnInput * MAXTHROT + MAXTHROT*thrustInput )
+            left_throt = int(-turnInput * MAXTHROT + MAXTHROT*thrustInput )
             
             # positive and negative clipping
             if left_throt > MAXTHROT:
