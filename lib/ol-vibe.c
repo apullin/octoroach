@@ -16,12 +16,6 @@
 
 #define ABS(my_val) ((my_val) < 0) ? -(my_val) : (my_val)
 
-#define T3FREQ 2048
-#define MAXPWM 1999 //20khz pwm
-//#define MAXPWM 0xf80 //10khz pwm
-
-//static unsigned int maxDC; // from define, MAXPWM
-//static unsigned int olvfreq;
 static int chan1amp, chan2amp;
 static int chan1dc, chan2dc;
 static _Q15 chan1arg, chan2arg;

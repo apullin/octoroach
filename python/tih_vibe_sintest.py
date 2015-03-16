@@ -15,17 +15,18 @@ from or_helpers import *
 
 ###### Operation Flags ####
 RESET_R1 = True  
-SAVE_DATA1 = False
+SAVE_DATA1 = True
 EXIT_WAIT   = False
 
 def main():    
     xb = setupSerial(shared.BS_COMPORT, shared.BS_BAUDRATE)
     
     R1 = Robot('\x20\x52', xb)
+    R1.SAVE_DATA = True
     
     shared.ROBOTS = [R1] #This is neccesary so callbackfunc can reference robots
-    shared.xb = xb           #This is neccesary so callbackfunc can halt before exit
-
+    shared.xb = xb           #This is neccesary so callbackfunc can halt before exit    
+    
     if RESET_R1:
         R1.reset()
         time.sleep(0.35)
@@ -37,7 +38,7 @@ def main():
     verifyAllQueried()  #exits on failure
 
     ##### Manually set number of samples to save , TODO: make this a function in or_helpers
-    R1.runtime = 5;
+    R1.runtime = 1;
     R1.numSamples = int((1000*R1.runtime + (0.25 + 0.25)*1000))
     #allocate an array to write the downloaded telemetry data into
     R1.imudata = [ [] ] * R1.numSamples
@@ -52,23 +53,23 @@ def main():
     #Lead-in
     time.sleep(0.25)
     
-    freqL = 60.0
-    freqR = 60.0
+    freqL = 10.0
+    freqR = 10.0
     amp = 3900
     phase = 0.0
     R1.setOLVibe(1, freqL, amp, phase)
     R1.setOLVibe(2, freqR, amp, phase)
-    time.sleep(15)
+    time.sleep(1)
     R1.setOLVibe(1, freqL, 0, phase)
     R1.setOLVibe(2, freqR, 0, phase)
     
     #Lead-out
     time.sleep(0.25)
     
-    #telemetry download
-    if SAVE_DATA1:
-        raw_input("Press Enter to start telemtry readback ...")
-        R1.downloadTelemetry(retry = False)
+    # Initiate telemetry recording; the robot will begin recording immediately when cmd is received.
+    for r in shared.ROBOTS:
+        if r.SAVE_DATA:
+            r.startTelemetrySave()
 
     if EXIT_WAIT:  #Pause for a Ctrl + Cif specified
         while True:

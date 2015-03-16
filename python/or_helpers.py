@@ -270,7 +270,7 @@ class Robot:
         self.clAnnounce()
         print "Started telemetry download"
         self.tx( 0, command.FLASH_READBACK, pack('=L',self.numSamples))
-                
+              
         dlStart = time.time()
         shared.last_packet_time = dlStart
         #bytesIn = 0

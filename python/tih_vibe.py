@@ -26,6 +26,7 @@ def main():
     xb = setupSerial(shared.BS_COMPORT, shared.BS_BAUDRATE)
     
     R1 = Robot('\x20\x52', xb)
+    R1.SAVE_DATA = False
     
     shared.ROBOTS = [R1] #This is neccesary so callbackfunc can reference robots
     shared.xb = xb           #This is neccesary so callbackfunc can halt before exit
@@ -43,7 +44,7 @@ def main():
     ##### Manually set number of samples to save , TODO: make this a function in or_helpers
     R1.runtime = 4000; #milliseconds
     
-    if SAVE_DATA1:
+    if R1.SAVE_DATA:
         R1.numSamples = int((R1.runtime + (0.25 + 0.25)*1000))
         print "Num samples:",R1.numSamples
         #allocate an array to write the downloaded telemetry data into
@@ -53,12 +54,15 @@ def main():
     
     raw_input("Press enter to start vibe...")
     
+    if R1.SAVE_DATA:
+        R1.startTelemetrySave()
+    
     time.sleep(0.25) #leadin
     
     ZERO_PHASE = 0
     #R1.setTIH(3,3999)
-    freq = 30
-    amp = 3500
+    freq = 20
+    amp = 3999
     R1.setOLVibe(1, freq, amp, ZERO_PHASE)
     R1.setOLVibe(2, freq, amp, ZERO_PHASE)
     time.sleep( R1.runtime/1000.0 )
@@ -68,10 +72,10 @@ def main():
     
     time.sleep(0.25) #leadout
     
-    if SAVE_DATA1:
-        #telemetry download
-        raw_input("Press Enter to start telemtry readback ...")
-        R1.downloadTelemetry()
+    for r in shared.ROBOTS:
+        if r.SAVE_DATA:
+            raw_input("Press Enter to start telemetry read-back ...")
+            r.downloadTelemetry()
 
     if EXIT_WAIT:  #Pause for a Ctrl + Cif specified
         while True:
@@ -88,16 +92,17 @@ def main():
 #Provide a try-except over the whole main function
 # for clean exit. The Xbee module should have better
 # provisions for handling a clean exit, but it doesn't.
+#TODO: provide a more informative exit here; stack trace, exception type, etc
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
         print "\nRecieved Ctrl+C, exiting."
-        shared.xb.halt()
-        shared.ser.close()
     except Exception as args:
-        print "\nGeneral exception:",args
+        print "\nGeneral exception from main:\n",args,'\n'
+        print "\n    ******    TRACEBACK    ******    "
+        traceback.print_exc()
+        print "    *****************************    \n"
         print "Attempting to exit cleanly..."
-        shared.xb.halt()
-        shared.ser.close()
-        sys.exit()
+    finally:
+        xb_safe_exit()

@@ -39,7 +39,7 @@ pktFormat = { \
     command.SET_TAIL_GAINS:         '5h' \
     }
                
-#XBee callback function, called every time a packet is recieved
+#XBee callback function, called every time a packet is received
 def xbee_received(packet):
     rf_data = packet.get('rf_data')
     #rssi = ord(packet.get('rssi'))
@@ -202,9 +202,12 @@ def xbee_received(packet):
     
     except Exception as args:
         print "\nGeneral exception from callbackfunc:",args
-        print "Attemping to exit cleanly..."
+        print "\n    ******    TRACEBACK    ******    "
+        traceback.print_exc()
+        print "    *****************************    \n"
+        print "Attempting to exit cleanly..."
         shared.xb.halt()
-        sharedser.close()
+        shared.ser.close()
         sys.exit()
 
 
