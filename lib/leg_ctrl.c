@@ -131,10 +131,6 @@ void legCtrlSetup() {
     legCtrlOutputChannels[0] = OCTOROACH_LEG1_MOTOR_CHANNEL;
     legCtrlOutputChannels[1] = OCTOROACH_LEG2_MOTOR_CHANNEL;
 
-    SetupTimer1(); // Timer 1 @ 1 Khz
-    int retval;
-    retval = sysServiceInstallT1(legCtrlServiceRoutine);
-
     //Move Queue setup and initialization
     moveq = mqInit(32);
     idleMove = malloc(sizeof (moveCmdStruct));
@@ -171,6 +167,11 @@ void legCtrlSetup() {
         bemfHist[i][1] = 0;
         bemfHist[i][2] = 0;
     }
+
+    SetupTimer1(); // Timer 1 @ 1 Khz
+    int retval;
+    retval = sysServiceInstallT1(legCtrlServiceRoutine);
+
 }
 
 // Runs the PID controllers for the legs
@@ -223,7 +224,7 @@ void updateBEMF() {
 
     //This assignment here is arbitrary.
     bemf[0] = adcGetMotorA();
-    bemf[1] = adcGetMotorB();
+    bemf[1] = adcGetMotorC();
     //Offsets are subtracted later; currently, all readings will be > 0
 
     //Apply median filter
@@ -464,7 +465,7 @@ static void setInitialOffset() {
     //Accumulate 8 readings to average out
     for (i = 0; i < 8; i++) {
         offsets[0] += adcGetMotorA();
-        offsets[1] += adcGetMotorB();
+        offsets[1] += adcGetMotorC();
         Nop();
         Nop();
         delay_ms(2);
