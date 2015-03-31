@@ -52,43 +52,43 @@ extern TailQueue tailq;
 
 // use an array of function pointer to avoid a number of case statements
 // CMD_VECTOR_SIZE is defined in cmd_const.h
-void (*cmd_func[CMD_VECTOR_SIZE])(unsigned char, unsigned char, unsigned char*);
+void (*cmd_func[CMD_VECTOR_SIZE])(unsigned char, unsigned char, unsigned char*, unsigned int);
 
 /*-----------------------------------------------------------------------------
  *          Declaration of static functions
 -----------------------------------------------------------------------------*/
-static void cmdSetThrust(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSteer(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdSetThrust(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSteer(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
 
-static void cmdEraseMemSector(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdEraseMemSector(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
 
-static void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
 
-static void cmdNop(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdNop(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
 
 //User commands
-static void cmdSetThrustOpenLoop(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetPIDGains(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdGetPIDTelemetry(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetCtrldTurnRate(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdGetImuLoopZGyro(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetMoveQueue(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetSteeringGains(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSpecialTelemetry(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdEraseSector(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdFlashReadback(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSleep(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdWhoAmI(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdHallTelemetry(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigned char *frame);
-static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdSetThrustOpenLoop(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetPIDGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdGetPIDTelemetry(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetCtrldTurnRate(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdGetImuLoopZGyro(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetMoveQueue(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetSteeringGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSpecialTelemetry(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdEraseSector(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdFlashReadback(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSleep(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdWhoAmI(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdHallTelemetry(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
+static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr);
 
 /*-----------------------------------------------------------------------------
  *          Public functions
@@ -99,8 +99,8 @@ unsigned int cmdSetup(void) {
 
     // initialize the array of func pointers with Nop()
     for (i = 0; i < MAX_CMD_FUNC; ++i) {
-        //cmd_func[i] = &cmdNop;
-        _cmdSetupHandler(i, cmdNop);
+        cmd_func[i] = &cmdNop;
+        //_cmdSetupHandler(i, cmdNop);
         //cmd_len[i] = 0; //0 indicated an unpoplulated command
     }
 
@@ -144,8 +144,10 @@ void cmdHandleRadioRxBuffer(void) {
         pld = macGetPayload(packet);
         status = payGetStatus(pld);
         command = payGetType(pld);
+        unsigned int rx_src_addr = packet->src_addr.val;
+
         if (command < MAX_CMD_FUNC) {
-            cmd_func[command](status, payGetDataLength(pld), payGetData(pld));
+            cmd_func[command](status, payGetDataLength(pld), payGetData(pld), rx_src_addr);
         }
         radioReturnPacket(packet);
     }
@@ -161,7 +163,7 @@ void cmdHandleRadioRxBuffer(void) {
  * ----------------------------------------------------------------------------
 -----------------------------------------------------------------------------*/
 
-static void cmdSetThrust(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetThrust(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
 /*
     unsigned char chr_test[4];
     float *duty_cycle = (float*) chr_test;
@@ -176,7 +178,7 @@ static void cmdSetThrust(unsigned char status, unsigned char length, unsigned ch
  */
 }
 
-static void cmdSteer(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSteer(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
 /*
     unsigned char chr_test[4];
     float *steer_value = (float*) chr_test;
@@ -194,7 +196,7 @@ static void cmdSteer(unsigned char status, unsigned char length, unsigned char *
  *          IMU functions
 -----------------------------------------------------------------------------*/
 
-static void cmdEraseMemSector(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdEraseMemSector(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     unsigned int page;
     page = frame[0] + (frame[1] << 8);
     LED_RED = 1;
@@ -205,20 +207,20 @@ static void cmdEraseMemSector(unsigned char status, unsigned char length, unsign
 /*-----------------------------------------------------------------------------
  *          AUX functions
 -----------------------------------------------------------------------------*/
-void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame) {
+void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
-    radioSendData(RADIO_DST_ADDR, 0, CMD_ECHO, length, frame, 0);
+    radioSendData(src_addr, 0, CMD_ECHO, length, frame, 0);
 }
 
-static void cmdNop(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdNop(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     Nop();
 }
 
 /*-----------------------------------------------------------------------------
  *         User function
 -----------------------------------------------------------------------------*/
-static void cmdSetThrustOpenLoop(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetThrustOpenLoop(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustOpenLoop, argsPtr, frame);
 
@@ -226,7 +228,7 @@ static void cmdSetThrustOpenLoop(unsigned char status, unsigned char length, uns
     tiHSetDC(argsPtr->channel, argsPtr->dc);
 }
 
-static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustClosedLoop, argsPtr, frame);
 
@@ -237,7 +239,7 @@ static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, u
     legCtrlOnOff(LEG_CTRL_RIGHT, PID_ON); //Motor PID #2 -> ON
 }
 
-static void cmdSetPIDGains(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetPIDGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetPIDGains, argsPtr, frame);
 
@@ -247,16 +249,16 @@ static void cmdSetPIDGains(unsigned char status, unsigned char length, unsigned 
     //Send confirmation packet, which is the exact same data payload as what was sent
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
-    radioSendData(RADIO_DST_ADDR, 0, CMD_SET_PID_GAINS, length, frame, 0);
+    radioSendData(src_addr, 0, CMD_SET_PID_GAINS, length, frame, 0);
 
 }
 
-static void cmdGetPIDTelemetry(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdGetPIDTelemetry(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Obsolete, not maintained
    
 }
 
-static void cmdSetCtrldTurnRate(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetCtrldTurnRate(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetCtrldTurnRate, argsPtr, frame);
     steeringSetInput(argsPtr->steerInput);
@@ -264,14 +266,14 @@ static void cmdSetCtrldTurnRate(unsigned char status, unsigned char length, unsi
     //Send confirmation packet, which is the exact same data payload as what was sent
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
-    radioSendData(RADIO_DST_ADDR, 0, CMD_SET_CTRLD_TURN_RATE, length, frame, 0);
+    radioSendData(src_addr, 0, CMD_SET_CTRLD_TURN_RATE, length, frame, 0);
 }
 
-static void cmdGetImuLoopZGyro(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdGetImuLoopZGyro(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Obsolete, do not use
 }
 
-static void cmdSetMoveQueue(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetMoveQueue(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //The count is read via standard pointer math
     unsigned int count;
     count = (unsigned int) (*(frame));
@@ -297,7 +299,7 @@ static void cmdSetMoveQueue(unsigned char status, unsigned char length, unsigned
 // [Kp, Ki, Kd, Kaw, Kff, steeringMode]
 //
 
-static void cmdSetSteeringGains(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetSteeringGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetSteeringGains, argsPtr, frame);
 
@@ -307,10 +309,10 @@ static void cmdSetSteeringGains(unsigned char status, unsigned char length, unsi
     //Send confirmation packet, which is the exact same data payload as what was sent
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
-    radioSendData(RADIO_DST_ADDR, 0, CMD_SET_STEERING_GAINS, length, frame, 1);
+    radioSendData(src_addr, 0, CMD_SET_STEERING_GAINS, length, frame, 1);
 }
 
-static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     char resetmsg[] = "RESET";
     int len = strlen(resetmsg);
 
@@ -318,7 +320,7 @@ static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigne
     response = radioRequestPacket(len);
 
     macSetDestPan(response, RADIO_PAN_ID);
-    macSetDestAddr(response, RADIO_DST_ADDR);
+    macSetDestAddr(response, src_addr);
     Payload pld = macGetPayload(response);
 
     paySetData(pld, len, (unsigned char*)resetmsg);
@@ -332,7 +334,7 @@ static void cmdSoftwareReset(unsigned char status, unsigned char length, unsigne
 #endif
 }
 
-static void cmdSpecialTelemetry(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSpecialTelemetry(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSpecialTelemetry, argsPtr, frame);
 
@@ -342,7 +344,7 @@ static void cmdSpecialTelemetry(unsigned char status, unsigned char length, unsi
     }
 }
 
-static void cmdEraseSector(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdEraseSector(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdEraseSector, argsPtr, frame);
 
@@ -351,23 +353,23 @@ static void cmdEraseSector(unsigned char status, unsigned char length, unsigned 
     //Send confirmation packet; this only happens when flash erase is completed.
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
-    radioSendData(RADIO_DST_ADDR, 0, CMD_ERASE_SECTORS, length, frame, 0);
+    radioSendData(src_addr, 0, CMD_ERASE_SECTORS, length, frame, 0);
 }
 
-static void cmdFlashReadback(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdFlashReadback(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //LED_YELLOW = 1;
     PKT_UNPACK(_args_cmdFlashReadback, argsPtr, frame);
 
     //Horibble hack: Disable IMU while erading back telem
     _T4IE = 0;
 
-    telemReadbackSamples(argsPtr->samples);
+    telemReadbackSamples(argsPtr->samples, src_addr);
 
     //Horibble hack: Disable IMU while erading back telem
     _T4IE = 1;
 }
 
-static void cmdSleep(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSleep(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Currently unused
     //todo : review power reduction organization
     /*char sleep = frame[0];
@@ -385,7 +387,7 @@ static void cmdSleep(unsigned char status, unsigned char length, unsigned char *
 }
 
 // set up velocity profile structure  - assume 4 set points for now, generalize later
-static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
 /*
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetVelProfile, argsPtr, frame);
@@ -402,7 +404,7 @@ static void cmdSetVelProfile(unsigned char status, unsigned char length, unsigne
 
 // report motor position and  reset motor position (from Hall effect sensors)
 // note motor_count is long (4 bytes)
-void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame) {
+void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
 /*
     hallZeroPos(0);
     hallZeroPos(1);
@@ -417,7 +419,7 @@ void cmdZeroPos(unsigned char status, unsigned char length, unsigned char *frame
 }
 
 // alternative telemetry which runs at 1 kHz rate inside PID loop
-static void cmdHallTelemetry(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdHallTelemetry(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //TODO: Integration of hall telemetry is unfinished. Fuction will currently
     // do nothing.
 
@@ -427,17 +429,17 @@ static void cmdHallTelemetry(unsigned char status, unsigned char length, unsigne
 }
 
 // send robot info when queried
-void cmdWhoAmI(unsigned char status, unsigned char length, unsigned char *frame) {
+void cmdWhoAmI(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     // maximum string length to avoid packet size limit
     char* verstr = versionGetString();
     int verlen = strlen(verstr);
 
     //Note that the destination is the hard-coded RADIO_DST_ADDR
     //todo : extract the destination address properly.
-    radioSendData(RADIO_DST_ADDR, 0, CMD_WHO_AM_I, verlen, (unsigned char*)verstr, 0);
+    radioSendData(src_addr, 0, CMD_WHO_AM_I, verlen, (unsigned char*)verstr, 0);
 }
 
-static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     /*
     
     //Unpack unsigned char* frame into structured values
@@ -452,7 +454,7 @@ static void cmdSetHallGains(unsigned char status, unsigned char length, unsigned
      */
 }
 
-static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Tail control being deprecated from mainline project
     //TODO () : figure out an easy way of switching in tail control
     /*
@@ -478,7 +480,7 @@ static void cmdSetTailQueue(unsigned char status, unsigned char length, unsigned
   */
 }
 
-static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Tail control being deprecated from mainline project
     //TODO () : figure out an easy way of switching in tail control
     /*
@@ -494,7 +496,7 @@ static void cmdSetTailGains(unsigned char status, unsigned char length, unsigned
 }
 
 
-static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigned char *frame) {
+static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     /*
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustHall, argsPtr, frame);
@@ -506,7 +508,7 @@ static void cmdSetThrustHall(unsigned char status, unsigned char length, unsigne
      */
 }
 
-static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame){
+static void cmdSetOLVibe(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr){
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetOLVibe, argsPtr, frame);
 
