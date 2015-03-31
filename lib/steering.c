@@ -7,13 +7,13 @@
 #include "gyro.h"
 #include "steering.h"
 #include "dfmem.h"
-#include "telem.h"
+#include "telem_service.h"
 #include "move_queue.h"
 #include "xl.h"
 #include "pid_hw.h"
 #include "leg_ctrl.h"
 #include "sys_service.h"
-#include "imu.h"
+#include "imu_service.h"
 
 //Inline functions
 #define ABS(a)	   (((a) < 0) ? -(a) : (a))

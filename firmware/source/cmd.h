@@ -16,7 +16,7 @@ is invalid and void.
 //// Includes here should be to provide TYPES and ENUMS only
 #include "move_queue.h"
 #include "tail_queue.h"
-#include "hall.h"
+//#include "hall.h"
 
 #define CMD_VECTOR_SIZE				0xFF //full length vector
 #define MAX_CMD_FUNC				0x9F
@@ -139,14 +139,14 @@ typedef struct{
 //cmdSleep
 
 //cmdSetVelProfile
-typedef struct{
+/*typedef struct{
     int intervalsL[NUM_VELS];
     int deltaL[NUM_VELS];
     int velL[NUM_VELS];
     int intervalsR[NUM_VELS];
     int deltaR[NUM_VELS];
     int velR[NUM_VELS];
-} _args_cmdSetVelProfile;
+} _args_cmdSetVelProfile;*/
 
 //cmdHallTelemetry
 typedef struct {

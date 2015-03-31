@@ -10,7 +10,7 @@
 #include "gyro.h"
 #include "xl.h"
 #include "ams-enc.h"
-#include "imu.h"
+#include "imu_service.h"
 #include "leg_ctrl.h"
 #include "tail_ctrl.h"
 #include "adc_pid.h"

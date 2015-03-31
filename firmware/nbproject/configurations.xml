@@ -25,23 +25,22 @@
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../lib/cmd_const.h</itemPath>
-        <itemPath>../lib/flashmem.h</itemPath>
         <itemPath>../lib/move_queue.h</itemPath>
         <itemPath>../lib/steering.h</itemPath>
         <itemPath>../lib/estop.h</itemPath>
-        <itemPath>../lib/telem.h</itemPath>
         <itemPath>../../imageproc-lib/dfmem.h</itemPath>
         <itemPath>../../imageproc-lib/i2c_driver.h</itemPath>
         <itemPath>../lib/leg_ctrl.h</itemPath>
         <itemPath>../lib/tail_queue.h</itemPath>
         <itemPath>../lib/tail_ctrl.h</itemPath>
         <itemPath>../lib/sys_service.h</itemPath>
-        <itemPath>../lib/imu.h</itemPath>
         <itemPath>../../imageproc-lib/spi_controller.h</itemPath>
         <itemPath>../lib/or_telem.h</itemPath>
         <itemPath>../lib/ol-vibe.h</itemPath>
         <itemPath>../../imageproc-lib/mpu6000.h</itemPath>
         <itemPath>../../imageproc-lib/bsp-ip25.h</itemPath>
+        <itemPath>../lib/imu_service.h</itemPath>
+        <itemPath>../lib/telem_service.h</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.h</itemPath>
     </logicalFolder>
@@ -84,14 +83,14 @@
         <itemPath>../../imageproc-lib/delay.s</itemPath>
         <itemPath>../lib/move_queue.c</itemPath>
         <itemPath>../lib/estop.c</itemPath>
-        <itemPath>../lib/telem.c</itemPath>
         <itemPath>../lib/steering.c</itemPath>
         <itemPath>../lib/leg_ctrl.c</itemPath>
         <itemPath>../lib/sys_service.c</itemPath>
-        <itemPath>../lib/imu.c</itemPath>
         <itemPath>../lib/or_telem.c</itemPath>
         <itemPath>../../imageproc-lib/mpu6000.c</itemPath>
         <itemPath>../lib/ol-vibe.c</itemPath>
+        <itemPath>../lib/imu_service.c</itemPath>
+        <itemPath>../lib/telem_service.c</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.c</itemPath>
       <itemPath>source/main.c</itemPath>
