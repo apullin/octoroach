@@ -42,7 +42,7 @@ def main():
     verifyAllQueried()  #exits on failure
 
     ##### Manually set number of samples to save , TODO: make this a function in or_helpers
-    R1.runtime = 4000; #milliseconds
+    R1.runtime = 15000; #milliseconds
     
     if R1.SAVE_DATA:
         R1.numSamples = int((R1.runtime + (0.25 + 0.25)*1000))
@@ -61,13 +61,14 @@ def main():
     
     ZERO_PHASE = 0
     #R1.setTIH(3,3999)
-    freq = 20
-    amp = 3999
-    R1.setOLVibe(1, freq, amp, ZERO_PHASE)
-    R1.setOLVibe(2, freq, amp, ZERO_PHASE)
+    freqL = 25
+    freqR = 25
+    amp = 2000
+    R1.setOLVibe(1, freqL, amp, ZERO_PHASE)
+    R1.setOLVibe(2, freqR, amp, ZERO_PHASE)
     time.sleep( R1.runtime/1000.0 )
-    R1.setOLVibe(1, freq, 0, ZERO_PHASE)
-    R1.setOLVibe(2, freq, 0, ZERO_PHASE)
+    R1.setOLVibe(1, freqL, 0, ZERO_PHASE)
+    R1.setOLVibe(2, freqR, 0, ZERO_PHASE)
     #R1.setTIH(3,0)
     
     time.sleep(0.25) #leadout
