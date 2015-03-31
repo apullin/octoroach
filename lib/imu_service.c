@@ -7,7 +7,7 @@
 #include "leg_ctrl.h"
 #include "sys_service.h"
 //#include "ams-enc.h"
-#include "imu.h"
+#include "imu_service.h"
 
 #if defined (__IMAGEPROC24)
     #include "gyro.h"

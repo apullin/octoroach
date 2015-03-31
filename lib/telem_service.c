@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "settings.h"
 #include "dfmem.h"
-#include "telem.h"
+#include "telem_service.h"
 #include "radio.h"
 #include "at86rf231_driver.h"
 #include "sclock.h"
