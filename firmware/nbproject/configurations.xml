@@ -41,6 +41,7 @@
         <itemPath>../../imageproc-lib/bsp-ip25.h</itemPath>
         <itemPath>../lib/imu_service.h</itemPath>
         <itemPath>../lib/telem_service.h</itemPath>
+        <itemPath>../lib/pid-ip2.5.h</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.h</itemPath>
     </logicalFolder>
@@ -91,6 +92,7 @@
         <itemPath>../lib/ol-vibe.c</itemPath>
         <itemPath>../lib/imu_service.c</itemPath>
         <itemPath>../lib/telem_service.c</itemPath>
+        <itemPath>../lib/pid-ip2.5.c</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.c</itemPath>
       <itemPath>source/main.c</itemPath>

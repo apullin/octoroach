@@ -12,10 +12,11 @@
 #include <xc.h>
 
 #include "settings.h"
-#include "Generic.h"
+//#include "Generic.h"
+
+#include "pid-ip2.5.h" //at top, due to PID_H include guard collision
 
 #include "init_default.h"
-#include "ports.h"
 #include "battery.h"
 #include "cmd.h"
 #include "radio.h"
@@ -24,7 +25,7 @@
 #include "sclock.h"
 #include "dfmem.h"
 #include "leg_ctrl.h"
-#include "pid.h"
+//#include "pid.h"
 #include "adc_pid.h"
 #include "steering.h"
 #include "telem_service.h"
@@ -33,9 +34,11 @@
 //#include "ams-enc.h"
 #include "tih.h"
 #include "imu_service.h"
-#include "spi_controller.h"
-#include "ppool.h"
+//#include "spi_controller.h"
+//#include "ppool.h"
 //#include "ol-vibe.h"
+#include "ams-enc.h"
+
 
 #include <stdlib.h>
 
@@ -64,22 +67,22 @@ int main(void) {
     radioSetSrcAddr(RADIO_SRC_ADDR);
 
     dfmemSetup();
-    telemSetup(); //Timer 5, HW priority 4
-
+    telemSetup(); //sysService Timer 5 @ 1Khz
     mpuSetup();
-    imuSetup();   //Timer 4, HW priority 3
-    
+    imuSetup();   //sysService Timer 4 @ 1Khz
     tiHSetup();
     adcSetup();
 
     //AMS Encoders
-    //encSetup();
+    amsEncoderSetup();
+    //VelociRoACH style leg control
+    pidSetup(); //sysService Timer 1 @ 1Khz
 
     //"Open Loop" vibration & jitter generator, AP 2014
     //olVibeSetup();
 
-    legCtrlSetup();  //Timer 1, HW priority 5
-    steeringSetup(); //Timer 5, HW priority 4
+    //legCtrlSetup();  //sysService Timer 1 @ 1Khz
+    //steeringSetup(); //sysService Timer 6 @ 300 hz
 
     //Tail control is a special case
     //tailCtrlSetup();
@@ -100,12 +103,10 @@ int main(void) {
     //_VREGS = 1;
     //gyroSleep();
 
-    /////FUNCTION TEST, NOT FOR PRODUCTION
-    //olVibeStart();
-    ////////////////////
 
     while (1) {
         cmdHandleRadioRxBuffer();
         radioProcess();
+        //TODO: Implement an Idle() condition here for power saving
     }
 }
