@@ -65,8 +65,6 @@ is invalid and void.
 
 unsigned int cmdSetup(void);
 void cmdHandleRadioRxBuffer(void);
-void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
-
 
 
 /////// Argument structures

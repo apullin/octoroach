@@ -45,14 +45,10 @@ unsigned char tx_frame_[127];
 
 extern MoveQueue moveq;
 extern TailQueue tailq;
-extern int offsz;
 
-extern moveCmdT currentMove, idleMove;
-extern tailCmdT currentTail, idleTail;
+//extern volatile char g_radio_duty_cycle;
 
-extern volatile char g_radio_duty_cycle;
-
-
+#define _cmdSetupHandler(CODE, funcPointer)  cmd_func[CODE] = &funcPointer;
 
 // use an array of function pointer to avoid a number of case statements
 // CMD_VECTOR_SIZE is defined in cmd_const.h
@@ -66,8 +62,7 @@ static void cmdSteer(unsigned char status, unsigned char length, unsigned char *
 
 static void cmdEraseMemSector(unsigned char status, unsigned char length, unsigned char *frame);
 
-//static void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
-//void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
+static void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
 
 static void cmdNop(unsigned char status, unsigned char length, unsigned char *frame);
 
@@ -102,40 +97,40 @@ unsigned int cmdSetup(void) {
 
     unsigned int i;
 
-
     // initialize the array of func pointers with Nop()
     for (i = 0; i < MAX_CMD_FUNC; ++i) {
-        cmd_func[i] = &cmdNop;
+        //cmd_func[i] = &cmdNop;
+        _cmdSetupHandler(i, cmdNop);
         //cmd_len[i] = 0; //0 indicated an unpoplulated command
     }
 
-    cmd_func[CMD_ECHO] = &cmdEcho;
-    cmd_func[CMD_SET_THRUST] = &cmdSetThrust;
-    cmd_func[CMD_SET_STEER] = &cmdSteer;
-    cmd_func[CMD_ERASE_MEM_SECTOR] = &cmdEraseMemSector;
+    _cmdSetupHandler(CMD_ECHO, cmdEcho);
+    _cmdSetupHandler(CMD_SET_THRUST, cmdSetThrust);
+    _cmdSetupHandler(CMD_SET_STEER, cmdSteer);
+    _cmdSetupHandler(CMD_ERASE_MEM_SECTOR, cmdEraseMemSector);
     //User commands
-    cmd_func[CMD_SET_THRUST_OPENLOOP] = &cmdSetThrustOpenLoop;
-    cmd_func[CMD_SET_THRUST_CLOSEDLOOP] = &cmdSetThrustClosedLoop;
-    cmd_func[CMD_SET_PID_GAINS] = &cmdSetPIDGains;
-    cmd_func[CMD_GET_PID_TELEMETRY] = &cmdGetPIDTelemetry;
-    cmd_func[CMD_SET_CTRLD_TURN_RATE] = &cmdSetCtrldTurnRate;
-    cmd_func[CMD_STREAM_TELEMETRY] = &cmdGetImuLoopZGyro;
-    cmd_func[CMD_SET_MOVE_QUEUE] = &cmdSetMoveQueue;
-    cmd_func[CMD_SET_STEERING_GAINS] = &cmdSetSteeringGains;
-    cmd_func[CMD_SOFTWARE_RESET] = &cmdSoftwareReset;
-    cmd_func[CMD_SPECIAL_TELEMETRY] = &cmdSpecialTelemetry;
-    cmd_func[CMD_ERASE_SECTORS] = &cmdEraseSector;
-    cmd_func[CMD_FLASH_READBACK] = &cmdFlashReadback;
-    cmd_func[CMD_SLEEP] = &cmdSleep;
-    cmd_func[CMD_SET_VEL_PROFILE] = &cmdSetVelProfile;
-    cmd_func[CMD_WHO_AM_I] = &cmdWhoAmI;
-    cmd_func[CMD_HALL_TELEMETRY] = &cmdHallTelemetry;
-    cmd_func[CMD_ZERO_POS] = &cmdZeroPos;
-    cmd_func[CMD_SET_HALL_GAINS] = &cmdSetHallGains;
-    cmd_func[CMD_SET_TAIL_QUEUE] = &cmdSetTailQueue;
-    cmd_func[CMD_SET_TAIL_GAINS] = &cmdSetTailGains;
-    cmd_func[CMD_SET_THRUST_HALL] = &cmdSetThrustHall;
-    cmd_func[CMD_SET_OL_VIBE]  = &cmdSetOLVibe;
+    _cmdSetupHandler(CMD_SET_THRUST_OPENLOOP, cmdSetThrustOpenLoop);
+    _cmdSetupHandler(CMD_SET_THRUST_CLOSEDLOOP, cmdSetThrustClosedLoop);
+    _cmdSetupHandler(CMD_SET_PID_GAINS, cmdSetPIDGains);
+    _cmdSetupHandler(CMD_GET_PID_TELEMETRY, cmdGetPIDTelemetry);
+    _cmdSetupHandler(CMD_SET_CTRLD_TURN_RATE, cmdSetCtrldTurnRate);
+    _cmdSetupHandler(CMD_STREAM_TELEMETRY, cmdGetImuLoopZGyro);
+    _cmdSetupHandler(CMD_SET_MOVE_QUEUE, cmdSetMoveQueue);
+    _cmdSetupHandler(CMD_SET_STEERING_GAINS, cmdSetSteeringGains);
+    _cmdSetupHandler(CMD_SOFTWARE_RESET, cmdSoftwareReset);
+    _cmdSetupHandler(CMD_SPECIAL_TELEMETRY, cmdSpecialTelemetry);
+    _cmdSetupHandler(CMD_ERASE_SECTORS, cmdEraseSector);
+    _cmdSetupHandler(CMD_FLASH_READBACK, cmdFlashReadback);
+    _cmdSetupHandler(CMD_SLEEP, cmdSleep);
+    _cmdSetupHandler(CMD_SET_VEL_PROFILE, cmdSetVelProfile);
+    _cmdSetupHandler(CMD_WHO_AM_I, cmdWhoAmI);
+    _cmdSetupHandler(CMD_HALL_TELEMETRY, cmdHallTelemetry);
+    _cmdSetupHandler(CMD_ZERO_POS, cmdZeroPos);
+    _cmdSetupHandler(CMD_SET_HALL_GAINS, cmdSetHallGains);
+    _cmdSetupHandler(CMD_SET_TAIL_QUEUE, cmdSetTailQueue);
+    _cmdSetupHandler(CMD_SET_TAIL_GAINS, cmdSetTailGains);
+    _cmdSetupHandler(CMD_SET_THRUST_HALL, cmdSetThrustHall);
+    _cmdSetupHandler(CMD_SET_OL_VIBE, cmdSetOLVibe);
     return 1;
 }
 
