@@ -14,7 +14,7 @@
 #include "settings.h"
 //#include "Generic.h"
 
-#include "pid-ip2.5.h" //at top, due to PID_H include guard collision
+//#include "pid-ip2.5.h" //at top, due to PID_H include guard collision
 
 #include "init_default.h"
 #include "battery.h"
@@ -24,6 +24,7 @@
 #include "utils.h"
 #include "sclock.h"
 #include "dfmem.h"
+
 #include "leg_ctrl.h"
 //#include "pid.h"
 #include "adc_pid.h"
@@ -74,15 +75,15 @@ int main(void) {
     adcSetup();
 
     //AMS Encoders
-    amsEncoderSetup();
+    //amsEncoderSetup();
     //VelociRoACH style leg control
-    pidSetup(); //sysService Timer 1 @ 1Khz
+    //pidSetup(); //sysService Timer 1 @ 1Khz
 
     //"Open Loop" vibration & jitter generator, AP 2014
     //olVibeSetup();
 
-    //legCtrlSetup();  //sysService Timer 1 @ 1Khz
-    //steeringSetup(); //sysService Timer 6 @ 300 hz
+    legCtrlSetup();  //sysService Timer 1 @ 1Khz
+    steeringSetup(); //sysService Timer 6 @ 300 hz
 
     //Tail control is a special case
     //tailCtrlSetup();

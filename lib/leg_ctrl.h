@@ -12,6 +12,8 @@
 #define LEG_CTRL_LEFT  0
 #define LEG_CTRL_RIGHT 1
 
+#include "pid.h"
+
 //Default gains
 #ifdef PID_SOFTWARE
 #define LEG_DEFAULT_KP  200
