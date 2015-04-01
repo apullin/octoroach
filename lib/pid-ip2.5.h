@@ -119,29 +119,29 @@ typedef struct
 
 
 //Functions
-void UpdatePID(pidPos *pid);
-void pidSetup();
-void initPIDVelProfile();
-void setPIDVelProfile(int pid_num, int *interval, int *delta, int *vel, int onceFlag);
-void initPIDObjPos(pidPos *pid, int Kp, int Ki, int Kd, int Kaw, int ff);
+void pidip25UpdatePID(pidPos *pid);
+void pidip25Setup();
+void pidip25initPIDVelProfile();
+void pidip25setPIDVelProfile(int pid_num, int *interval, int *delta, int *vel, int onceFlag);
+void pidip25initPIDObjPos(pidPos *pid, int Kp, int Ki, int Kd, int Kaw, int ff);
 //void SetupTimer1(void);
-void pidStartTimedTrial(unsigned int run_time);
-void pidSetInput(int pid_num, int input_val);
-void pidSetGains(int pid_num, int Kp, int Ki, int Kd, int Kaw, int ff);
-void pidGetState(); // update state vector from bemf and Hall angle
-void pidGetSetpoint(int j);
+void pidip25StartTimedTrial(unsigned int run_time);
+void pidip25SetInput(int pid_num, int input_val);
+void pidip25SetGains(int pid_num, int Kp, int Ki, int Kd, int Kaw, int ff);
+void pidip25GetState(); // update state vector from bemf and Hall angle
+void pidip25GetSetpoint(int j);
 void checkSwapBuff(int j);
-void pidSetControl();
+void pidip25SetControl();
 void EmergencyStop(void);
-unsigned char* pidGetTelemetry(void);
-void pidOn(int pid_num);
-void pidOff(int pid_num);
-void pidZeroPos(int pid_num);
-long pidGetPState(unsigned int channel);
-void pidSetPInput(unsigned int channel, long p_input);
-void pidStartMotor(unsigned int channel);
-void pidSetTimeFlag(unsigned int channel, char val);
-void pidSetMode(unsigned int channel, char mode);
-void pidSetPWMDes(unsigned int channel, int pwm);
+unsigned char* pidip25GetTelemetry(void);
+void pidip25On(int pid_num);
+void pidip25Off(int pid_num);
+void pidip25ZeroPos(int pid_num);
+long pidip25GetPState(unsigned int channel);
+void pidip25SetPInput(unsigned int channel, long p_input);
+void pidip25StartMotor(unsigned int channel);
+void pidip25SetTimeFlag(unsigned int channel, char val);
+void pidip25SetMode(unsigned int channel, char mode);
+void pidip25SetPWMDes(unsigned int channel, int pwm);
 
 #endif // __PID_H

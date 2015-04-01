@@ -16,6 +16,7 @@
 #include "adc.h"
 #include <stdlib.h> // for malloc
 //imageproc-lib and library includes
+#include "utils.h"
 #include "pid-ip2.5.h"
 #include "dfmem.h"
 #include "adc_pid.h"
@@ -60,9 +61,9 @@ unsigned long lastMoveTime;
 // 2 last readings for median filter
 int measLast1[NUM_PIDS];
 int measLast2[NUM_PIDS];
-int bemf[NUM_PIDS];
+static int bemf[NUM_PIDS];
 
-int medianFilter3(int*);
+static int medianFilter3(int*);
 
 //Service routine function
 static void pidip25ServiceRoutine();
@@ -88,12 +89,12 @@ static void SetupTimer1(void) {
 // -------------------------------------------
 // called from main()
 
-void pidSetup() {
+void pidip25Setup() {
     int i;
     for (i = 0; i < NUM_PIDS; i++) {
-        initPIDObjPos(&(pidObjs[i]), DEFAULT_KP, DEFAULT_KI, DEFAULT_KD, DEFAULT_KAW, DEFAULT_FF);
+        pidip25initPIDObjPos(&(pidObjs[i]), DEFAULT_KP, DEFAULT_KI, DEFAULT_KD, DEFAULT_KAW, DEFAULT_FF);
     }
-    initPIDVelProfile();
+    pidip25initPIDVelProfile();
     SetupTimer1(); // main interrupt used for leg motor PID
 
     lastMoveTime = 0;
@@ -110,8 +111,8 @@ void pidSetup() {
     pidObjs[RIGHT_LEGS_PID_NUM].pwm_flip       = RIGHT_LEGS_PWM_FLIP;
 
     // Initialize PID structures before starting Timer1
-    pidSetInput(LEFT_LEGS_PID_NUM, 0);
-    pidSetInput(RIGHT_LEGS_PID_NUM, 0);
+    pidip25SetInput(LEFT_LEGS_PID_NUM, 0);
+    pidip25SetInput(RIGHT_LEGS_PID_NUM, 0);
 
     setInitialOffset(16); //2ms delay between samples, so 32ms calib time
 
@@ -137,7 +138,7 @@ pidVelLUT* otherBuff(pidVelLUT* array, pidVelLUT* ptr) {
 // set points and velocities for one revolution of leg
 // called from pidSetup()
 
-void initPIDVelProfile() {
+void pidip25initPIDVelProfile() {
     int i, j;
     pidVelLUT* tempPID;
     for (j = 0; j < NUM_PIDS; j++) {
@@ -180,7 +181,7 @@ void setPIDVelProfile(int pid_num, int *interval, int *delta, int *vel, int once
 
 // called from pidSetup()
 
-void initPIDObjPos(pidPos *pid, int Kp, int Ki, int Kd, int Kaw, int ff) {
+void pidip25initPIDObjPos(pidPos *pid, int Kp, int Ki, int Kd, int Kaw, int ff) {
     pid->p_input = 0;
     pid->v_input = 0;
     pid->p = 0;
@@ -208,7 +209,7 @@ void initPIDObjPos(pidPos *pid, int Kp, int Ki, int Kd, int Kaw, int ff) {
 
 // called from set thrust closed loop, etc. Thrust
 
-void pidSetInput(int pid_num, int input_val) {
+void pidip25SetInput(int pid_num, int input_val) {
     unsigned long temp;
     /*      ******   use velocity setpoint + throttle for compatibility between Hall and Pullin code *****/
     /* otherwise, miss first velocity set point */
@@ -253,7 +254,7 @@ void pidStartTimedTrial(unsigned int run_time) {
 
 // from cmd.c  PID set gains
 
-void pidSetGains(int pid_num, int Kp, int Ki, int Kd, int Kaw, int ff) {
+void pidip25SetGains(int pid_num, int Kp, int Ki, int Kd, int Kaw, int ff) {
     pidObjs[pid_num].Kp = Kp;
     pidObjs[pid_num].Ki = Ki;
     pidObjs[pid_num].Kd = Kd;
@@ -261,13 +262,13 @@ void pidSetGains(int pid_num, int Kp, int Ki, int Kd, int Kaw, int ff) {
     pidObjs[pid_num].feedforward = ff;
 }
 
-void pidOn(int pid_num) {
+void pidip25On(int pid_num) {
     pidObjs[pid_num].onoff = PID_ON;
     //t1_ticks = 0;
     //sysService does not support timer zeroing
 }
 
-void pidOff(int pid_num) {
+void pidip25Off(int pid_num) {
     pidObjs[pid_num].onoff = PID_OFF;
     //t1_ticks = 0;
     //sysService does not support timer zeroing
@@ -275,7 +276,7 @@ void pidOff(int pid_num) {
 
 // zero position setpoint for both motors (avoids big offset errors)
 
-void pidZeroPos(int pid_num) {
+void pidip25ZeroPos(int pid_num) {
     // disable interrupts to reset state variables
     DisableIntT1; // turn off pid interrupts
     amsEncoderResetPos(); //  reinitialize rev count and relative zero encoder position for both motors
@@ -285,21 +286,6 @@ void pidZeroPos(int pid_num) {
     pidObjs[pid_num].v_input = 0;
     pidObjs[pid_num].leg_stride = 0; // strides also reset
     EnableIntT1; // turn on pid interrupts
-}
-
-
-/*****************************************************************************************/
-/*****************************************************************************************/
-/*********************** Stop Motor and Interrupts *********************************************/
-/*****************************************************************************************/
-
-/*****************************************************************************************/
-void EmergencyStop(void) {
-    pidSetInput(0, 0);
-    pidSetInput(1, 0);
-    DisableIntT1; // turn off pid interrupts
-    SetDCMCPWM(MC_CHANNEL_PWM1, 0, 0); // set PWM to zero
-    SetDCMCPWM(MC_CHANNEL_PWM2, 0, 0);
 }
 
 
@@ -323,25 +309,25 @@ static void pidip25ServiceRoutine() {
 
     int j = 0;
 
-    pidGetState(); // always update state, even if motor is coasting
+    pidip25GetState(); // always update state, even if motor is coasting
     for (j = 0; j < NUM_PIDS; j++) {
         // only update tracking setpoint if time has not yet expired
         if (pidObjs[j].onoff) {
             if (pidObjs[j].timeFlag) {
                 if (pidObjs[j].start_time + pidObjs[j].run_time >= t1_ticks) {
-                    pidGetSetpoint(j);
+                    pidip25GetSetpoint(j);
                 }
                 if (t1_ticks > lastMoveTime) { // turn off if done running all legs
                     pidObjs[0].onoff = 0;
                     pidObjs[1].onoff = 0;
                 }
             } else {
-                pidGetSetpoint(j);
+                pidip25GetSetpoint(j);
             }
         }
     }
     if (pidObjs[0].mode == PID_MODE_CONTROLED) {
-        pidSetControl();
+        pidip25SetControl();
     } else if (pidObjs[0].mode == PID_MODE_PWMPASS) {
         tiHSetDC(pidObjs[0].output_channel, pidObjs[0].pwmDes);
         tiHSetDC(pidObjs[1].output_channel, pidObjs[1].pwmDes);
@@ -365,13 +351,13 @@ static void pidip25ServiceRoutine() {
 
     //This used to be done in 1 of 5 time slices of a 5khz interrupt
     //This should be moved to a telem module.
-    telemSaveNow();
+    //telemSaveNow();
 
 }
 
 // update desired velocity and position tracking setpoints for each leg
 
-void pidGetSetpoint(int j) {
+void pidip25GetSetpoint(int j) {
     int index;
     index = pidObjs[j].index;
     // update desired position between setpoints, scaled by 256
@@ -414,7 +400,7 @@ void checkSwapBuff(int j) {
 
 /* update state variables including motor position and velocity */
 
-void pidGetState() {
+void pidip25GetState() {
     int i;
     long p_state;
     int enc_num;
@@ -495,7 +481,7 @@ void pidGetState() {
 #endif
 }
 
-void pidSetControl() {
+void pidip25SetControl() {
     int j;
     // 0 = right side
     for (j = 0; j < NUM_PIDS; j++) { //pidobjs[0] : right side
@@ -504,7 +490,7 @@ void pidSetControl() {
         pidObjs[j].p_error = pidObjs[j].p_input + pidObjs[j].interpolate - pidObjs[j].p_state;
         pidObjs[j].v_error = pidObjs[j].v_input - pidObjs[j].v_state; // v_input should be revs/sec
         //Update values
-        UpdatePID(&(pidObjs[j]));
+        pidip25UpdatePID(&(pidObjs[j]));
     } // end of for(j)
 
     if (pidObjs[0].onoff && pidObjs[1].onoff) // both motors on to run
@@ -530,7 +516,7 @@ void pidSetControl() {
     }
 }
 
-void UpdatePID(pidPos *pid) {
+void pidip25UpdatePID(pidPos *pid) {
     pid->p = ((long) pid->Kp * pid->p_error) >> 12; // scale so doesn't over flow
     pid->i = (long) pid->Ki * pid->i_error >> 12;
     pid->d = (long) pid->Kd * (long) pid->v_error;
@@ -561,7 +547,7 @@ void UpdatePID(pidPos *pid) {
 }
 
 //TODO: Controller design, this function was created specifically to remove existing externs.
-long pidGetPState(unsigned int channel) {
+long pidip25GetPState(unsigned int channel) {
     if (channel < NUM_PIDS) {
         return pidObjs[channel].p_state;
     } else {
@@ -570,38 +556,38 @@ long pidGetPState(unsigned int channel) {
 }
 
 //TODO: Controller design, this function was created specifically to remove existing externs.
-void pidSetPInput(unsigned int channel, long p_input) {
+void pidip25SetPInput(unsigned int channel, long p_input) {
     if (channel < NUM_PIDS) {
         pidObjs[channel].p_input = p_input;
     }
 }
 
 //TODO: Controller design, this function was created specifically to remove existing externs.
-void pidStartMotor(unsigned int channel){
+void pidip25StartMotor(unsigned int channel){
     if (channel < NUM_PIDS) {
         pidObjs[channel].timeFlag = 0;
-        pidSetInput(channel, 0);
+        pidip25SetInput(channel, 0);
         pidObjs[channel].p_input = pidObjs[channel].p_state;
-        pidOn(channel);
+        pidip25On(channel);
     }
 
 }
 
 //TODO: Controller design, this function was created specifically to remove existing externs.
-void pidSetTimeFlag(unsigned int channel, char val){
+void pidip25SetTimeFlag(unsigned int channel, char val){
     if (channel < NUM_PIDS) {
         pidObjs[channel].timeFlag = val;
     }
 }
 
 //TODO: Controller design, this function was created specifically to remove existing externs.
-void pidSetMode(unsigned int channel, char mode){
+void pidip25SetMode(unsigned int channel, char mode){
     if (channel < NUM_PIDS) {
         pidObjs[channel].mode = mode;
     }
 }
 
-void pidSetPWMDes(unsigned int channel, int pwm){
+void pidip25SetPWMDes(unsigned int channel, int pwm){
     if (channel < NUM_PIDS) {
         pidObjs[channel].pwmDes = pwm;
     }
@@ -634,7 +620,7 @@ static void setInitialOffset(unsigned int samples) {
 }
 
 //Poor implementation of a median filter for a 3-array of values
-int medianFilter3(int* a) {
+static int medianFilter3(int* a) {
     int b[3] = {a[0], a[1], a[2]};
     int temp;
 
