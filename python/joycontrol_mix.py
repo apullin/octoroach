@@ -54,7 +54,7 @@ def main():
     # Send robot a WHO_AM_I command, verify communications
     R1.query(retries = 1)
 
-    motorgains = [25000,200,100,0,0,    25000,200,100,0,0]
+    motorgains = [20000,200,100,0,0,    20000,200,100,0,0]
     #motorgains = [25000,50,0,0,25,    25000,50,0,0,25]
 
     R1.setMotorGains(motorgains, retries = 1)

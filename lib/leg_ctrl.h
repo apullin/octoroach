@@ -3,7 +3,7 @@
 #ifndef __LEG_CTRL_H
 #define __LEG_CTRL_H
 
-#define NUM_MOTOR_PIDS 2
+#define NUM_MOTOR_PIDS 2 //TODO: to be moved to settings.h in the future
 
 // These defines will make a correspondance for other modules calling the
 // functions below that take in a "num" for a given motor.
@@ -35,6 +35,7 @@ typedef struct {
     pidObj controller;
     int bemf,bemfLast, bemfHist[3];
     int outputChannel;
+    unsigned int (*bemf_getter)(void);
 } legCtrlStruct;
 
 void legCtrlSetup();
