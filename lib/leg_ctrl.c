@@ -224,7 +224,7 @@ void updateBEMF() {
 
     //This assignment here is arbitrary.
     bemf[0] = adcGetMotorA();
-    bemf[1] = adcGetMotorC();
+    bemf[1] = adcGetMotorB();
     //Offsets are subtracted later; currently, all readings will be > 0
 
     //Apply median filter
@@ -465,7 +465,7 @@ static void setInitialOffset() {
     //Accumulate 8 readings to average out
     for (i = 0; i < 8; i++) {
         offsets[0] += adcGetMotorA();
-        offsets[1] += adcGetMotorC();
+        offsets[1] += adcGetMotorB();
         Nop();
         Nop();
         delay_ms(2);
