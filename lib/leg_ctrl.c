@@ -21,8 +21,6 @@
 #include <stdlib.h> // for malloc
 #include <limits.h> //for INT_MAX, etc
 
-#define ABS(my_val) ((my_val) < 0) ? -(my_val) : (my_val)
-
 //PID container objects
 //pidObj motor_pidObjs[NUM_MOTOR_PIDS];
 
@@ -279,6 +277,9 @@ void updateBEMF() {
 
     bemf[0] = legCtrls[0].bemf_getter() - legCtrls[0].controller.inputOffset;
     bemf[1] = legCtrls[1].bemf_getter() - legCtrls[1].controller.inputOffset;
+    
+    //bemf[0] = legCtrls[0].bemf_getter() - legCtrls[0].controller.inputOffset;
+    //bemf[1] = legCtrls[1].bemf_getter() - legCtrls[1].controller.inputOffset;
 
     //  EXTRA NEGATIVE HERE is to make gains positive
     //   TODO: Understand exactly why this is the case
@@ -321,11 +322,11 @@ void updateBEMF() {
     //bemfLast[0] = bemf[0]; //bemfLast will not be used after here, OK to set
     //bemfLast[1] = bemf[1];
 
-    //char IIR_COEFF_Z_CURRENT = 3;
-    //char IIR_COEFF_Z_LAST = 3;
+    char IIR_COEFF_Z_CURRENT = 3;
+    char IIR_COEFF_Z_LAST = 3;
 
-    //bemf[0] = ((IIR_COEFF_Z_CURRENT * (long)legCtrls[0].bemfLast) + (IIR_COEFF_Z_LAST * (long)bemf[0])) / 10;
-    //bemf[1] = ((IIR_COEFF_Z_CURRENT * (long)legCtrls[1].bemfLast) + (IIR_COEFF_Z_LAST * (long)bemf[1])) / 10;
+    bemf[0] = ((IIR_COEFF_Z_CURRENT * (long)legCtrls[0].bemfLast) + (IIR_COEFF_Z_LAST * (long)bemf[0])) / 10;
+    bemf[1] = ((IIR_COEFF_Z_CURRENT * (long)legCtrls[1].bemfLast) + (IIR_COEFF_Z_LAST * (long)bemf[1])) / 10;
 
     //TODO: get rid of bemfLast and use the same history that the median filter is using
     legCtrls[0].bemfLast = bemf[0];
@@ -335,10 +336,10 @@ void updateBEMF() {
     // On IP2.5, the legs seem to drift all the time.
     int BEMF_DEADBAND = 6;
 
-    if(ABS(bemf[0]) <= BEMF_DEADBAND){
+    if(abs(bemf[0]) <= BEMF_DEADBAND){
         bemf[0] = 0;
     }
-    if(ABS(bemf[1]) <= BEMF_DEADBAND){
+    if(abs(bemf[1]) <= BEMF_DEADBAND){
         bemf[1] = 0;
     }
 
