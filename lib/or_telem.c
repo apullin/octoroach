@@ -11,7 +11,7 @@
 #include "xl.h"
 #include "ams-enc.h"
 #include "imu_service.h"
-#include "leg_ctrl.h"
+#include "or_leg_ctrl.h"
 #include "tail_ctrl.h"
 #include "adc_pid.h"
 #include "tail_ctrl.h"

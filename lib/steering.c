@@ -11,7 +11,7 @@
 #include "move_queue.h"
 #include "xl.h"
 #include "pid_hw.h"
-#include "leg_ctrl.h"
+#include "or_leg_ctrl.h"
 #include "sys_service.h"
 #include "imu_service.h"
 

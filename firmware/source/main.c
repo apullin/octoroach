@@ -25,7 +25,7 @@
 #include "sclock.h"
 #include "dfmem.h"
 
-#include "leg_ctrl.h"
+#include "or_leg_ctrl.h"
 //#include "pid.h"
 #include "adc_pid.h"
 #include "steering.h"
@@ -82,7 +82,7 @@ int main(void) {
     //"Open Loop" vibration & jitter generator, AP 2014
     //olVibeSetup();
 
-    legCtrlSetup();  //sysService Timer 1 @ 1Khz
+    or_legCtrlSetup();  //sysService Timer 1 @ 1Khz
     steeringSetup(); //sysService Timer 6 @ 300 hz
 
     //Tail control is a special case

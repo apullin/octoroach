@@ -30,7 +30,7 @@
         <itemPath>../lib/estop.h</itemPath>
         <itemPath>../../imageproc-lib/dfmem.h</itemPath>
         <itemPath>../../imageproc-lib/i2c_driver.h</itemPath>
-        <itemPath>../lib/leg_ctrl.h</itemPath>
+        <itemPath>../lib/or_leg_ctrl.h</itemPath>
         <itemPath>../lib/tail_queue.h</itemPath>
         <itemPath>../lib/tail_ctrl.h</itemPath>
         <itemPath>../lib/sys_service.h</itemPath>
@@ -41,7 +41,7 @@
         <itemPath>../../imageproc-lib/bsp-ip25.h</itemPath>
         <itemPath>../lib/imu_service.h</itemPath>
         <itemPath>../lib/telem_service.h</itemPath>
-        <itemPath>../lib/pid-ip2.5.h</itemPath>
+        <itemPath>../lib/vr_leg_ctrl.h</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.h</itemPath>
     </logicalFolder>
@@ -85,14 +85,14 @@
         <itemPath>../lib/move_queue.c</itemPath>
         <itemPath>../lib/estop.c</itemPath>
         <itemPath>../lib/steering.c</itemPath>
-        <itemPath>../lib/leg_ctrl.c</itemPath>
+        <itemPath>../lib/or_leg_ctrl.c</itemPath>
         <itemPath>../lib/sys_service.c</itemPath>
         <itemPath>../lib/or_telem.c</itemPath>
         <itemPath>../../imageproc-lib/mpu6000.c</itemPath>
         <itemPath>../lib/ol-vibe.c</itemPath>
         <itemPath>../lib/imu_service.c</itemPath>
         <itemPath>../lib/telem_service.c</itemPath>
-        <itemPath>../lib/pid-ip2.5.c</itemPath>
+        <itemPath>../lib/vr_leg_ctrl.c</itemPath>
       </logicalFolder>
       <itemPath>source/cmd.c</itemPath>
       <itemPath>source/main.c</itemPath>
@@ -119,8 +119,8 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>RealICEPlatformTool</platformTool>
         <languageToolchain>XC16</languageToolchain>
-        <languageToolchainVersion>1.23</languageToolchainVersion>
-        <platform>3</platform>
+        <languageToolchainVersion>1.24</languageToolchainVersion>
+        <platform>2</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
@@ -336,7 +336,7 @@
           <property key="output-file-format" value="elf"/>
         </C30Global>
       </item>
-      <item path="../lib/leg_ctrl.c" ex="false" overriding="true">
+      <item path="../lib/or_leg_ctrl.c" ex="false" overriding="true">
         <C30>
           <property key="code-model" value="default"/>
           <property key="const-model" value="default"/>
@@ -352,7 +352,7 @@
           <property key="enable-symbols" value="true"/>
           <property key="enable-unroll-loops" value="false"/>
           <property key="extra-include-directories"
-                    value="../lib;../../imageproc-lib;source;..\..\imageproc-settings"/>
+                    value="../lib/;../../imageproc-lib/;source;../../imageproc-settings/"/>
           <property key="isolate-each-function" value="false"/>
           <property key="oXC16gcc-align-arr" value="false"/>
           <property key="oXC16gcc-cnsts-mauxflash" value="false"/>
@@ -432,7 +432,7 @@
           <property key="enable-symbols" value="true"/>
           <property key="enable-unroll-loops" value="false"/>
           <property key="extra-include-directories"
-                    value="../lib;../../imageproc-lib;source;..\..\imageproc-settings"/>
+                    value="../lib;../../imageproc-lib;source;../../imageproc-settings"/>
           <property key="isolate-each-function" value="false"/>
           <property key="oXC16gcc-align-arr" value="false"/>
           <property key="oXC16gcc-cnsts-mauxflash" value="false"/>
@@ -511,7 +511,7 @@
         <property key="enable-symbols" value="true"/>
         <property key="enable-unroll-loops" value="false"/>
         <property key="extra-include-directories"
-                  value="source;..\lib;..\..\imageproc-lib;..\..\imageproc-settings"/>
+                  value="source;../lib;../../imageproc-lib;../../imageproc-settings"/>
         <property key="isolate-each-function" value="false"/>
         <property key="keep-inline" value="false"/>
         <property key="oXC16gcc-align-arr" value="false"/>

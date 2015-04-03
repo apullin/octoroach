@@ -38,7 +38,7 @@ typedef struct {
     unsigned int (*bemf_getter)(void);
 } legCtrlStruct;
 
-void legCtrlSetup();
+void or_legCtrlSetup();
 void legCtrlSetInput(unsigned int num, int val);
 void legCtrlOnOff(unsigned int num, unsigned char state);
 void legCtrlSetGains(unsigned int num, int Kp, int Ki, int Kd, int Kaw, int ff);

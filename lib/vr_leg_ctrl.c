@@ -17,7 +17,7 @@
 #include <stdlib.h> // for malloc
 //imageproc-lib and library includes
 #include "utils.h"
-#include "pid-ip2.5.h"
+#include "vr_leg_ctrl.h"
 #include "dfmem.h"
 #include "adc_pid.h"
 #include "sclock.h"

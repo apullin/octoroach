@@ -4,7 +4,7 @@
 #include "pid.h"
 #include "dfilter_avg.h"
 #include "adc_pid.h"
-#include "leg_ctrl.h"
+#include "or_leg_ctrl.h"
 #include "sys_service.h"
 //#include "ams-enc.h"
 #include "imu_service.h"

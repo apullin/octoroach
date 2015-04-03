@@ -3,7 +3,7 @@
 //leg_ctrl.c
 
 #include "pid.h"
-#include "leg_ctrl.h"
+#include "or_leg_ctrl.h"
 //#include "motor_ctrl.h"
 #include "tih.h"
 #include "timer.h"
@@ -96,7 +96,7 @@ static void SetupTimer1(void) {
 }
 
 
-void legCtrlSetup() {
+void or_legCtrlSetup() {
     int i;
 
     //Get maximum & saturation values
