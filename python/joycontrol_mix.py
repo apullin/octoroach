@@ -84,6 +84,10 @@ def main():
             thrustInput = -j.get_axis(1)
             turnInput = j.get_axis(4)
             
+            # Applying cubic should soften response & preserve sign
+            thrustInput = thrustInput**3
+            turnInput = turnInput**3
+            
             hatval = j.get_hat(0)
             
             if hatval[1] == 1:
