@@ -232,19 +232,19 @@ static void cmdSetThrustClosedLoop(unsigned char status, unsigned char length, u
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetThrustClosedLoop, argsPtr, frame);
 
-    legCtrlSetInput(LEG_CTRL_LEFT, argsPtr->chan1);
-    legCtrlOnOff(LEG_CTRL_LEFT, PID_ON); //Motor PID #1 -> ON
+    orLegCtrlSetInput(LEG_CTRL_LEFT, argsPtr->chan1);
+    orLegCtrlOnOff(LEG_CTRL_LEFT, PID_ON); //Motor PID #1 -> ON
 
-    legCtrlSetInput(LEG_CTRL_RIGHT, argsPtr->chan2);
-    legCtrlOnOff(LEG_CTRL_RIGHT, PID_ON); //Motor PID #2 -> ON
+    orLegCtrlSetInput(LEG_CTRL_RIGHT, argsPtr->chan2);
+    orLegCtrlOnOff(LEG_CTRL_RIGHT, PID_ON); //Motor PID #2 -> ON
 }
 
 static void cmdSetPIDGains(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {
     //Unpack unsigned char* frame into structured values
     PKT_UNPACK(_args_cmdSetPIDGains, argsPtr, frame);
 
-    legCtrlSetGains(0, argsPtr->Kp1, argsPtr->Ki1, argsPtr->Kd1, argsPtr->Kaw1, argsPtr->Kff1);
-    legCtrlSetGains(1, argsPtr->Kp2, argsPtr->Ki2, argsPtr->Kd2, argsPtr->Kaw2, argsPtr->Kff2);
+    orLegCtrlSetGains(0, argsPtr->Kp1, argsPtr->Ki1, argsPtr->Kd1, argsPtr->Kaw1, argsPtr->Kff1);
+    orLegCtrlSetGains(1, argsPtr->Kp2, argsPtr->Ki2, argsPtr->Kd2, argsPtr->Kaw2, argsPtr->Kff2);
 
     //Send confirmation packet, which is the exact same data payload as what was sent
     //Note that the destination is the hard-coded RADIO_DST_ADDR

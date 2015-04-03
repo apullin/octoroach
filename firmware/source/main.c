@@ -82,7 +82,7 @@ int main(void) {
     //"Open Loop" vibration & jitter generator, AP 2014
     //olVibeSetup();
 
-    or_legCtrlSetup();  //sysService Timer 1 @ 1Khz
+    orLegCtrlSetup();  //sysService Timer 1 @ 1Khz
     steeringSetup(); //sysService Timer 6 @ 300 hz
 
     //Tail control is a special case

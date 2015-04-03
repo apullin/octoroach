@@ -29,8 +29,8 @@ void orTelemGetData(unsigned char* ptr) {
     orTelemStruct_t* tptr;
     tptr = (orTelemStruct_t*) ptr;
  
-    tptr->inputL = legCtrlGetInput(1);
-    tptr->inputR = legCtrlGetInput(2);
+    tptr->inputL = orLegCtrlGetInput(1);
+    tptr->inputR = orLegCtrlGetInput(2);
     tptr->dcA = tiHGetSignedDC(1);
     tptr->dcB = tiHGetSignedDC(2);
     tptr->dcC = tiHGetSignedDC(3);

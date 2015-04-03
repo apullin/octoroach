@@ -64,7 +64,7 @@ volatile char inMotion;
 
 //Function to be installed into T1, and setup function
 static void SetupTimer1(void);
-static void legCtrlServiceRoutine(void);  //To be installed with sysService
+static void orLegCtrlServiceRoutine(void);  //To be installed with sysService
 //The following local functions are called by the service routine:
 static void serviceMoveQueue(void);
 static void moveSynth();
@@ -78,7 +78,7 @@ static int max_pwm;
 /////////        Leg Control ISR       ////////
 /////////  Installed to Timer1 @ 1Khz  ////////
 //void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
-static void legCtrlServiceRoutine(void){
+static void orLegCtrlServiceRoutine(void){
     serviceMoveQueue();
     moveSynth();         //TODO: port to synth module
     serviceMotionPID();  //Update controllers
@@ -96,7 +96,7 @@ static void SetupTimer1(void) {
 }
 
 
-void or_legCtrlSetup() {
+void orLegCtrlSetup() {
     int i;
 
     //Get maximum & saturation values
@@ -201,7 +201,7 @@ void or_legCtrlSetup() {
     ///////  syService installation ///////
     SetupTimer1(); // Timer 1 @ 1 Khz
     int retval;
-    retval = sysServiceInstallT1(legCtrlServiceRoutine);
+    retval = sysServiceInstallT1(orLegCtrlServiceRoutine);
 
 }
 
@@ -523,17 +523,17 @@ int medianFilter3(int* a) {
     return b[1];
 }
 
-void legCtrlSetInput(unsigned int num, int val) {
+void orLegCtrlSetInput(unsigned int num, int val) {
     //pidSetInput(&(motor_pidObjs[num]), val);
     pidSetInput(&(legCtrls[num].controller), val);
 }
 
-void legCtrlOnOff(unsigned int num, unsigned char state) {
+void orLegCtrlOnOff(unsigned int num, unsigned char state) {
     //motor_pidObjs[num].onoff = state;
     legCtrls[num].controller.onoff = state;
 }
 
-void legCtrlSetGains(unsigned int num, int Kp, int Ki, int Kd, int Kaw, int ff) {
+void orLegCtrlSetGains(unsigned int num, int Kp, int Ki, int Kd, int Kaw, int ff) {
     //pidSetGains(&(motor_pidObjs[num]), Kp, Ki, Kd, Kaw, ff);
     pidSetGains(&(legCtrls[num].controller), Kp, Ki, Kd, Kaw, ff);
 }
@@ -570,7 +570,7 @@ static void setInitialOffset(unsigned int samples) {
 
 }
 
-int legCtrlGetInput(unsigned int channel){
+int orLegCtrlGetInput(unsigned int channel){
     int idx = channel - 1;
     return legCtrls[idx].controller.input;
     //return motor_pidObjs[idx].input;

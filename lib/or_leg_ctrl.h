@@ -38,11 +38,11 @@ typedef struct {
     unsigned int (*bemf_getter)(void);
 } legCtrlStruct;
 
-void or_legCtrlSetup();
-void legCtrlSetInput(unsigned int num, int val);
-void legCtrlOnOff(unsigned int num, unsigned char state);
-void legCtrlSetGains(unsigned int num, int Kp, int Ki, int Kd, int Kaw, int ff);
-int legCtrlGetInput(unsigned int channel);
+void orLegCtrlSetup();
+void orLegCtrlSetInput(unsigned int num, int val);
+void orLegCtrlOnOff(unsigned int num, unsigned char state);
+void orLegCtrlSetGains(unsigned int num, int Kp, int Ki, int Kd, int Kaw, int ff);
+int orLegCtrlGetInput(unsigned int channel);
 
 
 #endif
