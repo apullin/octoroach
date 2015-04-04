@@ -141,8 +141,8 @@ void orLegCtrlSetup() {
     //legCtrlOutputChannels[1] = OCTOROACH_LEG2_MOTOR_CHANNEL;
 
 
-    legCtrls[0].bemf_getter = adcGetMotorA;
-    legCtrls[1].bemf_getter = adcGetMotorB;
+    legCtrls[0].bemf_getter = &adcGetMotorA; //TODO: Resolve function pointer ambiguity
+    legCtrls[1].bemf_getter = &adcGetMotorB;
 
     legCtrls[0].outputChannel = OCTOROACH_LEG1_MOTOR_CHANNEL;
     legCtrls[1].outputChannel = OCTOROACH_LEG2_MOTOR_CHANNEL;
