@@ -1,7 +1,7 @@
 // Contents of this file are copyright Andrew Pullin, 2013
 
-#ifndef __LEG_CTRL_H
-#define __LEG_CTRL_H
+#ifndef __OR_LEG_CTRL_H
+#define __OR_LEG_CTRL_H
 
 #define NUM_MOTOR_PIDS 2 //TODO: to be moved to settings.h in the future
 
@@ -45,4 +45,4 @@ void orLegCtrlSetGains(unsigned int num, int Kp, int Ki, int Kd, int Kaw, int ff
 int orLegCtrlGetInput(unsigned int channel);
 
 
-#endif
+#endif //__OR_LEG_CTRL_H

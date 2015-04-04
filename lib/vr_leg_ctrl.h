@@ -1,5 +1,5 @@
-#ifndef __PID_H
-#define __PID_H
+#ifndef __VR_LEG_CTRL_H
+#define __VR_LEG_CTRL_H
 
 // better to turn gains to zero until initialized by command
 #define DEFAULT_KP  0
@@ -144,4 +144,4 @@ void pidip25SetTimeFlag(unsigned int channel, char val);
 void pidip25SetMode(unsigned int channel, char mode);
 void pidip25SetPWMDes(unsigned int channel, int pwm);
 
-#endif // __PID_H
+#endif // __VR_LEG_CTRL_H
