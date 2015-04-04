@@ -12,18 +12,19 @@ is invalid and void.
 #define __CMD_H
 
 #include "cmd_const.h"
+#include <stdint.h>
 
 //// Includes here should be to provide TYPES and ENUMS only
 #include "move_queue.h"
-#include "tail_queue.h"
-//#include "hall.h"
+#include "vr_leg_ctrl.h"
 
-#define CMD_VECTOR_SIZE				0xFF //full length vector
-#define MAX_CMD_FUNC				0x9F
+
+#define CMD_VECTOR_SIZE             0xFF //full length vector
+#define MAX_CMD_FUNC                0x9F
 
 #define CMD_SET_THRUST_OPENLOOP     0x80
 #define CMD_SET_THRUST_CLOSEDLOOP   0x81
-#define CMD_SET_PID_GAINS           0x82
+#define CMD_OR_SET_PID_GAINS        0x82
 #define CMD_GET_PID_TELEMETRY       0x83
 #define CMD_SET_CTRLD_TURN_RATE     0x84
 #define CMD_STREAM_TELEMETRY        0x85
@@ -34,7 +35,6 @@ is invalid and void.
 #define CMD_ERASE_SECTORS           0x8A
 #define CMD_FLASH_READBACK          0x8B
 #define CMD_SLEEP                   0x8C
-#define CMD_SET_VEL_PROFILE         0x8D
 #define CMD_WHO_AM_I                0x8E
 #define CMD_HALL_TELEMETRY          0x8F
 #define CMD_ZERO_POS                0x90
@@ -44,24 +44,16 @@ is invalid and void.
 #define CMD_SET_THRUST_HALL         0x94
 #define CMD_SET_OL_VIBE             0x95
 
-//Argument lengths
-//lenghts are in bytes
-//OBSOLETE, replaced with command-specific structs
-/*
-#define LEN_CMD_SET_THRUST_OPENLOOP     4   //2 unsigned int
-#define LEN_CMD_SET_THRUST_CLOSEDLOOP   10  //5 unsigned int
-#define LEN_CMD_SET_PID_GAINS  		20  //10 unsigned int
-#define LEN_CMD_GET_PID_TELEMETRY	2   //1 unsigned int
-#define LEN_CMD_SET_CTRLD_TURN_RATE	2   //1 signed int
-#define LEN_CMD_GET_IMU_LOOP_ZGYRO      2   //1 unsigned int
-#define LEN_CMD_SET_MOVE_QUEUE	        -1  //variable length
-#define LEN_CMD_SET_STEERING_GAINS      12  //6 signed int
-#define LEN_CMD_SOFTWARE_RESET          1   //1 char
-#define LEN_CMD_SPECIAL_TELEMETRY       4   //1 unsigned long
-#define LEN_CMD_ERASE_SECTORS           4   //1 unsigned long
-#define LEN_CMD_FLASH_READBACK          4   //1 unsigned long
-#define LEN_CMD_SLEEP			1   //1 char
-*/
+//VelociRoACH specific functions
+#define CMD_VR_SET_VEL_PROFILE      0x8D
+#define CMD_VR_GET_AMS_POS          0x84
+#define CMD_VR_START_TIMED_RUN      0x91
+#define CMD_VR_START_TELEMETRY      0x8F
+#define CMD_VR_SET_PID_GAINS        0x82
+#define CMD_VR_SET_MOTOR_MODE       0x94
+#define CMD_VR_PID_START_MOTORS     0x81
+#define CMD_VR_PID_STOP_MOTORS      0x81
+#define CMD_VR_SET_PHASE            0x93
 
 unsigned int cmdSetup(void);
 void cmdHandleRadioRxBuffer(void);
@@ -74,6 +66,11 @@ typedef struct{
 	int channel, dc;
 } _args_cmdSetThrustOpenLoop;
 
+//cmdSetMotorMode
+typedef struct{
+	int thrust1, thrust2;
+} _args_cmdSetMotorMode;
+
 //cmdSetThrustClosedLoop
 typedef struct{
 	int chan1;
@@ -83,14 +80,17 @@ typedef struct{
         unsigned int telem_samples;
 } _args_cmdSetThrustClosedLoop;
 
-//cmdSetPIDGains
+//cmdORSetPIDGains
 typedef struct{
 	int Kp1, Ki1, Kd1, Kaw1, Kff1;
 	int Kp2, Ki2, Kd2, Kaw2, Kff2;
-} _args_cmdSetPIDGains;
+} _args_cmdORSetPIDGains;
 
-//cmdGetPIDTelemetry
-//obsolete
+//cmdVRSetPIDGains
+typedef struct{
+	int Kp1, Ki1, Kd1, Kaw1, Kff1;
+	int Kp2, Ki2, Kd2, Kaw2, Kff2;
+} _args_cmdVRSetPIDGains;
 
 //cmdSetCtrldTurnRate
 typedef struct{
@@ -121,6 +121,16 @@ typedef struct{
 //cmdSoftwareReset
 //no arguments
 
+//cmdcmdStartTimedRun
+typedef struct{
+    uint16_t run_time;
+} _args_cmdStartTimedRun;
+
+//cmdStartTelemetry
+typedef struct{
+    uint32_t numSamples;
+} _args_cmdStartTelemetry;
+
 //cmdSpecialTelemetry
 typedef struct{
 	unsigned long count;
@@ -139,14 +149,14 @@ typedef struct{
 //cmdSleep
 
 //cmdSetVelProfile
-/*typedef struct{
-    int intervalsL[NUM_VELS];
-    int deltaL[NUM_VELS];
-    int velL[NUM_VELS];
-    int intervalsR[NUM_VELS];
-    int deltaR[NUM_VELS];
-    int velR[NUM_VELS];
-} _args_cmdSetVelProfile;*/
+typedef struct{
+    int16_t periodLeft;
+    int16_t deltaL[NUM_VELS];
+    int16_t flagLeft;
+    int16_t periodRight;
+    int16_t deltaR[NUM_VELS];
+    int16_t flagRight;
+} _args_cmdSetVelProfile;
 
 //cmdHallTelemetry
 typedef struct {
@@ -158,17 +168,17 @@ typedef struct {
 //cmdSetTailQueue
 //NOTE: This is not for the entire packet, just for one tailQ item,
 // the cmd handler will stride across the packet, unpacking these
-typedef struct {
-    float angle;
-    unsigned long duration;
-    enum tailSegT type;
-    int params[3];
-} _args_cmdSetTailQueue;
+//typedef struct {
+//    float angle;
+//    unsigned long duration;
+//    enum tailSegT type;
+//    int params[3];
+//} _args_cmdSetTailQueue;
 
 //cmdSetTailGains
-typedef struct{
-	int Kp, Ki, Kd, Kaw, Kff;
-} _args_cmdSetTailGains;
+//typedef struct{
+//	int Kp, Ki, Kd, Kaw, Kff;
+//} _args_cmdSetTailGains;
 
 //cmdSetThrustHall
 typedef struct{
@@ -185,6 +195,11 @@ typedef struct{
         int amplitude;
         int phase;
 } _args_cmdSetOLVibe;
+
+//cmdSetPhase
+typedef struct{
+    int32_t offset;
+} _args_cmdSetPhase;
 
 #endif // __CMD_H
 
