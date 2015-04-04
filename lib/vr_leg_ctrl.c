@@ -163,7 +163,7 @@ void pidip25initPIDVelProfile() {
 
 // called from cmd.c
 
-void setPIDVelProfile(int pid_num, int *interval, int *delta, int *vel, int onceFlag) {
+void pidip25setPIDVelProfile(int pid_num, int *interval, int *delta, int *vel, int onceFlag) {
     pidVelLUT* tempPID;
     int i;
     tempPID = otherBuff(pidVel, activePID[pid_num]);
@@ -239,7 +239,7 @@ void pidip25SetInput(int pid_num, int input_val) {
 
 }
 
-void pidStartTimedTrial(unsigned int run_time) {
+void pidip25StartTimedTrial(unsigned int run_time) {
     unsigned long temp;
 
     temp = getT1_ticks(); // need atomic read due to interrupt
