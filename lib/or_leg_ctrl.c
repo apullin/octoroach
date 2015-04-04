@@ -114,31 +114,19 @@ void orLegCtrlSetup() {
         //THe user is REQUIRED to set up these pointers before initializing
         //the object, because the arrays are local to this module.
         
-        //motor_pidObjs[i].dspPID.abcCoefficients = motor_abcCoeffs[i];
-        //motor_pidObjs[i].dspPID.controlHistory = motor_controlHists[i];
         controller->dspPID.abcCoefficients = motor_abcCoeffs[i];
         controller->dspPID.controlHistory = motor_controlHists[i];
 #endif
         pidInitPIDObj(controller, LEG_DEFAULT_KP, LEG_DEFAULT_KI,
                 LEG_DEFAULT_KD, LEG_DEFAULT_KAW, LEG_DEFAULT_KFF);
 
+        //Set max and saturation values
         controller->satValPos = max_pwm;
         controller->satValNeg = -max_pwm;
         controller->maxVal = 2*pwm_period; //dsPIC PWM module specific, pwm counts on up and down edge
         controller->minVal = -2*pwm_period;
 
-        //Set max and saturation values
-        //motor_pidObjs[i].satValPos = max_pwm;
-        //motor_pidObjs[i].satValNeg = -max_pwm;
-        //motor_pidObjs[i].maxVal = 2*pwm_period; //dsPIC PWM module specific, pwm counts on up and down edge
-        //motor_pidObjs[i].minVal = -2*pwm_period;
-
-
     }
-
-    //Set which PWM output each PID Object will correspond to
-    //legCtrlOutputChannels[0] = OCTOROACH_LEG1_MOTOR_CHANNEL;
-    //legCtrlOutputChannels[1] = OCTOROACH_LEG2_MOTOR_CHANNEL;
 
 
     legCtrls[0].bemf_getter = &adcGetMotorA; //TODO: Resolve function pointer ambiguity
@@ -150,10 +138,12 @@ void orLegCtrlSetup() {
     legCtrls[0].controller.onoff = PID_OFF;
     legCtrls[1].controller.onoff = PID_OFF;
 
+    //Ensure controllers are reset to zero and turned off
+    //Setter function used here since it will zero out the whole state.
     pidSetInput(&(legCtrls[0].controller), 0);
     pidSetInput(&(legCtrls[1].controller), 0);
 
-     //Set up filters and histories
+    //Set up histories for filters
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
         legCtrls[i].bemfHist[0] = 0;
         legCtrls[i].bemfHist[1] = 0;
@@ -183,20 +173,6 @@ void orLegCtrlSetup() {
     //This will set legCtrls[i].controller.inputOffset for i=0,1
     setInitialOffset(32);
 
-    //Ensure controllers are reset to zero and turned off
-    //External function used here since it will zero out the state
-    //pidSetInput(&(motor_pidObjs[0]), 0);
-    //pidSetInput(&(motor_pidObjs[1]), 0);
-    //motor_pidObjs[0].onoff = PID_OFF;
-    //motor_pidObjs[1].onoff = PID_OFF;
-
-    //Set up filters and histories
-    //for (i = 0; i < NUM_MOTOR_PIDS; i++) {
-    //    bemfLast[i] = 0;
-    //    bemfHist[i][0] = 0;
-    //    bemfHist[i][1] = 0;
-    //    bemfHist[i][2] = 0;
-    //}
 
     ///////  syService installation ///////
     SetupTimer1(); // Timer 1 @ 1 Khz
@@ -247,20 +223,13 @@ void serviceMotionPID() {
             pidUpdate(&(legCtrls[j].controller) , MOTOR_PID_SCALER* bemf[j]);
             legCtrls[j].controller.input = temp;  //Reset unscaled input
 
-            //int temp;
-            //temp = motor_pidObjs[j].input; //Save unscaled input val
-            //motor_pidObjs[j].input *= MOTOR_PID_SCALER; //Scale input
-            //pidUpdate(&(motor_pidObjs[j]), MOTOR_PID_SCALER* bemf[j]);
-            //motor_pidObjs[j].input = temp;  //Reset unscaled input
 #endif //PID_SOFTWWARE vs PID_HARDWARE
 
             //Set PWM duty cycle
-            //tiHSetDC(legCtrlOutputChannels[j], motor_pidObjs[j].output);
             tiHSetDC(legCtrls[j].outputChannel, legCtrls[j].controller.output);
 
         }//end of if (on / off)
         else if (PID_ZEROING_ENABLE) { //if PID loop is off
-            //tiHSetDC(legCtrlOutputChannels[j], 0);
             tiHSetDC(legCtrls[j].outputChannel, 0);
         }
 
@@ -270,27 +239,22 @@ void serviceMotionPID() {
 void updateBEMF() {
     //Back EMF measurements are made automatically by coordination of the ADC, PWM, and DMA.
 
+    //Subtract offset
+    //This is relevant for IP2.5, since the motors can go in forward and reverse
     //This assignment here is arbitrary.
-    
-    //bemf[0] = pidObjs[0]->bemf_getter();
-    //bemf[1] = pidObjs[1]->bemf_getter();
-
+    // TODO: Use macros to correct assign these
     bemf[0] = legCtrls[0].bemf_getter() - legCtrls[0].controller.inputOffset;
     bemf[1] = legCtrls[1].bemf_getter() - legCtrls[1].controller.inputOffset;
-    
-    //bemf[0] = legCtrls[0].bemf_getter() - legCtrls[0].controller.inputOffset;
-    //bemf[1] = legCtrls[1].bemf_getter() - legCtrls[1].controller.inputOffset;
 
     //  EXTRA NEGATIVE HERE is to make gains positive
-    //   TODO: Understand exactly why this is the case
+    // TODO: Understand exactly why this is the case
     bemf[0] = -bemf[0];
     bemf[1] = -bemf[1];
 
-    //bemf[0] = adcGetMotorA();
-    //bemf[1] = adcGetMotorB();
-    //Offsets are subtracted later; currently, all readings will be > 0
+    //bemf now should be in range (-415, 415), see wiki for more details
 
-    //Apply median filter
+    //Rotate history and apply median filter
+    // TODO: Fix median filter
     int i;
     for (i = 0; i < NUM_MOTOR_PIDS; i++) {
 
@@ -307,14 +271,6 @@ void updateBEMF() {
         //bemf[i] = medianFilter3(bemfHist[i]); //Apply median filter
    }
 
-    //Subtract offset
-    //This is relevant for IP2.5, since the motors can go in forward and reverse
-    //  EXTRA NEGATIVE HERE is to make gains positive
-    //   TODO: Understand exactly why this is the case
-    //bemf[0] = -(bemf[0] - motor_pidObjs[0].inputOffset);
-    //bemf[1] = -(bemf[1] - motor_pidObjs[1].inputOffset);
-    //bemf now should be in range (-415, 415)
-    // See wiki for more details
 
     // IIR filter on BEMF: y[n] = 0.2 * y[n-1] + 0.8 * x[n]
     //bemf[0] = (5 * (long) bemfLast[0] / 10) + 5 * (long) bemf[0] / 10;
@@ -342,7 +298,6 @@ void updateBEMF() {
     if(abs(bemf[1]) <= BEMF_DEADBAND){
         bemf[1] = 0;
     }
-
 
     //Simple indicator if a leg is "in motion", via the yellow LED.
     //Not functionally necceasry; can be elimited to use the LED for something else.
