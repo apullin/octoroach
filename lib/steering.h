@@ -12,6 +12,8 @@ void steeringSetMode(unsigned int mode);
 void steeringApplyCorrection(int* inputs, int* outputs);
 void steeringOff();
 void steeringOn();
+int steeringGetInput();
+int steeringGetOutput();
 
 //#define STEERING_SAT       1024
 #define STEERING_SAT       4000 //for yaw-control steering
@@ -24,7 +26,7 @@ void steeringOn();
 
 #elif defined PID_HARDWARE
 //Hardware PID
-#define STEERING_KP  0
+#define STEERING_KP  50
 #define STEERING_KI  0
 #define STEERING_KD  0
 #define STEERING_KAW 0

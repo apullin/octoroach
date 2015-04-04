@@ -10,9 +10,12 @@ is invalid and void.
 
 from lib import command
 from struct import pack,unpack
-import time, sys
+import time, sys, os, traceback
 
-import shared
+# Path to imageproc-settings repo must be added
+sys.path.append(os.path.dirname("../../imageproc-settings/"))
+sys.path.append(os.path.dirname("../imageproc-settings/"))  
+import shared_multi as shared
 
 #Dictionary of packet formats, for unpack()
 pktFormat = { \
@@ -27,7 +30,7 @@ pktFormat = { \
     command.SET_MOVE_QUEUE:         '', \
     command.SET_STEERING_GAINS:     '6h', \
     command.SOFTWARE_RESET:         '', \
-    command.SPECIAL_TELEMETRY:      '=LL'+13*'h'+'fhhffLLh', \
+    command.SPECIAL_TELEMETRY:      '=LLhhhhhhhhhhhhhhhhhhhhf', \
     command.ERASE_SECTORS:          'L', \
     command.FLASH_READBACK:         '', \
     command.SLEEP:                  'b', \
@@ -124,6 +127,12 @@ def xbee_received(packet):
             if (datum[0] != -1):
                 for i in range(pp):
                     shared.imudata.append(datum[4*i:4*(i+1)] )
+                    
+         
+        # SOFTWARE_RESET
+        elif type == command.SOFTWARE_RESET:
+            print "RESET"
+            
         # SPECIAL_TELEMETRY
         elif type == command.SPECIAL_TELEMETRY:
             shared.pkts = shared.pkts + 1
@@ -131,12 +140,15 @@ def xbee_received(packet):
             datum = unpack(pattern, data)
             datum = list(datum)
             telem_index = datum.pop(0) #pop removes this from data array
-            #print "telem_index: ",telem_index
             #print "Special Telemetry Data Packet #",telem_index
+            #print datum
             if (datum[0] != -1) and (telem_index) >= 0:
                 for r in shared.ROBOTS:
                     if r.DEST_ADDR_int == src_addr:
-                        r.imudata[telem_index] = datum
+                        if telem_index <= r.numSamples:
+                            r.imudata[telem_index] = datum
+                        else:
+                            print "Got out of range telem_index =",telem_index
                 
         # ERASE_SECTORS
         elif type == command.ERASE_SECTORS:
@@ -193,9 +205,12 @@ def xbee_received(packet):
     
     except Exception as args:
         print "\nGeneral exception from callbackfunc:",args
-        print "Attemping to exit cleanly..."
+        print "\n    ******    TRACEBACK    ******    "
+        traceback.print_exc()
+        print "    *****************************    \n"
+        print "Attempting to exit cleanly..."
         shared.xb.halt()
-        sharedser.close()
+        shared.ser.close()
         sys.exit()
 
 

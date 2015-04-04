@@ -4,12 +4,11 @@
 #include "pid.h"
 //#include "motor_ctrl.h"
 #include "timer.h"
-#include "led.h"
 #include "tail_queue.h"
 #include "math.h"
 #include "sys_service.h"
 #include "move_queue.h"
-#include "ams-enc.h"
+//#include "ams-enc.h"
 #include "motor_ctrl.h"
 #include "gyro.h"
 #include "dfilter_avg.h"
@@ -276,7 +275,7 @@ void tailCtrlSetInput(int val){
 static void serviceTailPID() {
 
 	//update tail position
-	lastTailPos = encGetFloatPos(4);
+	//lastTailPos = encGetFloatPos(4);
 	
 	int encAngle = (int) (lastTailPos*10.0);
 	//Update the setpoints

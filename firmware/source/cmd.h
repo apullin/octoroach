@@ -16,7 +16,7 @@ is invalid and void.
 //// Includes here should be to provide TYPES and ENUMS only
 #include "move_queue.h"
 #include "tail_queue.h"
-#include "hall.h"
+//#include "hall.h"
 
 #define CMD_VECTOR_SIZE				0xFF //full length vector
 #define MAX_CMD_FUNC				0x9F
@@ -42,6 +42,7 @@ is invalid and void.
 #define CMD_SET_TAIL_QUEUE          0x92
 #define CMD_SET_TAIL_GAINS          0x93
 #define CMD_SET_THRUST_HALL         0x94
+#define CMD_SET_OL_VIBE             0x95
 
 //Argument lengths
 //lenghts are in bytes
@@ -62,17 +63,15 @@ is invalid and void.
 #define LEN_CMD_SLEEP			1   //1 char
 */
 
-void cmdSetup(void);
+unsigned int cmdSetup(void);
 void cmdHandleRadioRxBuffer(void);
-void cmdEcho(unsigned char status, unsigned char length, unsigned char *frame);
-
 
 
 /////// Argument structures
 
 //cmdSetThrustOpenLoop
 typedef struct{
-	int dc1, dc2;
+	int channel, dc;
 } _args_cmdSetThrustOpenLoop;
 
 //cmdSetThrustClosedLoop
@@ -140,14 +139,14 @@ typedef struct{
 //cmdSleep
 
 //cmdSetVelProfile
-typedef struct{
+/*typedef struct{
     int intervalsL[NUM_VELS];
     int deltaL[NUM_VELS];
     int velL[NUM_VELS];
     int intervalsR[NUM_VELS];
     int deltaR[NUM_VELS];
     int velR[NUM_VELS];
-} _args_cmdSetVelProfile;
+} _args_cmdSetVelProfile;*/
 
 //cmdHallTelemetry
 typedef struct {
@@ -178,6 +177,14 @@ typedef struct{
         int chan2;
         unsigned int runtime2;
 } _args_cmdSetThrustHall;
+
+//cmdSetOLVibe
+typedef struct{
+	int channel;
+        int incr;
+        int amplitude;
+        int phase;
+} _args_cmdSetOLVibe;
 
 #endif // __CMD_H
 

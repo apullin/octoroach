@@ -6,16 +6,20 @@ Contents of this file are copyright Andrew Pullin, 2013
 
 """
 from lib import command
-import time,sys
+import time,sys,os
 import serial
-import shared
+
+# Path to imageproc-settings repo must be added
+sys.path.append(os.path.dirname("../../imageproc-settings/"))
+sys.path.append(os.path.dirname("../imageproc-settings/"))  
+import shared_multi as shared
 
 from or_helpers import *
 
 
 ###### Operation Flags ####
 SAVE_DATA1 = False 
-RESET_R1 = True  
+RESET_R1 = False
 
 EXIT_WAIT   = False
 
@@ -47,17 +51,17 @@ def main():
     #    ----------LEFT----------        ---------_RIGHT----------
     
     #motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0] #Hardware PID
-    motorgains = [15000,50,1000,0,0,    15000,50,1000,0,0]
+    motorgains = [20000,3000,50,0,0,    20000,3000,50,0,0]
 
-    R1.setMotorGains(motorgains, retries = 8)
+    R1.setMotorGains(motorgains, retries = 4)
     #Verify all robots have motor gains set
     verifyAllMotorGainsSet()   #exits on failure
 
     #Steering gains format:
     #  [ Kp , Ki , Kd , Kaw , Kff]
-    steeringGains = [15000,5,0,0,0,  STEER_MODE_SPLIT] # Hardware PID
+    steeringGains = [0,0,0,0,0,  STEER_MODE_OFF] # Hardware PID
 
-    R1.setSteeringGains(steeringGains, retries = 8)
+    R1.setSteeringGains(steeringGains, retries = 4)
     #Verify all robots have steering gains set
     verifyAllSteeringGainsSet()  #exits on failure
     
@@ -108,19 +112,22 @@ def main():
     #    85, 85, 6500,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*160.0)),
     #    85, 85, 6200,   MOVE_SEG_CONSTANT, 0, 0,  0, STEER_MODE_YAW_DEC, int(round(shared.deg2count*240.0))]
     
-    numMoves = 2
-    moveq1 = [numMoves, \
-        0, 0, 2000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0, 
-        60, 60, 10000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
-    
-    #No movements, just for static telemetry capture
     #numMoves = 1
     #moveq1 = [numMoves, \
-    #    0, 0, 2000,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
-        
+    #    40, 40, 2000, MOVE_SEG_CONSTANT, 0, 0, 0, STEER_MODE_OFF, 0]
+    
+    #No movements, just for static telemetry capture
+    numMoves = 1
+    moveq1 = [numMoves, \
+        0, 0, 500,   MOVE_SEG_CONSTANT, 0,  0,  0, STEER_MODE_OFF, 0]    
+     
+    #trapezoidal velocity profile
+    #[numMoves, moveq1] = trapRun(topspeed = 150, tstime = 1000, acceltime=1000, deceltime=1000,steertype = STEER_MODE_OFF)
+    
+
     #Timing settings
-    R1.leadinTime = 500;
-    R1.leadoutTime = 500;
+    R1.leadinTime = 0;
+    R1.leadoutTime = 0;
     
     #Flash must be erased to save new data
     if SAVE_DATA1:
@@ -142,12 +149,13 @@ def main():
     #### to the proper "SAVE_DATA"                 ####
     
     if SAVE_DATA1:
-        R1.startTelemetrySave()
+        R1.startTelemetrySave(timeout = 1000)
         
     time.sleep(R1.leadinTime / 1000.0)
     #Send the move queue to the robot; robot will start processing it
     #as soon as it is received
     R1.sendMoveQueue(moveq1)
+    
     
     if SAVE_DATA1:
         maxtime = 0
@@ -172,19 +180,43 @@ def main():
     xb_safe_exit()
 
 
+def trapRun(topspeed = 0, tstime = 0, acceltime = 0, deceltime = 0, steertype = STEER_MODE_YAW_DEC):
+    moveq = []
+    numMoves = 0
+    if acceltime != 0:
+        ramprate = int(topspeed / ( acceltime/1000.0))
+        moveq.extend( [ 0, 0, acceltime,   MOVE_SEG_RAMP, ramprate, ramprate,  0, steertype, 0])
+        numMoves = numMoves + 1
+        
+    if tstime != 0:
+        ramprate = int(topspeed / ( acceltime/1000.0))
+        moveq.extend( [ topspeed, topspeed, tstime,   MOVE_SEG_CONSTANT, 0, 0,  0, steertype, 0])
+        numMoves = numMoves + 1
+        
+    if deceltime != 0:
+        ramprate = -int(topspeed / ( deceltime/1000.0))
+        moveq.extend( [ topspeed, topspeed, deceltime,   MOVE_SEG_RAMP, ramprate, ramprate,  0, steertype, 0])
+        numMoves = numMoves + 1
+        
+    moveq.insert(0,numMoves)
+    
+    return [numMoves, moveq]
+
+
 #Provide a try-except over the whole main function
 # for clean exit. The Xbee module should have better
 # provisions for handling a clean exit, but it doesn't.
+#TODO: provide a more informative exit here; stack trace, exception type, etc
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
         print "\nRecieved Ctrl+C, exiting."
-        shared.xb.halt()
-        shared.ser.close()
-    #except Exception as args:
-    #    print "\nGeneral exception:",args
-    #    print "Attemping to exit cleanly..."
-    #    shared.xb.halt()
-    #    shared.ser.close()
-    #    sys.exit()
+    except Exception as args:
+        print "\nGeneral exception from main:\n",args,'\n'
+        print "\n    ******    TRACEBACK    ******    "
+        traceback.print_exc()
+        print "    *****************************    \n"
+        print "Attempting to exit cleanly..."
+    finally:
+        xb_safe_exit(shared.xb)

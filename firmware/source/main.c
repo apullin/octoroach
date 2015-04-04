@@ -9,80 +9,81 @@
  is invalid and void.
  *******************************************************************************/
 
+#include <xc.h>
+
 #include "settings.h"
-#include "Generic.h"
-#include "p33Fxxxx.h"
+//#include "Generic.h"
+
+//#include "pid-ip2.5.h" //at top, due to PID_H include guard collision
+
 #include "init_default.h"
-#include "ports.h"
 #include "battery.h"
 #include "cmd.h"
 #include "radio.h"
-#include "xl.h"
-#include "gyro.h"
+#include "mpu6000.h"
 #include "utils.h"
 #include "sclock.h"
-#include "motor_ctrl.h"
-#include "led.h"
 #include "dfmem.h"
+
 #include "leg_ctrl.h"
-#include "pid.h"
+//#include "pid.h"
 #include "adc_pid.h"
 #include "steering.h"
-#include "telem.h"
-#include "hall.h"
-#include "tail_ctrl.h"
+#include "telem_service.h"
+//#include "hall.h"
+//#include "tail_ctrl.h"
+//#include "ams-enc.h"
+#include "tih.h"
+#include "imu_service.h"
+//#include "spi_controller.h"
+//#include "ppool.h"
+//#include "ol-vibe.h"
 #include "ams-enc.h"
-#include "imu.h"
+
 
 #include <stdlib.h>
 
 extern unsigned char id[4];
 
-volatile unsigned long wakeTime;
-extern volatile char g_radio_duty_cycle;
-extern volatile char inMotion;
-
-int dcCounter;
-
 int main(void) {
 
-    wakeTime = 0;
-    dcCounter = 0;
+    //wakeTime = 0;
+    //dcCounter = 0;
 
-    WordVal src_addr_init = {RADIO_SRC_ADDR};
-    WordVal src_pan_id_init = {RADIO_SRC_PAN_ID};
-    WordVal dst_addr_init = {RADIO_DST_ADDR};
-
+    // Processor Initialization
     SetupClock();
     SwitchClocks();
     SetupPorts();
-    //batSetup();
-
-    int old_ipl;
-    mSET_AND_SAVE_CPU_IP(old_ipl, 1)
-
     sclockSetup();
-    radioInit(src_addr_init, src_pan_id_init, RADIO_RXPQ_MAX_SIZE, RADIO_TXPQ_MAX_SIZE);
-    radioSetChannel(RADIO_CHANNEL); //Set to my channel
-    macSetDestAddr(dst_addr_init);
+
+    LED_1 = 0;
+    LED_2 = 0;
+    LED_3 = 0;
+
+    cmdSetup();
+    
+    radioInit(RADIO_TXPQ_MAX_SIZE, RADIO_RXPQ_MAX_SIZE);
+    radioSetChannel(RADIO_CHANNEL);
+    radioSetSrcPanID(RADIO_PAN_ID);
+    radioSetSrcAddr(RADIO_SRC_ADDR);
 
     dfmemSetup();
-    //xlSetup();
-    gyroSetup();
-    mcSetup();
-    cmdSetup();
+    telemSetup(); //sysService Timer 5 @ 1Khz
+    mpuSetup();
+    imuSetup();   //sysService Timer 4 @ 1Khz
+    tiHSetup();
     adcSetup();
-    telemSetup(); //Timer 5
-    encSetup();
-    imuSetup();
 
-    #ifdef  HALL_SENSORS
-    hallSetup();    // Timer 1, Timer 2
-    hallSteeringSetup(); //doesn't exist yet
-    #else //No hall sensors, standard BEMF control
-    legCtrlSetup(); // Timer 1
-    steeringSetup();  //Timer 5
-    #endif
+    //AMS Encoders
+    //amsEncoderSetup();
+    //VelociRoACH style leg control
+    //pidSetup(); //sysService Timer 1 @ 1Khz
+
+    //"Open Loop" vibration & jitter generator, AP 2014
+    //olVibeSetup();
+
+    legCtrlSetup();  //sysService Timer 1 @ 1Khz
+    steeringSetup(); //sysService Timer 6 @ 300 hz
 
     //Tail control is a special case
     //tailCtrlSetup();
@@ -95,67 +96,18 @@ int main(void) {
     LED_YELLOW = 0;
 
     //Radio startup verification
-    if(phyGetState() == 0x16)  { LED_GREEN = 1; }
+    //if (phyGetState() == 0x16) {
+    //    LED_GREEN = 1;
+    //}
 
     //Sleeping and low power options
     //_VREGS = 1;
     //gyroSleep();
 
+
     while (1) {
         cmdHandleRadioRxBuffer();
-
-#ifndef __DEBUG //Idle will not work with debug
-        //Simple idle:
-        if (radioIsRxQueueEmpty()) {
-            Idle();
-            //_T1IE = 0;
-        }
-#endif
-
-        //delay_ms(1000);
-        //cmdEcho(0, 1 , (unsigned char*)(&i) );
-        //i++;
-        //if(radioIsRxQueueEmpty() && (t1_ticks >= wakeTime + 5000) ){
-        //Idle();
-        //LED_RED = 0;
-        //gyroSleep();
-        //Sleep();
-        //}
+        radioProcess();
+        //TODO: Implement an Idle() condition here for power saving
     }
-
-    /*
-    if(g_radio_duty_cycle){
-            if(dcCounter == 0){
-                    //LED_GREEN = 1;
-                    atSetRXAACKON();
-            }else{
-                    //LED_GREEN = 0;
-                    atSetTRXOFF();
-            }
-    }
-    else{
-            //LED_GREEN = 1;
-    }
-
-    dcCounter = (dcCounter + 1) % 8;
-		
-    if(radioIsRxQueueEmpty() && !inMotion){
-            //gyroSleep();
-            LED_RED = 0;
-            _SWDTEN = 1; //restart wdt
-            Sleep();
-            //Idle();
-    }
-		
-    //should be asleep here, waiting for WTD wakeup
-    ClrWdt(); //clear wdt
-    _SWDTEN = 0; //software disable wdt
-    LED_RED = 1;
-
-    //spin up clock
-    if(_COSC != 0b010){
-            while(OSCCONbits.LOCK!=1);
-    }
-    //gyroWake();
-    }*/
 }
