@@ -45,6 +45,8 @@ static void imuServiceRoutine(void);  //To be installed with sysService
 //The following local functions are called by the service routine:
 static void imuISRHandler(void);
 
+static int imu_service_handle = -1;
+
 ////   Private functions
 ////////////////////////
 /////////        IMU ISR          ////////
@@ -119,6 +121,7 @@ static void SetupTimer4(){
     T4PERvalue = 625;  // 1Khz
     int retval;
     retval = sysServiceConfigT4(T4CON1value, T4PERvalue, T4_INT_PRIOR_3 & T4_INT_ON);
+    imu_service_handle = retval;
 }
 
 ////   Public functions
@@ -183,4 +186,12 @@ int imuGetXLYValue() {
 
 int imuGetXLZValue() {
     return lastXL[2];
+}
+
+void imuServiceDisable(){
+    sysServiceDisableSvcT1(imu_service_handle);
+}
+
+void imuServiceEnable(){
+    sysServiceEnableSvcT1(imu_service_handle);
 }
