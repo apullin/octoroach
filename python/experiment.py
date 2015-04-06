@@ -18,7 +18,7 @@ from or_helpers import *
 
 
 ###### Operation Flags ####
-SAVE_DATA1 = False 
+SAVE_DATA1 = True 
 RESET_R1 = False
 
 EXIT_WAIT   = False
@@ -149,7 +149,7 @@ def main():
     #### to the proper "SAVE_DATA"                 ####
     
     if SAVE_DATA1:
-        R1.startTelemetrySave(timeout = 1000)
+        R1.startTelemetrySave()
         
     time.sleep(R1.leadinTime / 1000.0)
     #Send the move queue to the robot; robot will start processing it
@@ -177,7 +177,6 @@ def main():
                 break
 
     print "Done"
-    xb_safe_exit()
 
 
 def trapRun(topspeed = 0, tstime = 0, acceltime = 0, deceltime = 0, steertype = STEER_MODE_YAW_DEC):

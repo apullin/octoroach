@@ -335,12 +335,14 @@ static void cmdFlashReadback(unsigned char status, unsigned char length, unsigne
     PKT_UNPACK(_args_cmdFlashReadback, argsPtr, frame);
 
     //Horibble hack: Disable IMU while erading back telem
-    _T4IE = 0;
-
+    //_T4IE = 0; // only for 'roach' project
+    imuServiceDisable();
+    
     telemReadbackSamples(argsPtr->samples, src_addr);
 
     //Horibble hack: Disable IMU while erading back telem
-    _T4IE = 1;
+    //_T4IE = 1; // only for 'roach' project
+    imuServiceEnable();
 }
 
 static void cmdSleep(unsigned char status, unsigned char length, unsigned char *frame, unsigned int src_addr) {

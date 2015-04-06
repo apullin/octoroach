@@ -135,7 +135,7 @@ def xbee_received(packet):
             
         # SPECIAL_TELEMETRY
         elif type == command.SPECIAL_TELEMETRY:
-            shared.pkts = shared.pkts + 1
+            #shared.pkts = shared.pkts + 1
             #print "Special Telemetry Data Packet, ",shared.pkts
             datum = unpack(pattern, data)
             datum = list(datum)
