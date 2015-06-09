@@ -31,7 +31,7 @@
 #include "steering.h"
 #include "telem_service.h"
 //#include "hall.h"
-//#include "tail_ctrl.h"
+#include "tail_ctrl.h"
 //#include "ams-enc.h"
 #include "tih.h"
 #include "imu_service.h"
@@ -86,7 +86,7 @@ int main(void) {
     steeringSetup(); //sysService Timer 6 @ 300 hz
 
     //Tail control is a special case
-    //tailCtrlSetup();
+    tailCtrlSetup();
 
     //Camera is untested with current code base, AP 12/6/2012
     //ovcamSetup();

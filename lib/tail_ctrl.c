@@ -12,7 +12,7 @@
 #include "motor_ctrl.h"
 #include "gyro.h"
 #include "dfilter_avg.h"
-#include "imu.h"
+#include "imu_service.h"
 #include <stdlib.h> // for malloc
 
 #define ABS(my_val) ((my_val) < 0) ? -(my_val) : (my_val)
